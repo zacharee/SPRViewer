@@ -3,6 +3,7 @@ package tk.zwander.sprviewer.ui.activities
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -71,8 +72,12 @@ class DrawableViewActivity : AppCompatActivity() {
                         //TODO something...
                     } else {
                         image.drawable.run {
-                            val ratio = intrinsicHeight.toFloat() / intrinsicWidth.toFloat()
-                            toBitmap(512, (512 * ratio).toInt())
+                            if (this is BitmapDrawable) {
+                                bitmap
+                            } else {
+                                val ratio = intrinsicHeight.toFloat() / intrinsicWidth.toFloat()
+                                toBitmap(512, (512 * ratio).toInt())
+                            }
                         }.compress(Bitmap.CompressFormat.PNG, 100, output)
                     }
                 }
