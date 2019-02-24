@@ -22,6 +22,7 @@ import tk.zwander.sprviewer.util.getAppRes
 import java.io.File
 import java.io.FileDescriptor
 import java.io.FileOutputStream
+import java.util.*
 
 class DrawableViewActivity : AppCompatActivity() {
     companion object {
@@ -31,7 +32,10 @@ class DrawableViewActivity : AppCompatActivity() {
         private const val SAVE_XML_REQ = 102
     }
 
-    private val apk by lazy { ApkFile(File(packageManager.getApplicationInfo(pkg, 0).sourceDir)) }
+    private val apk by lazy {
+        ApkFile(File(packageManager.getApplicationInfo(pkg, 0).sourceDir))
+            .apply { preferredLocale = Locale.getDefault() }
+    }
     private val drawableXml by lazy {
         try {
             apk.transBinaryXml("res/drawable/$drawableName.xml")
