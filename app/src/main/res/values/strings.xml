@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">SPRViewer</string>
-    <string name="save_image">Save Image</string>
+    <string name="save_png">Save PNG</string>
+    <string name="save_xml">Save XML</string>
 
     <string name="load_image_error">Unable to load image</string>
-    <string name="cant_save_anim">Currently unable to save animated images</string>
 </resources>

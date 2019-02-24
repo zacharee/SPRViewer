@@ -14,18 +14,40 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/save"
+        app:layout_constraintBottom_toTopOf="@id/save_wrapper"
         />
 
-    <Button
-        android:id="@+id/save"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/save_wrapper"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/save_image"
         android:layout_marginBottom="16dp"
+        android:orientation="horizontal"
+        android:gravity="center_horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        />
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <Button
+            android:id="@+id/save_png"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/save_png"
+            android:visibility="gone"
+            style="@style/Widget.AppCompat.ButtonBar"
+            />
+
+        <Button
+            android:id="@+id/save_xml"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/save_xml"
+            android:visibility="gone"
+            style="@style/Widget.AppCompat.ButtonBar"
+            />
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
