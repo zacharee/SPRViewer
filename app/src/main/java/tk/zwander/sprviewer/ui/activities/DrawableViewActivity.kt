@@ -14,8 +14,10 @@ import com.squareup.picasso.RequestCreator
 import kotlinx.android.synthetic.main.activity_drawable_view.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import net.dongliu.apk.parser.ApkFile
 import tk.zwander.sprviewer.R
 import tk.zwander.sprviewer.util.getAppRes
+import java.io.File
 import java.io.FileDescriptor
 import java.io.FileOutputStream
 
@@ -26,6 +28,14 @@ class DrawableViewActivity : AppCompatActivity() {
         private const val SAVE_REQ = 101
     }
 
+    val apk by lazy { ApkFile(File(packageManager.getApplicationInfo(pkg, 0).sourceDir)) }
+    val drawableXml by lazy {
+        try {
+            apk.transBinaryXml("res/drawable/$drawableName.xml")
+        } catch (e: Exception) {
+            null
+        }
+    }
     val drawableName by lazy { intent.getStringExtra(EXTRA_DRAWABLE_NAME) }
     val drawableId: Int
         get() = remRes.getIdentifier(drawableName, "drawable", pkg)
@@ -66,18 +76,21 @@ class DrawableViewActivity : AppCompatActivity() {
                 val desc = contentResolver.openFileDescriptor(data!!.data!!, "rw")!!.fileDescriptor
 
                 GlobalScope.launch {
-                    handleSave(
-                        image.drawable.run {
-                            if (this is BitmapDrawable) {
-                                saveDirect(desc)
-                                return@launch
-                            } else {
-                                val ratio = intrinsicHeight.toFloat() / intrinsicWidth.toFloat()
-                                toBitmap(512, (512 * ratio).toInt())
+                    image.drawable.run {
+                        when {
+                            drawableXml != null -> saveXml(desc)
+                            this is BitmapDrawable -> saveDirect(desc)
+                            else -> {
+                                handleSave(
+                                    kotlin.run {
+                                        val ratio = intrinsicHeight.toFloat() / intrinsicWidth.toFloat()
+                                        toBitmap(512, (512 * ratio).toInt())
+                                    },
+                                    desc
+                                )
                             }
-                        },
-                        desc
-                    )
+                        }
+                    }
                 }
             }
         }
@@ -86,18 +99,13 @@ class DrawableViewActivity : AppCompatActivity() {
     }
 
     private fun startSave() {
-        val animated = isViewingAnimatedImage
-
-        if (animated) {
-            Toast.makeText(this, R.string.cant_save_anim, Toast.LENGTH_SHORT).show()
-            return
-        }
+        val xml = drawableXml != null
 
         val saveIntent = Intent(Intent.ACTION_CREATE_DOCUMENT)
 
         saveIntent.addCategory(Intent.CATEGORY_OPENABLE)
-        saveIntent.type = if (animated) "text/xml" else "images/png"
-        saveIntent.putExtra(Intent.EXTRA_TITLE, "$drawableName.${if (animated) "xml" else "png"}")
+        saveIntent.type = if (xml) "text/xml" else "images/png"
+        saveIntent.putExtra(Intent.EXTRA_TITLE, "$drawableName.${if (xml) "xml" else "png"}")
 
         startActivityForResult(saveIntent, SAVE_REQ)
     }
@@ -117,7 +125,7 @@ class DrawableViewActivity : AppCompatActivity() {
         var n: Int
 
         try {
-            while(true) {
+            while (true) {
                 n = res.read(buffer)
 
                 if (n <= 0) break
@@ -127,6 +135,12 @@ class DrawableViewActivity : AppCompatActivity() {
         } finally {
             res.close()
             file.close()
+        }
+    }
+
+    private fun saveXml(desc: FileDescriptor) {
+        FileOutputStream(desc).bufferedWriter().use { writer ->
+            writer.write(drawableXml ?: return@use)
         }
     }
 
