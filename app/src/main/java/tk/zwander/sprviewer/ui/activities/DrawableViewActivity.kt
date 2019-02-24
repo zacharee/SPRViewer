@@ -1,13 +1,16 @@
 package tk.zwander.sprviewer.ui.activities
 
 import android.app.Activity
+import android.content.ContentResolver
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
+import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.drawable.toBitmap
+import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_drawable_view.*
 import tk.zwander.sprviewer.R
 import tk.zwander.sprviewer.util.getAppRes
@@ -40,9 +43,18 @@ class DrawableViewActivity : AppCompatActivity() {
 
         try {
             val id = res.getIdentifier(drawableId, "drawable", pkg)
-            val img = res.getDrawable(id)
 
-            image.setImageDrawable(img)
+            Picasso.Builder(this)
+                .build()
+                .load(
+                    Uri.parse(
+                        "${ContentResolver.SCHEME_ANDROID_RESOURCE}://" +
+                                "$pkg/" +
+                                "${res.getResourceTypeName(id)}/" +
+                                "$id"
+                    )
+                )
+                .into(image)
         } catch (e: Exception) {
             Toast.makeText(this, R.string.load_image_error, Toast.LENGTH_SHORT).show()
             finish()
