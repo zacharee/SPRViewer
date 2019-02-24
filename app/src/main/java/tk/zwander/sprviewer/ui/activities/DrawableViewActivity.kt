@@ -20,6 +20,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import net.dongliu.apk.parser.ApkFile
 import tk.zwander.sprviewer.R
+import tk.zwander.sprviewer.util.extensionsToRasterize
 import tk.zwander.sprviewer.util.getAppRes
 import tk.zwander.sprviewer.util.mainHandler
 import java.io.ByteArrayInputStream
@@ -68,7 +69,7 @@ class DrawableViewActivity : AppCompatActivity() {
         try {
             makePicasso(
                 Picasso.Listener { _, _, _ ->
-                    image.setImageDrawable(remRes.getDrawable(drawableId))
+                    image.setImageDrawable(remRes.getDrawable(drawableId, remRes.newTheme()))
                 }
             ).into(image)
         } catch (e: Exception) {
@@ -126,7 +127,7 @@ class DrawableViewActivity : AppCompatActivity() {
 
     private fun startPngSave() {
         val saveIntent = Intent(Intent.ACTION_CREATE_DOCUMENT)
-        val extension = if (ext == "astc" || ext == "xml") "png" else ext
+        val extension = if (extensionsToRasterize.contains(ext)) "png" else ext
 
         saveIntent.addCategory(Intent.CATEGORY_OPENABLE)
         saveIntent.type = "images/$extension"
@@ -146,7 +147,7 @@ class DrawableViewActivity : AppCompatActivity() {
     }
 
     private fun saveAsPng(os: OutputStream) {
-        if (ext != "astc" && ext != "xml") {
+        if (!extensionsToRasterize.contains(ext)) {
             savePngDirect(os)
         } else {
             handlePngSave(os)
@@ -154,7 +155,13 @@ class DrawableViewActivity : AppCompatActivity() {
     }
 
     private fun handlePngSave(os: OutputStream) {
-        val bmp = image.drawable.toBitmap()
+        val spr = ext == "spr"
+        val bmp = image.drawable.run {
+            toBitmap(
+                width = if (spr) 512 else intrinsicWidth,
+                height = if (spr) (512 * (intrinsicHeight.toFloat() / intrinsicWidth.toFloat())).toInt() else intrinsicHeight
+            )
+        }
 
         setProgressVisible(true, indet = true)
 

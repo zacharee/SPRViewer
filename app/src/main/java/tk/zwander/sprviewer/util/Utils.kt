@@ -69,3 +69,9 @@ fun findDrawableRangeStart(res: Resources): Int {
 
     return base
 }
+
+val extensionsToRasterize = arrayOf(
+    "spr",
+    "xml",
+    "astc"
+)
