@@ -4,9 +4,11 @@ import android.app.Activity
 import android.content.ContentResolver
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Bundle
+import android.util.TypedValue
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -19,9 +21,10 @@ import kotlinx.coroutines.launch
 import net.dongliu.apk.parser.ApkFile
 import tk.zwander.sprviewer.R
 import tk.zwander.sprviewer.util.getAppRes
+import tk.zwander.sprviewer.util.mainHandler
+import java.io.ByteArrayInputStream
 import java.io.File
-import java.io.FileDescriptor
-import java.io.FileOutputStream
+import java.io.OutputStream
 import java.util.*
 
 class DrawableViewActivity : AppCompatActivity() {
@@ -43,6 +46,7 @@ class DrawableViewActivity : AppCompatActivity() {
             null
         }
     }
+    private val ext by lazy { getExtension() }
     private val drawableName by lazy { intent.getStringExtra(EXTRA_DRAWABLE_NAME) }
     private val drawableId: Int
         get() = remRes.getIdentifier(drawableName, "drawable", pkg)
@@ -71,16 +75,31 @@ class DrawableViewActivity : AppCompatActivity() {
             Toast.makeText(this, R.string.load_image_error, Toast.LENGTH_SHORT).show()
             finish()
         }
+    }
 
-        save_png.visibility = if (isViewingAnimatedImage) View.GONE else View.VISIBLE
-        save_xml.visibility = if (drawableXml != null) View.VISIBLE else View.GONE
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.save, menu)
 
-        save_png.setOnClickListener {
-            startPngSave()
-        }
+        val saveImg = menu.findItem(R.id.action_save_png)
+        val saveXml = menu.findItem(R.id.action_save_xml)
 
-        save_xml.setOnClickListener {
-            startXmlSave()
+        saveImg.isVisible = !isViewingAnimatedImage
+        saveXml.isVisible = drawableXml != null
+
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        return when (item?.itemId) {
+            R.id.action_save_png -> {
+                startPngSave()
+                true
+            }
+            R.id.action_save_xml -> {
+                startXmlSave()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
         }
     }
 
@@ -89,27 +108,14 @@ class DrawableViewActivity : AppCompatActivity() {
             GlobalScope.launch {
                 when (requestCode) {
                     SAVE_PNG_REQ -> {
-                        val desc = contentResolver.openFileDescriptor(data!!.data!!, "rw")!!.fileDescriptor
+                        val os = contentResolver.openOutputStream(data!!.data!!)!!
 
-                        image.drawable.run {
-                            when {
-                                this is BitmapDrawable -> savePngDirect(desc)
-                                else -> {
-                                    handlePngSave(
-                                        kotlin.run {
-                                            val ratio = intrinsicHeight.toFloat() / intrinsicWidth.toFloat()
-                                            toBitmap(512, (512 * ratio).toInt())
-                                        },
-                                        desc
-                                    )
-                                }
-                            }
-                        }
+                        saveAsPng(os)
                     }
                     SAVE_XML_REQ -> {
-                        val desc = contentResolver.openFileDescriptor(data!!.data!!, "rw")!!.fileDescriptor
+                        val os = contentResolver.openOutputStream(data!!.data!!)!!
 
-                        saveXml(desc)
+                        saveXml(os)
                     }
                 }
             }
@@ -120,10 +126,11 @@ class DrawableViewActivity : AppCompatActivity() {
 
     private fun startPngSave() {
         val saveIntent = Intent(Intent.ACTION_CREATE_DOCUMENT)
+        val extension = if (ext == "astc" || ext == "xml") "png" else ext
 
         saveIntent.addCategory(Intent.CATEGORY_OPENABLE)
-        saveIntent.type = "images/png"
-        saveIntent.putExtra(Intent.EXTRA_TITLE, "$drawableName.png")
+        saveIntent.type = "images/$extension"
+        saveIntent.putExtra(Intent.EXTRA_TITLE, "$drawableName.$extension")
 
         startActivityForResult(saveIntent, SAVE_PNG_REQ)
     }
@@ -138,17 +145,36 @@ class DrawableViewActivity : AppCompatActivity() {
         startActivityForResult(saveIntent, SAVE_XML_REQ)
     }
 
-    private fun handlePngSave(bitmap: Bitmap, desc: FileDescriptor) {
-        FileOutputStream(desc).use { output ->
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, output)
+    private fun saveAsPng(os: OutputStream) {
+        if (ext != "astc" && ext != "xml") {
+            savePngDirect(os)
+        } else {
+            handlePngSave(os)
         }
     }
 
-    private fun savePngDirect(desc: FileDescriptor) {
-        val res = remRes.openRawResource(drawableId)
-        val file = FileOutputStream(desc)
+    private fun handlePngSave(os: OutputStream) {
+        val bmp = image.drawable.toBitmap()
 
-        val buffer = ByteArray(8192)
+        setProgressVisible(true, indet = true)
+
+        try {
+            bmp.compress(Bitmap.CompressFormat.PNG, 100, os)
+        } finally {
+            os.close()
+            setProgressVisible(false)
+        }
+    }
+
+    private fun savePngDirect(os: OutputStream, bytes: ByteArray? = null) {
+        val res = if (bytes != null) ByteArrayInputStream(bytes) else remRes.openRawResource(drawableId)
+
+        val buffer = ByteArray(16384)
+
+        setProgressVisible(true)
+
+        val max = res.available()
+        setMaxProgress(max)
 
         var n: Int
 
@@ -158,16 +184,19 @@ class DrawableViewActivity : AppCompatActivity() {
 
                 if (n <= 0) break
 
-                file.write(buffer, 0, n)
+                os.write(buffer, 0, n)
+                setCurrentProgress(max - res.available())
             }
         } finally {
             res.close()
-            file.close()
+            os.close()
+
+            setProgressVisible(false)
         }
     }
 
-    private fun saveXml(desc: FileDescriptor) {
-        FileOutputStream(desc).bufferedWriter().use { writer ->
+    private fun saveXml(os: OutputStream) {
+        os.bufferedWriter().use { writer ->
             writer.write(drawableXml ?: return@use)
         }
     }
@@ -188,5 +217,33 @@ class DrawableViewActivity : AppCompatActivity() {
                             "$drawableId"
                 )
             )
+    }
+
+    private fun getExtension(): String {
+        val v = TypedValue()
+        remRes.getValue(drawableId, v, true)
+
+        val string = v.coerceToString()
+
+        return string.split(".")[1]
+    }
+
+    private fun setProgressVisible(visible: Boolean, indet: Boolean = false) {
+        mainHandler.post {
+            export_progress.visibility = if (visible) View.VISIBLE else View.GONE
+            export_progress.isIndeterminate = indet
+        }
+    }
+
+    private fun setMaxProgress(max: Int) {
+        mainHandler.post {
+            export_progress.max = max
+        }
+    }
+
+    private fun setCurrentProgress(current: Int) {
+        mainHandler.post {
+            export_progress.progress = current
+        }
     }
 }

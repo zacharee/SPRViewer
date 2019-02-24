@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="tk.zwander.sprviewer">
 
     <application
@@ -8,8 +9,10 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
-        <activity android:name=".ui.activities.DrawableViewActivity"></activity>
+        android:theme="@style/AppTheme"
+        android:vmSafeMode="true"
+        tools:ignore="AllowBackup,GoogleAppIndexingWarning">
+        <activity android:name=".ui.activities.DrawableViewActivity" />
         <activity android:name=".ui.activities.DrawableListActivity" />
         <activity android:name=".ui.activities.MainActivity">
             <intent-filter>

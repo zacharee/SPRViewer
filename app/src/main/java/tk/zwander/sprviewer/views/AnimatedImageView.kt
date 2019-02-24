@@ -23,11 +23,11 @@ import android.graphics.drawable.AnimationDrawable
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.View
-import android.widget.ImageView
 import android.widget.RemoteViews.RemoteView
+import com.github.chrisbanes.photoview.PhotoView
 
 @RemoteView
-class AnimatedImageView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) : ImageView(context, attrs) {
+class AnimatedImageView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) : PhotoView(context, attrs) {
     var anim: AnimationDrawable? = null
     internal var attached: Boolean = false
     private var allowAnimation = true

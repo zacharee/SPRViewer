@@ -9,45 +9,54 @@
     <tk.zwander.sprviewer.views.AnimatedImageView
         android:id="@+id/image"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:adjustViewBounds="true"
+        android:layout_height="0dp"
+        android:scaleType="fitCenter"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/save_wrapper"
+        app:layout_constraintBottom_toBottomOf="parent"
         />
 
-    <LinearLayout
-        android:id="@+id/save_wrapper"
+    <!--<LinearLayout-->
+        <!--android:id="@+id/save_wrapper"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:orientation="horizontal"-->
+        <!--android:gravity="center_horizontal"-->
+        <!--app:layout_constraintBottom_toBottomOf="parent"-->
+        <!--app:layout_constraintStart_toStartOf="parent"-->
+        <!--app:layout_constraintEnd_toEndOf="parent">-->
+
+        <!--<Button-->
+            <!--android:id="@+id/save_png"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_weight="1"-->
+            <!--android:text="@string/save_png"-->
+            <!--android:visibility="gone"-->
+            <!--style="@style/Widget.AppCompat.ButtonBar"-->
+            <!--/>-->
+
+        <!--<Button-->
+            <!--android:id="@+id/save_xml"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_weight="1"-->
+            <!--android:text="@string/save_xml"-->
+            <!--android:visibility="gone"-->
+            <!--style="@style/Widget.AppCompat.ButtonBar"-->
+            <!--/>-->
+
+    <!--</LinearLayout>-->
+
+    <ProgressBar
+        android:id="@+id/export_progress"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:orientation="horizontal"
-        android:gravity="center_horizontal"
+        android:layout_height="18dp"
+        android:indeterminate="false"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <Button
-            android:id="@+id/save_png"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/save_png"
-            android:visibility="gone"
-            style="@style/Widget.AppCompat.ButtonBar"
-            />
-
-        <Button
-            android:id="@+id/save_xml"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/save_xml"
-            android:visibility="gone"
-            style="@style/Widget.AppCompat.ButtonBar"
-            />
-
-    </LinearLayout>
+        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
