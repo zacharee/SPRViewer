@@ -75,14 +75,10 @@ abstract class BaseListAdapter<T>(dataClass: Class<T>) : RecyclerView.Adapter<Ba
 
     fun add(item: T) {
         orig.add(item)
-
-        notifyItemInserted(indexOf(item))
     }
 
     fun remove(item: T) {
         orig.remove(item)
-
-        notifyItemRemoved(indexOf(item))
     }
 
     fun indexOf(item: T) = results.indexOf(item)

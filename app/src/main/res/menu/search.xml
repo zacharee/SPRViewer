@@ -3,10 +3,17 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/status_progress"
+        android:title=""
+        app:actionLayout="@layout/progress"
+        app:showAsAction="always"
+        />
+
+    <item
         android:id="@+id/action_search"
         android:title="@android:string/search_go"
         app:actionViewClass="androidx.appcompat.widget.SearchView"
-        app:showAsAction="always"
+        app:showAsAction="ifRoom"
         />
 
 </menu>

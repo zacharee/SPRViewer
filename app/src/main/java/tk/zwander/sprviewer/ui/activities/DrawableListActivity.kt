@@ -25,6 +25,11 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>() {
             return
         }
 
-        adapter.loadItems(this, pkg, this::onLoadFinished)
+        adapter.loadItems(this, pkg, this::onLoadFinished) { size, count ->
+            progress?.apply {
+                progress += Math.floor((count.toFloat() / size.toFloat() * 100f)
+                    .toDouble()).toInt()
+            }
+        }
     }
 }

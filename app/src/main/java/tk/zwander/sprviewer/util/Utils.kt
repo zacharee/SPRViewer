@@ -10,7 +10,7 @@ import tk.zwander.sprviewer.data.DrawableData
 
 val mainHandler = Handler(Looper.getMainLooper())
 
-fun Context.getInstalledApps(listener: (data: AppData?, size: Int, count: Int) -> Unit): List<AppData> {
+fun Context.getInstalledApps(listener: (data: AppData, size: Int, count: Int) -> Unit): List<AppData> {
     val installedApps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
     val ret = ArrayList<AppData>()
 
@@ -32,11 +32,15 @@ fun Context.getInstalledApps(listener: (data: AppData?, size: Int, count: Int) -
     return ret
 }
 
-fun Context.getAppDrawables(packageName: String, drawableFound: (DrawableData) -> Unit): List<DrawableData> {
+fun Context.getAppDrawables(packageName: String, drawableFound: (data: DrawableData, size: Int, count: Int) -> Unit): List<DrawableData> {
     val res = getAppRes(packageName)
     val list = ArrayList<DrawableData>()
 
-    val start = findDrawableRangeStart(res)
+    val start = findDrawableRangeStart(res, packageName)
+    val max = start + 0xffff
+    val size = max - start
+
+    var count = 0
 
     for (i in start until start + 0xffff) {
         try {
@@ -45,8 +49,9 @@ fun Context.getAppDrawables(packageName: String, drawableFound: (DrawableData) -
                 i
             )
 
+            count++
             list.add(data)
-            mainHandler.post { drawableFound.invoke(data) }
+            mainHandler.post { drawableFound.invoke(data, size, count) }
         } catch (e: Resources.NotFoundException) {}
     }
 
@@ -54,16 +59,15 @@ fun Context.getAppDrawables(packageName: String, drawableFound: (DrawableData) -
 }
 
 fun Context.getAppRes(packageName: String) =
-        packageManager.getResourcesForApplication(packageName)
+    packageManager.getResourcesForApplication(packageName)
 
-fun findDrawableRangeStart(res: Resources): Int {
-    val base = 0x7f000000
+fun findDrawableRangeStart(res: Resources, pkg: String): Int {
+    val base = if (pkg == "android") 0x0 else 0x7f000000
     val max = 0x7f200000
 
     val mult = 0x10000
 
     for (i in base until max step mult) {
-
         try {
             val type = res.getResourceTypeName(i)
 

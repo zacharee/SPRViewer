@@ -9,7 +9,7 @@ import tk.zwander.sprviewer.data.AppData
 import tk.zwander.sprviewer.util.getInstalledApps
 import tk.zwander.sprviewer.util.mainHandler
 
-class AppListAdapter(private val itemSelectedListener: (AppData) -> Unit, private val progressListener: (AppData?, Int, Int) -> Unit) : BaseListAdapter<AppData>(AppData::class.java) {
+class AppListAdapter(private val itemSelectedListener: (AppData) -> Unit) : BaseListAdapter<AppData>(AppData::class.java) {
     override val viewRes = R.layout.app_info_layout
 
     override fun onBindViewHolder(holder: BaseVH, position: Int, info: AppData) {
@@ -36,17 +36,15 @@ class AppListAdapter(private val itemSelectedListener: (AppData) -> Unit, privat
         return oldItem.pkg == newItem.pkg
     }
 
-    fun loadItems(context: Context, listener: () -> Unit) {
-
-
+    fun loadItems(context: Context, listener: () -> Unit, progressListener: (Int, Int) -> Unit) {
         GlobalScope.launch {
-            val apps = context.getInstalledApps(progressListener)
+            context.getInstalledApps {data, size, count ->
+                progressListener.invoke(size, count)
+
+                add(data)
+            }
 
             mainHandler.post {
-                apps.forEach {
-                    add(it)
-                }
-
                 listener.invoke()
             }
         }

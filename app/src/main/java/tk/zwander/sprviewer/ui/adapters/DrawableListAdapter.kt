@@ -34,15 +34,15 @@ class DrawableListAdapter(private val itemSelectedListener: (DrawableData) -> Un
         return data.name.toLowerCase().contains(query)
     }
 
-    fun loadItems(context: Context, packageName: String, listener: () -> Unit) {
+    fun loadItems(context: Context, packageName: String, listener: () -> Unit, progressListener: (Int, Int) -> Unit) {
         GlobalScope.launch {
-            val drawables = context.getAppDrawables(packageName) {}
+            context.getAppDrawables(packageName) { data, size, count ->
+                progressListener.invoke(size, count)
+
+                add(data)
+            }
 
             mainHandler.post {
-                drawables.forEach {
-                    add(it)
-                }
-
                 listener.invoke()
             }
         }
