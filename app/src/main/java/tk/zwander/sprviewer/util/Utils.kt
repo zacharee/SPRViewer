@@ -10,11 +10,15 @@ import tk.zwander.sprviewer.data.DrawableData
 
 val mainHandler = Handler(Looper.getMainLooper())
 
-fun Context.getInstalledApps(listener: (AppData) -> Unit): List<AppData> {
+fun Context.getInstalledApps(listener: (data: AppData?, size: Int, count: Int) -> Unit): List<AppData> {
     val installedApps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
     val ret = ArrayList<AppData>()
 
+    var count = 0
+
     installedApps.forEach {
+        count++
+
         val data = AppData(
             it.packageName,
             it.loadLabel(packageManager).toString(),
@@ -22,7 +26,7 @@ fun Context.getInstalledApps(listener: (AppData) -> Unit): List<AppData> {
         )
 
         ret.add(data)
-        mainHandler.post { listener.invoke(data) }
+        mainHandler.post { listener.invoke(data, installedApps.size, count) }
     }
 
     return ret
