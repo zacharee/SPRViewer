@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.ContentResolver
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.util.TypedValue
@@ -23,6 +24,7 @@ import tk.zwander.sprviewer.R
 import tk.zwander.sprviewer.util.extensionsToRasterize
 import tk.zwander.sprviewer.util.getAppRes
 import tk.zwander.sprviewer.util.mainHandler
+import tk.zwander.sprviewer.views.DimensionInputDialog
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.OutputStream
@@ -155,14 +157,16 @@ class DrawableViewActivity : AppCompatActivity() {
     }
 
     private fun handlePngSave(os: OutputStream) {
-        val spr = ext == "spr"
-        val bmp = image.drawable.run {
-            toBitmap(
-                width = if (spr) 512 else intrinsicWidth,
-                height = if (spr) (512 * (intrinsicHeight.toFloat() / intrinsicWidth.toFloat())).toInt() else intrinsicHeight
-            )
+        image.drawable.run {
+            if (!extensionsToRasterize.contains(ext)) {
+                compressPng(toBitmap(), os)
+            } else {
+                getDimensions(this, os)
+            }
         }
+    }
 
+    private fun compressPng(bmp: Bitmap, os: OutputStream) {
         setProgressVisible(true, indet = true)
 
         try {
@@ -251,6 +255,16 @@ class DrawableViewActivity : AppCompatActivity() {
     private fun setCurrentProgress(current: Int) {
         mainHandler.post {
             export_progress.progress = current
+        }
+    }
+
+    private fun getDimensions(drawable: Drawable, os: OutputStream) {
+        mainHandler.post {
+            DimensionInputDialog(this, drawable)
+                .apply {
+                    saveListener = { width, height -> compressPng(drawable.toBitmap(width, height), os) }
+                }
+                .show()
         }
     }
 }

@@ -3,5 +3,9 @@
     <string name="save_png">Image</string>
     <string name="save_xml">XML</string>
 
+    <string name="width">Width</string>
+    <string name="height">Height</string>
+
     <string name="load_image_error">Unable to load image</string>
+    <string name="enter_dimensions">Enter export dimensions</string>
 </resources>
