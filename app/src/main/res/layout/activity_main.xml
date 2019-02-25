@@ -11,6 +11,7 @@
         android:padding="48dp"
         app:pgc_indeterminate="true"
         app:pgc_rimWidth="16dp"
+        app:pgc_rimColor="?android:colorAccent"
         />
 
     <androidx.recyclerview.widget.RecyclerView
