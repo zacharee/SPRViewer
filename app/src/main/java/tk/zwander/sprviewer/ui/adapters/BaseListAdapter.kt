@@ -28,6 +28,9 @@ abstract class BaseListAdapter<T>(dataClass: Class<T>) : RecyclerView.Adapter<Ba
 
     internal abstract val viewRes: Int
 
+    val allItemsCopy: MutableList<T>
+        get() = ArrayList(orig)
+
     override fun getItemCount() = results.size()
 
     override fun onQueryTextChange(newText: String?): Boolean {

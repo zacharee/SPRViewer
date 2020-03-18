@@ -250,7 +250,7 @@ class DrawableViewActivity : AppCompatActivity() {
 
     private fun getExtension(): String {
         val v = TypedValue()
-        remRes.getValue(drawableId, v, true)
+        remRes.getValue(drawableId, v, false)
 
         val string = v.coerceToString()
 
