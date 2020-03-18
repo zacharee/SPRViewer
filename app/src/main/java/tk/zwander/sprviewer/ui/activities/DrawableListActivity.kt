@@ -3,40 +3,30 @@ package tk.zwander.sprviewer.ui.activities
 import android.content.ContentResolver
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
-import android.view.LayoutInflater
 import android.view.Menu
 import android.widget.ImageView
 import androidx.core.graphics.drawable.toBitmap
+import ar.com.hjg.pngj.*
 import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
-import com.squareup.picasso.RequestCreator
 import com.squareup.picasso.Target
-import kotlinx.android.synthetic.main.activity_drawable_view.view.*
 import kotlinx.coroutines.*
 import net.dongliu.apk.parser.ApkFile
 import tk.zwander.sprviewer.R
-import tk.zwander.sprviewer.data.DrawableData
 import tk.zwander.sprviewer.ui.adapters.DrawableListAdapter
 import tk.zwander.sprviewer.util.extensionsToRasterize
 import tk.zwander.sprviewer.util.getAppRes
 import tk.zwander.sprviewer.util.getExtension
-import tk.zwander.sprviewer.views.AnimatedImageView
 import tk.zwander.sprviewer.views.BaseDimensionInputDialog
 import tk.zwander.sprviewer.views.CircularProgressDialog
 import java.io.File
 import java.io.PrintWriter
-import java.lang.reflect.GenericDeclaration
-import java.lang.reflect.TypeVariable
 import java.util.*
-import kotlin.coroutines.experimental.suspendCoroutine
 import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 import kotlin.math.floor
 import kotlin.math.max
 
@@ -73,6 +63,12 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+
+        cancel()
+    }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.batch, menu)
 
@@ -92,8 +88,6 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
         val dialog = CircularProgressDialog(this@DrawableListActivity, items.size)
         val d = dialog.show()
 
-        val img = LayoutInflater.from(this@DrawableListActivity).inflate(R.layout.activity_drawable_view, null).image
-
         val done = async(context = Dispatchers.IO) {
             val dir = File(externalCacheDir, "batch/$pkg")
             if (!dir.exists()) dir.mkdirs()
@@ -106,9 +100,23 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                 }
                 val ext = remRes.getExtension(drawableData.id)
                 val rasterExtension = if (extensionsToRasterize.contains(ext)) "png" else ext
+                
+                var loaded: Bitmap? = null
 
                 if (drawableXml == null) {
                     suspendCancellableCoroutine<Unit> { cont ->
+                        val img = object : Target {
+                            override fun onBitmapLoaded(bitmap: Bitmap?, from: Picasso.LoadedFrom?) {
+                                loaded = bitmap
+                                cont.resume(Unit)
+                            }
+
+                            override fun onBitmapFailed(e: java.lang.Exception?, errorDrawable: Drawable?) {
+                                cont.resume(Unit)
+                            }
+                            override fun onPrepareLoad(placeHolderDrawable: Drawable?) {}
+                        }
+                        
                         this@DrawableListActivity.launch {
                             Picasso.Builder(this@DrawableListActivity)
                                 .build()
@@ -118,30 +126,43 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                                             "${remRes.getResourceTypeName(drawableData.id)}/" +
                                             "${drawableData.id}"
                                 ))
-                                .into(img, object : Callback {
-                                    override fun onError(e: Exception?) {
-                                        cont.resume(Unit)
-                                    }
-
-                                    override fun onSuccess() {
-                                        cont.resume(Unit)
-                                    }
-                                })
+                                .into(img)
                         }
                     }
                 } else {
                     try {
-                        img.setImageDrawable(remRes.getDrawable(drawableData.id, remRes.newTheme()))
+                        loaded = remRes.getDrawable(drawableData.id, remRes.newTheme()).run { 
+                            toBitmap(width = max(dimen, 1), height = max((dimen * intrinsicWidth.toFloat() / intrinsicHeight.toFloat()).toInt(), 1))
+                        }
                     } catch (e: Exception) {}
                 }
+                
+                delay(100)
 
-                if (img.drawable != null) {
+                if (loaded != null) {
+                    val bmp = loaded!!
                     val target = File(dir, "${drawableData.name}.$rasterExtension")
                     target.outputStream().use { output ->
-                        img.drawable.run {
-                            if (this is BitmapDrawable) bitmap
-                            else toBitmap(width = max(dimen, 1), height = max((dimen * intrinsicWidth.toFloat() / intrinsicHeight.toFloat()).toInt(), 1))
-                        }.compress(Bitmap.CompressFormat.PNG, 100, output)
+                        val info = ImageInfo(bmp.width, bmp.height, 8, bmp.hasAlpha())
+                        val writer = PngWriter(output, info)
+
+                        writer.pixelsWriter.deflaterCompLevel = 0
+
+                        for (row in 0 until bmp.height) {
+                            val line = ImageLineInt(info)
+
+                            for (col in 0 until bmp.width) {
+                                if (bmp.hasAlpha()) {
+                                    ImageLineHelper.setPixelRGBA8(line, col, bmp.getPixel(col, row))
+                                } else {
+                                    ImageLineHelper.setPixelRGB8(line, col, bmp.getPixel(col, row))
+                                }
+                            }
+
+                            writer.writeRow(line)
+                        }
+
+                        writer.end()
                     }
                 }
 

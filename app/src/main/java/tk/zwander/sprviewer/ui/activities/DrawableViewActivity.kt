@@ -10,27 +10,30 @@ import android.os.Bundle
 import android.util.TypedValue
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.isVisible
+import ar.com.hjg.pngj.ImageInfo
+import ar.com.hjg.pngj.ImageLineHelper
+import ar.com.hjg.pngj.ImageLineInt
+import ar.com.hjg.pngj.PngWriter
 import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 import com.squareup.picasso.RequestCreator
 import kotlinx.android.synthetic.main.activity_drawable_view.*
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import net.dongliu.apk.parser.ApkFile
 import tk.zwander.sprviewer.R
 import tk.zwander.sprviewer.util.extensionsToRasterize
 import tk.zwander.sprviewer.util.getAppRes
-import tk.zwander.sprviewer.util.mainHandler
+import tk.zwander.sprviewer.util.getExtension
 import tk.zwander.sprviewer.views.DimensionInputDialog
 import java.io.*
 import java.util.*
 
-class DrawableViewActivity : AppCompatActivity() {
+@Suppress("DeferredResultUnused")
+class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     companion object {
         const val EXTRA_DRAWABLE_NAME = "drawable_name"
 
@@ -49,7 +52,7 @@ class DrawableViewActivity : AppCompatActivity() {
             null
         }
     }
-    private val ext by lazy { getExtension() }
+    private val ext by lazy { remRes.getExtension(drawableId) }
     private val drawableName by lazy { intent.getStringExtra(EXTRA_DRAWABLE_NAME) }
     private val drawableId: Int
         get() = remRes.getIdentifier(drawableName, "drawable", pkg)
@@ -111,6 +114,12 @@ class DrawableViewActivity : AppCompatActivity() {
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+
+        cancel()
+    }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.save, menu)
 
@@ -139,18 +148,16 @@ class DrawableViewActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (resultCode == Activity.RESULT_OK) {
-            GlobalScope.launch {
-                when (requestCode) {
-                    SAVE_PNG_REQ -> {
-                        val os = contentResolver.openOutputStream(data!!.data!!)!!
+            when (requestCode) {
+                SAVE_PNG_REQ -> {
+                    val os = contentResolver.openOutputStream(data!!.data!!)!!
 
-                        saveAsPng(os)
-                    }
-                    SAVE_XML_REQ -> {
-                        val os = contentResolver.openOutputStream(data!!.data!!)!!
+                    saveAsPng(os)
+                }
+                SAVE_XML_REQ -> {
+                    val os = contentResolver.openOutputStream(data!!.data!!)!!
 
-                        saveXml(os)
-                    }
+                    saveXmlAsync(os)
                 }
             }
         }
@@ -181,7 +188,7 @@ class DrawableViewActivity : AppCompatActivity() {
 
     private fun saveAsPng(os: OutputStream) {
         if (!extensionsToRasterize.contains(ext)) {
-            savePngDirect(os)
+            savePngDirectAsync(os)
         } else {
             handlePngSave(os)
         }
@@ -190,33 +197,54 @@ class DrawableViewActivity : AppCompatActivity() {
     private fun handlePngSave(os: OutputStream) {
         image.drawable.run {
             if (!extensionsToRasterize.contains(ext)) {
-                compressPng(toBitmap(), os)
+                compressPngAsync(toBitmap(), os)
             } else {
                 getDimensions(this, os)
             }
         }
     }
 
-    private fun compressPng(bmp: Bitmap, os: OutputStream) {
-        setProgressVisible(true, indet = true)
+    private fun compressPngAsync(bmp: Bitmap, os: OutputStream) = async(context = Dispatchers.IO) {
+        setProgressVisible(true, indet = false).join()
+        setMaxProgress(bmp.height)
 
         try {
-            bmp.compress(Bitmap.CompressFormat.PNG, 100, os)
+            val info = ImageInfo(bmp.width, bmp.height, 8, bmp.hasAlpha())
+            val writer = PngWriter(os, info)
+
+            writer.pixelsWriter.deflaterCompLevel = 0
+
+            for (row in 0 until bmp.height) {
+                val line = ImageLineInt(info)
+
+                for (col in 0 until bmp.width) {
+                    if (bmp.hasAlpha()) {
+                        ImageLineHelper.setPixelRGBA8(line, col, bmp.getPixel(col, row))
+                    } else {
+                        ImageLineHelper.setPixelRGB8(line, col, bmp.getPixel(col, row))
+                    }
+                }
+
+                writer.writeRow(line)
+                setCurrentProgress(row + 1)
+            }
+
+            writer.end()
         } finally {
             os.close()
-            setProgressVisible(false)
+            setProgressVisible(false).join()
         }
     }
 
-    private fun savePngDirect(os: OutputStream, bytes: ByteArray? = null) {
+    private fun savePngDirectAsync(os: OutputStream, bytes: ByteArray? = null) = async(context = Dispatchers.IO) {
         val res = if (bytes != null) ByteArrayInputStream(bytes) else remRes.openRawResource(drawableId)
 
         val buffer = ByteArray(16384)
 
-        setProgressVisible(true)
+        setProgressVisible(true).join()
 
         val max = res.available()
-        setMaxProgress(max)
+        setMaxProgress(max).join()
 
         var n: Int
 
@@ -227,20 +255,24 @@ class DrawableViewActivity : AppCompatActivity() {
                 if (n <= 0) break
 
                 os.write(buffer, 0, n)
-                setCurrentProgress(max - res.available())
+                setCurrentProgress(max - res.available()).join()
             }
         } finally {
             res.close()
             os.close()
 
-            setProgressVisible(false)
+            setProgressVisible(false).join()
         }
     }
 
-    private fun saveXml(os: OutputStream) {
+    private fun saveXmlAsync(os: OutputStream) = async(context = Dispatchers.IO) {
+        setProgressVisible(visible = true, indet = true)
+
         os.bufferedWriter().use { writer ->
             writer.write(drawableXml ?: return@use)
         }
+
+        setProgressVisible(false)
     }
 
     private fun makePicasso(listener: Picasso.Listener? = null): RequestCreator {
@@ -261,41 +293,25 @@ class DrawableViewActivity : AppCompatActivity() {
             )
     }
 
-    private fun getExtension(): String {
-        val v = TypedValue()
-        remRes.getValue(drawableId, v, false)
-
-        val string = v.coerceToString()
-
-        return string.split(".")[1]
+    private fun setProgressVisible(visible: Boolean, indet: Boolean = false) = launch {
+        export_progress.isVisible = visible
+        export_progress.isIndeterminate = indet
+        export_progress.progress = 0
     }
 
-    private fun setProgressVisible(visible: Boolean, indet: Boolean = false) {
-        mainHandler.post {
-            export_progress.visibility = if (visible) View.VISIBLE else View.GONE
-            export_progress.isIndeterminate = indet
-        }
+    private fun setMaxProgress(max: Int) = launch {
+        export_progress.max = max
     }
 
-    private fun setMaxProgress(max: Int) {
-        mainHandler.post {
-            export_progress.max = max
-        }
+    private fun setCurrentProgress(current: Int) = launch {
+        export_progress.progress = current
     }
 
-    private fun setCurrentProgress(current: Int) {
-        mainHandler.post {
-            export_progress.progress = current
-        }
-    }
-
-    private fun getDimensions(drawable: Drawable, os: OutputStream) {
-        mainHandler.post {
-            DimensionInputDialog(this, drawable)
-                .apply {
-                    saveListener = { width, height -> compressPng(drawable.toBitmap(width, height), os) }
-                }
-                .show()
-        }
+    private fun getDimensions(drawable: Drawable, os: OutputStream) = launch {
+        DimensionInputDialog(this@DrawableViewActivity, drawable)
+            .apply {
+                saveListener = { width, height -> compressPngAsync(drawable.toBitmap(width, height), os) }
+            }
+            .show()
     }
 }

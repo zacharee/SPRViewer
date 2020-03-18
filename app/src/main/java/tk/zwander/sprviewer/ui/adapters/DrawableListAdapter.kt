@@ -14,7 +14,7 @@ class DrawableListAdapter(private val itemSelectedListener: (DrawableData) -> Un
 
     override fun onBindViewHolder(holder: BaseVH, position: Int, info: DrawableData) {
         holder.itemView.apply {
-            drawable_name.text = info.name
+            drawable_name.text = "${info.name}.${info.ext}"
 
             setOnClickListener {
                 itemSelectedListener.invoke(getInfo(holder.adapterPosition))
@@ -31,7 +31,7 @@ class DrawableListAdapter(private val itemSelectedListener: (DrawableData) -> Un
     }
 
     override fun matches(query: String, data: DrawableData): Boolean {
-        return data.name.toLowerCase().contains(query)
+        return data.name.contains(query, true)
     }
 
     fun loadItems(context: Context, packageName: String, listener: () -> Unit, progressListener: (Int, Int) -> Unit) {

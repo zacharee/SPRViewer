@@ -44,4 +44,5 @@ dependencies {
     implementation 'com.squareup.picasso:picasso:2.71828'
     implementation 'net.dongliu:apk-parser:2.6.5'
     implementation 'com.github.chrisbanes:PhotoView:2.3.0'
+    implementation 'ar.com.hjg:pngj:2.1.0'
 }

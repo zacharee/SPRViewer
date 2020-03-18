@@ -49,6 +49,7 @@ fun Context.getAppDrawables(packageName: String, drawableFound: (data: DrawableD
         try {
             val data = DrawableData(
                 res.getResourceEntryName(i),
+                res.getExtension(i),
                 i
             )
 
