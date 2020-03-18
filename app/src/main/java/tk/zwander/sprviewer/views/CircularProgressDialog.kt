@@ -24,6 +24,10 @@ class CircularProgressDialog(context: Context, var maxProgress: Int) : AlertDial
         }
     }
 
+    fun setCurrentFileName(name: String) {
+        view.filename.text = name
+    }
+
     fun updateProgress(progress: Int) {
         val new = (progress.toFloat() / maxProgress.toFloat() * 100f).toInt()
 

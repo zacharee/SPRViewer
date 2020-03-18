@@ -93,6 +93,10 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
             if (!dir.exists()) dir.mkdirs()
 
             items.forEachIndexed { index, drawableData ->
+                this@DrawableListActivity.launch {
+                    dialog.setCurrentFileName(drawableData.name)
+                }.join()
+
                 val drawableXml = try {
                     apk.transBinaryXml("res/drawable/${drawableData.name}.xml")
                 } catch (e: Exception) {
@@ -142,6 +146,11 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                 if (loaded != null) {
                     val bmp = loaded!!
                     val target = File(dir, "${drawableData.name}.$rasterExtension")
+
+                    this@DrawableListActivity.launch {
+                        dialog.setCurrentFileName(target.name)
+                    }.join()
+
                     target.outputStream().use { output ->
                         val info = ImageInfo(bmp.width, bmp.height, 8, bmp.hasAlpha())
                         val writer = PngWriter(output, info)
@@ -168,6 +177,11 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
 
                 if (drawableXml != null) {
                     val target = File(dir, "${drawableData.name}.xml")
+
+                    this@DrawableListActivity.launch {
+                        dialog.setCurrentFileName(target.name)
+                    }.join()
+
                     target.outputStream().use { out ->
                         PrintWriter(out).use { writer ->
                             writer.println(drawableXml)
