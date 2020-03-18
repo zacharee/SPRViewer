@@ -14,6 +14,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.drawable.toBitmap
+import androidx.core.view.isVisible
 import com.squareup.picasso.Picasso
 import com.squareup.picasso.RequestCreator
 import kotlinx.android.synthetic.main.activity_drawable_view.*
@@ -58,6 +59,13 @@ class DrawableViewActivity : AppCompatActivity() {
 
     private val isViewingAnimatedImage: Boolean
         get() = image.anim != null
+    private val isXmlOnly: Boolean
+        get() = try {
+            remRes.getDrawable(drawableId, remRes.newTheme())
+            false
+        } catch (e: Exception) {
+            true
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,15 +76,25 @@ class DrawableViewActivity : AppCompatActivity() {
             return
         }
 
-        try {
-            makePicasso(
-                Picasso.Listener { _, _, _ ->
-                    image.setImageDrawable(remRes.getDrawable(drawableId, remRes.newTheme()))
-                }
-            ).into(image)
-        } catch (e: Exception) {
-            Toast.makeText(this, R.string.load_image_error, Toast.LENGTH_SHORT).show()
-            finish()
+        if (!isXmlOnly) {
+            try {
+                makePicasso(
+                    Picasso.Listener { _, _, _ ->
+                        try {
+                            image.setImageDrawable(remRes.getDrawable(drawableId, remRes.newTheme()))
+                        } catch (e: Exception) {
+                            Toast.makeText(this, R.string.load_image_error, Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                ).into(image)
+            } catch (e: Exception) {
+                Toast.makeText(this, R.string.load_image_error, Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            image.isVisible = false
+            text.isVisible = true
+
+            text.text = drawableXml
         }
     }
 
@@ -86,7 +104,7 @@ class DrawableViewActivity : AppCompatActivity() {
         val saveImg = menu.findItem(R.id.action_save_png)
         val saveXml = menu.findItem(R.id.action_save_xml)
 
-        saveImg.isVisible = !isViewingAnimatedImage
+        saveImg.isVisible = !isViewingAnimatedImage && !isXmlOnly
         saveXml.isVisible = drawableXml != null
 
         return true
