@@ -15,6 +15,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.isVisible
+import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 import com.squareup.picasso.RequestCreator
 import kotlinx.android.synthetic.main.activity_drawable_view.*
@@ -26,9 +27,7 @@ import tk.zwander.sprviewer.util.extensionsToRasterize
 import tk.zwander.sprviewer.util.getAppRes
 import tk.zwander.sprviewer.util.mainHandler
 import tk.zwander.sprviewer.views.DimensionInputDialog
-import java.io.ByteArrayInputStream
-import java.io.File
-import java.io.OutputStream
+import java.io.*
 import java.util.*
 
 class DrawableViewActivity : AppCompatActivity() {
@@ -59,13 +58,8 @@ class DrawableViewActivity : AppCompatActivity() {
 
     private val isViewingAnimatedImage: Boolean
         get() = image.anim != null
-    private val isXmlOnly: Boolean
-        get() = try {
-            remRes.getDrawable(drawableId, remRes.newTheme())
-            false
-        } catch (e: Exception) {
-            true
-        }
+
+    private var saveImg: MenuItem? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,7 +70,7 @@ class DrawableViewActivity : AppCompatActivity() {
             return
         }
 
-        if (!isXmlOnly) {
+        if (drawableXml == null) {
             try {
                 makePicasso(
                     Picasso.Listener { _, _, _ ->
@@ -86,25 +80,44 @@ class DrawableViewActivity : AppCompatActivity() {
                             Toast.makeText(this, R.string.load_image_error, Toast.LENGTH_SHORT).show()
                         }
                     }
-                ).into(image)
+                ).into(image, object : Callback {
+                    override fun onError(e: java.lang.Exception?) {
+                        image.isVisible = false
+                        text.isVisible = true
+
+                        saveImg?.isVisible = false
+
+                        text.text = drawableXml
+                    }
+
+                    override fun onSuccess() {
+
+                    }
+                })
             } catch (e: Exception) {
                 Toast.makeText(this, R.string.load_image_error, Toast.LENGTH_SHORT).show()
             }
         } else {
-            image.isVisible = false
-            text.isVisible = true
+            try {
+                image.setImageDrawable(remRes.getDrawable(drawableId, remRes.newTheme()))
+            } catch (e: Exception) {
+                image.isVisible = false
+                text.isVisible = true
 
-            text.text = drawableXml
+                saveImg?.isVisible = false
+
+                text.text = drawableXml
+            }
         }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.save, menu)
 
-        val saveImg = menu.findItem(R.id.action_save_png)
+        saveImg = menu.findItem(R.id.action_save_png)
         val saveXml = menu.findItem(R.id.action_save_xml)
 
-        saveImg.isVisible = !isViewingAnimatedImage && !isXmlOnly
+        saveImg?.isVisible = !isViewingAnimatedImage
         saveXml.isVisible = drawableXml != null
 
         return true

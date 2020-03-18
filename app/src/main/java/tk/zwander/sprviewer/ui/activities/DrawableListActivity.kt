@@ -1,23 +1,44 @@
 package tk.zwander.sprviewer.ui.activities
 
+import android.content.ContentResolver
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
+import android.net.Uri
 import android.os.Bundle
-import android.util.TypedValue
+import android.util.Log
+import android.view.LayoutInflater
 import android.view.Menu
+import android.widget.ImageView
 import androidx.core.graphics.drawable.toBitmap
+import com.squareup.picasso.Callback
+import com.squareup.picasso.Picasso
+import com.squareup.picasso.RequestCreator
+import com.squareup.picasso.Target
+import kotlinx.android.synthetic.main.activity_drawable_view.view.*
 import kotlinx.coroutines.*
 import net.dongliu.apk.parser.ApkFile
 import tk.zwander.sprviewer.R
+import tk.zwander.sprviewer.data.DrawableData
 import tk.zwander.sprviewer.ui.adapters.DrawableListAdapter
 import tk.zwander.sprviewer.util.extensionsToRasterize
 import tk.zwander.sprviewer.util.getAppRes
+import tk.zwander.sprviewer.util.getExtension
+import tk.zwander.sprviewer.views.AnimatedImageView
 import tk.zwander.sprviewer.views.BaseDimensionInputDialog
 import tk.zwander.sprviewer.views.CircularProgressDialog
 import java.io.File
 import java.io.PrintWriter
+import java.lang.reflect.GenericDeclaration
+import java.lang.reflect.TypeVariable
 import java.util.*
+import kotlin.coroutines.experimental.suspendCoroutine
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 import kotlin.math.floor
+import kotlin.math.max
 
 class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope by MainScope() {
     override val contentView = R.layout.activity_main
@@ -71,7 +92,9 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
         val dialog = CircularProgressDialog(this@DrawableListActivity, items.size)
         val d = dialog.show()
 
-        val done = async {
+        val img = LayoutInflater.from(this@DrawableListActivity).inflate(R.layout.activity_drawable_view, null).image
+
+        val done = async(context = Dispatchers.IO) {
             val dir = File(externalCacheDir, "batch/$pkg")
             if (!dir.exists()) dir.mkdirs()
 
@@ -81,20 +104,44 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                 } catch (e: Exception) {
                     null
                 }
-                val ext = getExtension(drawableData.id)
-                val raster = try {
-                    remRes.getDrawable(drawableData.id, remRes.newTheme())?.run {
-                        toBitmap(dimen, (dimen * intrinsicHeight.toFloat() / intrinsicWidth.toFloat()).toInt())
-                    }
-                } catch (e: Exception) {
-                    null
-                }
+                val ext = remRes.getExtension(drawableData.id)
                 val rasterExtension = if (extensionsToRasterize.contains(ext)) "png" else ext
 
-                if (raster != null) {
+                if (drawableXml == null) {
+                    suspendCancellableCoroutine<Unit> { cont ->
+                        this@DrawableListActivity.launch {
+                            Picasso.Builder(this@DrawableListActivity)
+                                .build()
+                                .load(Uri.parse(
+                                    "${ContentResolver.SCHEME_ANDROID_RESOURCE}://" +
+                                            "$pkg/" +
+                                            "${remRes.getResourceTypeName(drawableData.id)}/" +
+                                            "${drawableData.id}"
+                                ))
+                                .into(img, object : Callback {
+                                    override fun onError(e: Exception?) {
+                                        cont.resume(Unit)
+                                    }
+
+                                    override fun onSuccess() {
+                                        cont.resume(Unit)
+                                    }
+                                })
+                        }
+                    }
+                } else {
+                    try {
+                        img.setImageDrawable(remRes.getDrawable(drawableData.id, remRes.newTheme()))
+                    } catch (e: Exception) {}
+                }
+
+                if (img.drawable != null) {
                     val target = File(dir, "${drawableData.name}.$rasterExtension")
                     target.outputStream().use { output ->
-                        raster.compress(Bitmap.CompressFormat.PNG, 100, output)
+                        img.drawable.run {
+                            if (this is BitmapDrawable) bitmap
+                            else toBitmap(width = max(dimen, 1), height = max((dimen * intrinsicWidth.toFloat() / intrinsicHeight.toFloat()).toInt(), 1))
+                        }.compress(Bitmap.CompressFormat.PNG, 100, output)
                     }
                 }
 
@@ -106,8 +153,6 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                         }
                     }
                 }
-
-                raster?.recycle()
 
                 this@DrawableListActivity.launch {
                     dialog.updateProgress(index + 1)
@@ -121,19 +166,6 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
 
         done.invokeOnCompletion {
             d.dismiss()
-        }
-    }
-
-    private fun getExtension(drawableId: Int): String? {
-        val v = TypedValue()
-        remRes.getValue(drawableId, v, false)
-
-        val string = v.coerceToString()
-
-        return try {
-            string.split(".").run { subList(1, size) }.joinToString(".")
-        } catch (e: Exception) {
-            null
         }
     }
 }

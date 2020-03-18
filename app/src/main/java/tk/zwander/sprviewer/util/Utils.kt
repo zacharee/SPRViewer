@@ -3,8 +3,11 @@ package tk.zwander.sprviewer.util
 import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.Resources
+import android.graphics.BitmapFactory
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
+import android.util.TypedValue
 import tk.zwander.sprviewer.data.AppData
 import tk.zwander.sprviewer.data.DrawableData
 
@@ -83,3 +86,16 @@ val extensionsToRasterize = arrayOf(
     "xml",
     "astc"
 )
+
+fun Resources.getExtension(id: Int): String? {
+    val v = TypedValue()
+    getValue(id, v, false)
+
+    val string = v.coerceToString()
+
+    return try {
+        string.split(".").run { subList(1, size) }.joinToString(".")
+    } catch (e: Exception) {
+        null
+    }
+}
