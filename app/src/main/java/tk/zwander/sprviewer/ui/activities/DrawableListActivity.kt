@@ -1,12 +1,8 @@
 package tk.zwander.sprviewer.ui.activities
 
-import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
-import android.net.Uri
 import android.os.Bundle
-import android.provider.DocumentsContract
-import android.util.Log
 import android.util.TypedValue
 import android.view.Menu
 import androidx.core.graphics.drawable.toBitmap
@@ -18,9 +14,7 @@ import tk.zwander.sprviewer.util.extensionsToRasterize
 import tk.zwander.sprviewer.util.getAppRes
 import tk.zwander.sprviewer.views.BaseDimensionInputDialog
 import tk.zwander.sprviewer.views.CircularProgressDialog
-import java.io.BufferedInputStream
 import java.io.File
-import java.io.InputStream
 import java.io.PrintWriter
 import java.util.*
 import kotlin.math.floor

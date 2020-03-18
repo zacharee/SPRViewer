@@ -25,7 +25,11 @@ class CircularProgressDialog(context: Context, var maxProgress: Int) : AlertDial
     }
 
     fun updateProgress(progress: Int) {
-        currentPercent = (progress.toFloat() / maxProgress.toFloat() * 100f).toInt()
-        this.progress.progress = currentPercent
+        val new = (progress.toFloat() / maxProgress.toFloat() * 100f).toInt()
+
+        if (new != currentPercent) {
+            currentPercent = new
+            this.progress.progress = currentPercent
+        }
     }
 }
