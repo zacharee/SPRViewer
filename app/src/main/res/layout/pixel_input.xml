@@ -30,6 +30,22 @@
         />
 
     <CheckBox
+        android:id="@+id/rasterize_astc"
+        android:layout_width="match_parent"
+        android:layout_height="?android:listPreferredItemHeightSmall"
+        android:checked="true"
+        android:text="@string/rasterize_astcs"
+        />
+
+    <CheckBox
+        android:id="@+id/rasterize_spr"
+        android:layout_width="match_parent"
+        android:layout_height="?android:listPreferredItemHeightSmall"
+        android:checked="true"
+        android:text="@string/rasterize_sprs"
+        />
+
+    <CheckBox
         android:id="@+id/export_rasters"
         android:layout_width="match_parent"
         android:layout_height="?android:listPreferredItemHeightSmall"
@@ -43,14 +59,6 @@
         android:layout_height="?android:listPreferredItemHeightSmall"
         android:checked="true"
         android:text="@string/export_xmls"
-        />
-
-    <CheckBox
-        android:id="@+id/rasterize_others"
-        android:layout_width="match_parent"
-        android:layout_height="?android:listPreferredItemHeightSmall"
-        android:checked="true"
-        android:text="@string/rasterize_other_vectors"
         />
 
 </LinearLayout>
