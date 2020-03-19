@@ -25,9 +25,7 @@ import kotlinx.android.synthetic.main.activity_drawable_view.*
 import kotlinx.coroutines.*
 import net.dongliu.apk.parser.ApkFile
 import tk.zwander.sprviewer.R
-import tk.zwander.sprviewer.util.extensionsToRasterize
-import tk.zwander.sprviewer.util.getAppRes
-import tk.zwander.sprviewer.util.getExtension
+import tk.zwander.sprviewer.util.*
 import tk.zwander.sprviewer.views.DimensionInputDialog
 import java.io.*
 import java.util.*
@@ -45,7 +43,7 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
         ApkFile(File(packageManager.getApplicationInfo(pkg, 0).sourceDir))
             .apply { preferredLocale = Locale.getDefault() }
     }
-    private val drawableXml by lazy {
+    private val drawableXml by lazyDeferred {
         try {
             apk.transBinaryXml("res/drawable/$drawableName.xml")
         } catch (e: Exception) {
@@ -64,6 +62,7 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
 
     private var saveImg: MenuItem? = null
 
+    @ExperimentalCoroutinesApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_drawable_view)
@@ -73,43 +72,49 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
             return
         }
 
-        if (drawableXml == null) {
-            try {
-                makePicasso(
-                    Picasso.Listener { _, _, _ ->
-                        try {
-                            image.setImageDrawable(remRes.getDrawable(drawableId, remRes.newTheme()))
-                        } catch (e: Exception) {
-                            Toast.makeText(this, R.string.load_image_error, Toast.LENGTH_SHORT).show()
+        launch {
+            val drawableXml = drawableXml.getOrAwaitResult()
+
+            if (drawableXml == null) {
+                try {
+                    makePicasso().into(image, object : Callback {
+                        override fun onError(e: java.lang.Exception?) {
+                            try {
+                                image.setImageDrawable(remRes.getDrawable(drawableId, remRes.newTheme()))
+
+                                saveImg?.isVisible = !isViewingAnimatedImage
+                            } catch (e: Exception) {
+                                Toast.makeText(this@DrawableViewActivity, R.string.load_image_error, Toast.LENGTH_SHORT).show()
+
+                                image.isVisible = false
+                                text.isVisible = true
+
+                                saveImg?.isVisible = false
+
+                                text.text = drawableXml
+                            }
                         }
-                    }
-                ).into(image, object : Callback {
-                    override fun onError(e: java.lang.Exception?) {
-                        image.isVisible = false
-                        text.isVisible = true
 
-                        saveImg?.isVisible = false
+                        override fun onSuccess() {
+                            saveImg?.isVisible = !isViewingAnimatedImage
+                        }
+                    })
+                } catch (e: Exception) {
+                    Toast.makeText(this@DrawableViewActivity, R.string.load_image_error, Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                try {
+                    image.setImageDrawable(remRes.getDrawable(drawableId, remRes.newTheme()))
 
-                        text.text = drawableXml
-                    }
+                    saveImg?.isVisible = !isViewingAnimatedImage
+                } catch (e: Exception) {
+                    image.isVisible = false
+                    text.isVisible = true
 
-                    override fun onSuccess() {
+                    saveImg?.isVisible = false
 
-                    }
-                })
-            } catch (e: Exception) {
-                Toast.makeText(this, R.string.load_image_error, Toast.LENGTH_SHORT).show()
-            }
-        } else {
-            try {
-                image.setImageDrawable(remRes.getDrawable(drawableId, remRes.newTheme()))
-            } catch (e: Exception) {
-                image.isVisible = false
-                text.isVisible = true
-
-                saveImg?.isVisible = false
-
-                text.text = drawableXml
+                    text.text = drawableXml
+                }
             }
         }
     }
@@ -120,6 +125,7 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
         cancel()
     }
 
+    @ExperimentalCoroutinesApi
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.save, menu)
 
@@ -127,7 +133,10 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
         val saveXml = menu.findItem(R.id.action_save_xml)
 
         saveImg?.isVisible = !isViewingAnimatedImage
-        saveXml.isVisible = drawableXml != null
+
+        launch {
+            saveXml.isVisible = drawableXml.getOrAwaitResult() != null
+        }
 
         return true
     }
@@ -146,6 +155,7 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
         }
     }
 
+    @ExperimentalCoroutinesApi
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (resultCode == Activity.RESULT_OK) {
             when (requestCode) {
@@ -265,11 +275,12 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
         }
     }
 
+    @ExperimentalCoroutinesApi
     private fun saveXmlAsync(os: OutputStream) = async(context = Dispatchers.IO) {
         setProgressVisible(visible = true, indet = true)
 
         os.bufferedWriter().use { writer ->
-            writer.write(drawableXml ?: return@use)
+            writer.write(drawableXml.getOrAwaitResult() ?: return@use)
         }
 
         setProgressVisible(false)

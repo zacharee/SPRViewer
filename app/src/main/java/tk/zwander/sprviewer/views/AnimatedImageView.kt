@@ -55,6 +55,7 @@ class AnimatedImageView @JvmOverloads constructor(context: Context, attrs: Attri
         }
         if (drawable is AnimationDrawable) {
             anim = drawable
+            anim!!.isOneShot = false
             if (isShown && allowAnimation) {
                 anim!!.start()
             }

@@ -8,6 +8,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.util.TypedValue
+import kotlinx.coroutines.*
 import tk.zwander.sprviewer.data.AppData
 import tk.zwander.sprviewer.data.DrawableData
 
@@ -100,3 +101,14 @@ fun Resources.getExtension(id: Int): String? {
         null
     }
 }
+
+fun <T> CoroutineScope.lazyDeferred(block: suspend CoroutineScope.() -> T): Lazy<Deferred<T>> {
+    return lazy {
+        async(start = CoroutineStart.LAZY) {
+            block.invoke(this)
+        }
+    }
+}
+
+@ExperimentalCoroutinesApi
+suspend fun <T> Deferred<T>.getOrAwaitResult() = if (isCompleted) getCompleted() else await()
