@@ -112,7 +112,8 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
             items.forEachIndexed { index, drawableData ->
                 dialog.setCurrentFileName(drawableData.name)
 
-                val path = zip.entries().asSequence().find { it.name.contains(drawableData.name) }?.name
+                val ext = remRes.getExtension(drawableData.id)
+                val path = zip.entries().asSequence().find { it.name.split("/").last() == ("${drawableData.name}.$ext") }?.name
                 val drawableXml = withContext(Dispatchers.IO) {
                     try {
                         apk.transBinaryXml(path)
@@ -120,7 +121,6 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                         null
                     }
                 }
-                val ext = remRes.getExtension(drawableData.id)
                 val rasterExtension = if (extensionsToRasterize.contains(ext)) "png" else ext
 
                 var loaded: Bitmap? = null
@@ -144,7 +144,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                     try {
                         loaded = withContext(Dispatchers.IO) {
                             remRes.getDrawable(drawableData.id, remRes.newTheme()).run {
-                                if (this is Animatable) null else toBitmap(
+                                if (this is Animatable && this::class.java.canonicalName?.contains("SemPathRenderingDrawable") == false) null else toBitmap(
                                     width = max(
                                         dimen,
                                         1

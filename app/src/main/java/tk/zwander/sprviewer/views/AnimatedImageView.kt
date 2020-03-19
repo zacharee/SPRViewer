@@ -26,6 +26,7 @@ import android.view.View
 import android.widget.RemoteViews.RemoteView
 import com.android.internal.graphics.drawable.AnimationScaleListDrawable
 import com.github.chrisbanes.photoview.PhotoView
+import java.util.*
 
 @RemoteView
 class AnimatedImageView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) : PhotoView(context, attrs) {
@@ -54,7 +55,7 @@ class AnimatedImageView @JvmOverloads constructor(context: Context, attrs: Attri
         if (attached && anim != null) {
             anim!!.stop()
         }
-        if (drawable is Animatable) {
+        if (drawable is Animatable && drawable::class.java.canonicalName?.contains("SemPathRenderingDrawable") == false) {
             anim = drawable
             if (isShown && allowAnimation) {
                 anim!!.start()

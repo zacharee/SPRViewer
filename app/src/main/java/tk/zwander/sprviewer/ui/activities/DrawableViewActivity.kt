@@ -53,12 +53,13 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
     }
     private val drawableXml by lazyDeferred(context = Dispatchers.IO) {
         try {
-            apk.transBinaryXml(path)
+            if (ext == "xml") apk.transBinaryXml(path)
+            else null
         } catch (e: Exception) {
             null
         }
     }
-    private val path by lazy { zip.entries().asSequence().find { it.name.contains(drawableName) }?.name }
+    private val path by lazy { zip.entries().asSequence().find { it.name.split("/").last() == ("$drawableName.$ext") }?.name }
     private val ext by lazy { remRes.getExtension(drawableId) }
     private val drawableName by lazy { intent.getStringExtra(EXTRA_DRAWABLE_NAME) }
     private val drawableId: Int
