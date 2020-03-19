@@ -169,9 +169,17 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                             }
 
                             writer.writeRow(line)
+
+                            this@DrawableListActivity.launch {
+                                dialog.updateSubProgress(row + 1, bmp.height)
+                            }.join()
                         }
 
                         writer.end()
+
+                        this@DrawableListActivity.launch {
+                            dialog.updateSubProgress(0)
+                        }.join()
                     }
                 }
 
@@ -199,8 +207,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
             done.cancel()
         }
 
-        done.invokeOnCompletion {
-            d.dismiss()
-        }
+        done.join()
+        d.dismiss()
     }
 }

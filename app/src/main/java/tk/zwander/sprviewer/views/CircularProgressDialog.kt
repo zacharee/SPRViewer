@@ -14,6 +14,7 @@ class CircularProgressDialog(context: Context, var maxProgress: Int) : AlertDial
     var onCancelListener: (() -> Unit)? = null
 
     var currentPercent = 0
+    var currentSubPercent = 0
 
     init {
         setView(view)
@@ -34,6 +35,15 @@ class CircularProgressDialog(context: Context, var maxProgress: Int) : AlertDial
         if (new != currentPercent) {
             currentPercent = new
             this.progress.progress = currentPercent
+        }
+    }
+
+    fun updateSubProgress(current: Int, max: Int = 100) {
+        val new = (current.toFloat() / max.toFloat() * 100f).toInt()
+
+        if (new != currentSubPercent) {
+            currentSubPercent = new
+            view.sub_progress.progress = currentSubPercent
         }
     }
 }
