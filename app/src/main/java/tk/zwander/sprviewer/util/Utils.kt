@@ -11,6 +11,7 @@ import android.util.TypedValue
 import kotlinx.coroutines.*
 import tk.zwander.sprviewer.data.AppData
 import tk.zwander.sprviewer.data.DrawableData
+import kotlin.coroutines.CoroutineContext
 
 val mainHandler = Handler(Looper.getMainLooper())
 
@@ -102,9 +103,9 @@ fun Resources.getExtension(id: Int): String? {
     }
 }
 
-fun <T> CoroutineScope.lazyDeferred(block: suspend CoroutineScope.() -> T): Lazy<Deferred<T>> {
+fun <T> CoroutineScope.lazyDeferred(context: CoroutineContext = Dispatchers.Default, block: suspend CoroutineScope.() -> T): Lazy<Deferred<T>> {
     return lazy {
-        async(start = CoroutineStart.LAZY) {
+        async(context = context, start = CoroutineStart.LAZY) {
             block.invoke(this)
         }
     }

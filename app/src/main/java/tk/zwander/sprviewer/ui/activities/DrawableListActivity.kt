@@ -28,6 +28,7 @@ import tk.zwander.sprviewer.views.CircularProgressDialog
 import java.io.File
 import java.io.PrintWriter
 import java.util.*
+import java.util.zip.ZipFile
 import kotlin.coroutines.resume
 import kotlin.math.floor
 import kotlin.math.max
@@ -42,9 +43,15 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
         startActivity(viewIntent)
     }
 
+    private val apkPath by lazy {
+        File(packageManager.getApplicationInfo(pkg, 0).sourceDir)
+    }
     private val apk by lazy {
-        ApkFile(File(packageManager.getApplicationInfo(pkg, 0).sourceDir))
+        ApkFile(apkPath)
             .apply { preferredLocale = Locale.getDefault() }
+    }
+    private val zip by lazy {
+        ZipFile(apkPath)
     }
     private val pkg by lazy { intent.getStringExtra(Intent.EXTRA_PACKAGE_NAME) }
     private val remRes by lazy { getAppRes(pkg) }
@@ -105,9 +112,10 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
             items.forEachIndexed { index, drawableData ->
                 dialog.setCurrentFileName(drawableData.name)
 
+                val path = zip.entries().asSequence().find { it.name.contains(drawableData.name) }?.name
                 val drawableXml = withContext(Dispatchers.IO) {
                     try {
-                        apk.transBinaryXml("res/drawable/${drawableData.name}.xml")
+                        apk.transBinaryXml(path)
                     } catch (e: Exception) {
                         null
                     }
@@ -118,31 +126,10 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                 var loaded: Bitmap? = null
 
                 if (drawableXml == null) {
-                    suspendCancellableCoroutine<Unit> { cont ->
-                        val picasso = Picasso.Builder(this@DrawableListActivity)
-                            .build()
+                    val picasso = Picasso.Builder(this@DrawableListActivity)
+                        .build()
 
-                        val img = object : Target {
-                            override fun onBitmapLoaded(
-                                bitmap: Bitmap?,
-                                from: Picasso.LoadedFrom?
-                            ) {
-                                loaded = bitmap
-                                picasso.shutdown()
-                                cont.resume(Unit)
-                            }
-
-                            override fun onBitmapFailed(
-                                e: java.lang.Exception?,
-                                errorDrawable: Drawable?
-                            ) {
-                                picasso.shutdown()
-                                cont.resume(Unit)
-                            }
-
-                            override fun onPrepareLoad(placeHolderDrawable: Drawable?) {}
-                        }
-
+                    loaded = withContext(Dispatchers.IO) {
                         picasso.load(
                                 Uri.parse(
                                     "${ContentResolver.SCHEME_ANDROID_RESOURCE}://" +
@@ -151,7 +138,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                                             "${drawableData.id}"
                                 )
                             )
-                            .into(img)
+                            .get()
                     }
                 } else {
                     try {

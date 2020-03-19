@@ -7,6 +7,7 @@ import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.util.TypedValue
 import android.view.Menu
 import android.view.MenuItem
@@ -29,6 +30,7 @@ import tk.zwander.sprviewer.util.*
 import tk.zwander.sprviewer.views.DimensionInputDialog
 import java.io.*
 import java.util.*
+import java.util.zip.ZipFile
 
 @Suppress("DeferredResultUnused")
 class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() {
@@ -39,17 +41,24 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
         private const val SAVE_XML_REQ = 102
     }
 
+    private val apkPath by lazy {
+        File(packageManager.getApplicationInfo(pkg, 0).sourceDir)
+    }
     private val apk by lazy {
-        ApkFile(File(packageManager.getApplicationInfo(pkg, 0).sourceDir))
+        ApkFile(apkPath)
             .apply { preferredLocale = Locale.getDefault() }
     }
-    private val drawableXml by lazyDeferred {
+    private val zip by lazy {
+        ZipFile(apkPath)
+    }
+    private val drawableXml by lazyDeferred(context = Dispatchers.IO) {
         try {
-            apk.transBinaryXml("res/drawable/$drawableName.xml")
+            apk.transBinaryXml(path)
         } catch (e: Exception) {
             null
         }
     }
+    private val path by lazy { zip.entries().asSequence().find { it.name.contains(drawableName) }?.name }
     private val ext by lazy { remRes.getExtension(drawableId) }
     private val drawableName by lazy { intent.getStringExtra(EXTRA_DRAWABLE_NAME) }
     private val drawableId: Int
