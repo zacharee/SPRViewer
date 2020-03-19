@@ -110,7 +110,8 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
 
                 val ext = remRes.getExtension(drawableData.id)
                 val path = withContext(Dispatchers.IO) {
-                    zip.entries().asSequence().find { it.name.split("/").last() == ("${drawableData.name}.$ext") }?.name
+                    zip.entries().asSequence()
+                        .find { it.name.split("/").last() == ("${drawableData.name}.$ext") }?.name
                 }
                 val drawableXml = withContext(Dispatchers.IO) {
                     try {
@@ -137,7 +138,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                             )
                         }
                     } catch (e: Exception) {
-                         null
+                        null
                     }
                 }
 
@@ -152,7 +153,17 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                                                 "${drawableData.id}"
                                     )
                                 )
-                                .get()
+                                .get().run {
+                                    if (extensionsToRasterize.contains(ext)) Bitmap.createScaledBitmap(
+                                        this,
+                                        dimen,
+                                        dimen * (height.toFloat() / width.toFloat()).toInt(),
+                                        true
+                                    ).also {
+                                        this.recycle()
+                                    }
+                                    else this
+                                }
                         }
                     } catch (e: Exception) {
                         loadBmpFromRes.getOrAwaitResult()
@@ -205,6 +216,8 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
 
                         dialog.updateSubProgress(0)
                     }
+
+                    loaded.recycle()
                 }
 
                 if (drawableXml != null) {
