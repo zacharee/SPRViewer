@@ -163,7 +163,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                                         1
                                     ),
                                     height = max(
-                                        (dimen * intrinsicWidth.toFloat() / intrinsicHeight.toFloat()).toInt(),
+                                        (dimen * intrinsicHeight.toFloat() / intrinsicWidth.toFloat()).toInt(),
                                         1
                                     )
                                 )
