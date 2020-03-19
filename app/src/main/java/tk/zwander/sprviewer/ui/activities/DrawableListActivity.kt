@@ -17,6 +17,7 @@ import tk.zwander.sprviewer.ui.adapters.DrawableListAdapter
 import tk.zwander.sprviewer.util.*
 import tk.zwander.sprviewer.views.BaseDimensionInputDialog
 import tk.zwander.sprviewer.views.CircularProgressDialog
+import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.PrintWriter
 import java.util.*
@@ -106,7 +107,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
             if (!dir.exists()) dir.mkdirs()
 
             items.forEachIndexed { index, drawableData ->
-                dialog.setCurrentFileName(drawableData.name)
+                dialog.setBaseFileName(drawableData.name)
 
                 val ext = remRes.getExtension(drawableData.id)
                 val path = withContext(Dispatchers.IO) {
@@ -227,11 +228,30 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
 
                     withContext(Dispatchers.IO) {
                         target.outputStream().use { out ->
-                            PrintWriter(out).use { writer ->
-                                writer.println(drawableXml)
+                            drawableXml.byteInputStream().use { input ->
+                                val buffer = ByteArray(16384)
+                                val max = input.available()
+
+                                var n: Int
+
+                                while (true) {
+                                    n = input.read(buffer)
+
+                                    if (n <= 0) break
+
+                                    out.write(buffer, 0, n)
+
+                                    val avail = input.available()
+
+                                    withContext(Dispatchers.Main) {
+                                        dialog.updateSubProgress(max - avail, max)
+                                    }
+                                }
                             }
                         }
                     }
+
+                    dialog.updateSubProgress(0)
                 }
 
                 dialog.updateProgress(index + 1)

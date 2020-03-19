@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
     android:layout_width="match_parent"
+    android:padding="16dp"
     android:layout_height="wrap_content">
 
     <com.hmomeni.progresscircula.ProgressCircula
         android:id="@+id/progress"
         android:layout_width="match_parent"
         android:layout_height="128dp"
-        android:padding="16dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/filename"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp"
         app:pgc_indeterminate="false"
         app:pgc_rimColor="?colorAccent"
         app:pgc_rimWidth="8dp"
@@ -19,25 +20,38 @@
         />
 
     <TextView
+        android:id="@+id/file_fraction"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        tools:text="800/900"
+        />
+
+    <TextView
+        android:id="@+id/base_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        tools:text="some_filename"
+        />
+
+    <TextView
         android:id="@+id/filename"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAlignment="center"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        app:layout_constraintBottom_toTopOf="@id/sub_progress"
-        tools:text="some_filename"
+        tools:text="some_filename.some_extension"
         />
 
-    <ProgressBar
+    <com.daimajia.numberprogressbar.NumberProgressBar
         android:id="@+id/sub_progress"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:indeterminate="false"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        android:layout_marginTop="8dp"
+        app:progress_reached_color="?colorAccent"
+        app:progress_text_color="?colorAccent"
+        style="@style/NumberProgressBar_Default"
         />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>

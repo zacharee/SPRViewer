@@ -1,5 +1,6 @@
 package tk.zwander.sprviewer.views
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
 import android.view.LayoutInflater
@@ -25,10 +26,15 @@ class CircularProgressDialog(context: Context, var maxProgress: Int) : AlertDial
         }
     }
 
-    fun setCurrentFileName(name: String) {
+    fun setBaseFileName(name: String?) {
+        view.base_name.text = name
+    }
+
+    fun setCurrentFileName(name: String?) {
         view.filename.text = name
     }
 
+    @SuppressLint("SetTextI18n")
     fun updateProgress(progress: Int) {
         val new = (progress.toFloat() / maxProgress.toFloat() * 100f).toInt()
 
@@ -36,6 +42,8 @@ class CircularProgressDialog(context: Context, var maxProgress: Int) : AlertDial
             currentPercent = new
             this.progress.progress = currentPercent
         }
+
+        view.file_fraction.text = "$progress/$maxProgress"
     }
 
     fun updateSubProgress(current: Int, max: Int = 100) {
