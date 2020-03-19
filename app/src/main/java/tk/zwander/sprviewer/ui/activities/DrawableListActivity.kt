@@ -107,7 +107,9 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
             if (!dir.exists()) dir.mkdirs()
 
             items.forEachIndexed { index, drawableData ->
-                dialog.setBaseFileName(drawableData.name)
+                launch {
+                    dialog.setBaseFileName(drawableData.name)
+                }
 
                 val ext = remRes.getExtension(drawableData.id)
                 val path = withContext(Dispatchers.IO) {
@@ -176,7 +178,9 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                 if (loaded != null) {
                     val target = File(dir, "${drawableData.name}.$rasterExtension")
 
-                    dialog.setCurrentFileName(target.name)
+                    launch {
+                        dialog.setCurrentFileName(target.name)
+                    }
 
                     target.outputStream().use { output ->
                         val info = ImageInfo(loaded.width, loaded.height, 8, loaded.hasAlpha())
@@ -208,14 +212,18 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                                 writer.writeRow(line)
                             }
 
-                            dialog.updateSubProgress(row + 1, loaded.height)
+                            launch {
+                                dialog.updateSubProgress(row + 1, loaded.height)
+                            }
                         }
 
                         withContext(Dispatchers.IO) {
                             writer.end()
                         }
 
-                        dialog.updateSubProgress(0)
+                        launch {
+                            dialog.updateSubProgress(0)
+                        }
                     }
 
                     loaded.recycle()
@@ -224,7 +232,9 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                 if (drawableXml != null) {
                     val target = File(dir, "${drawableData.name}.xml")
 
-                    dialog.setCurrentFileName(target.name)
+                    launch {
+                        dialog.setCurrentFileName(target.name)
+                    }
 
                     withContext(Dispatchers.IO) {
                         target.outputStream().use { out ->
@@ -243,7 +253,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
 
                                     val avail = input.available()
 
-                                    withContext(Dispatchers.Main) {
+                                    launch(context = Dispatchers.Main) {
                                         dialog.updateSubProgress(max - avail, max)
                                     }
                                 }
@@ -251,10 +261,14 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                         }
                     }
 
-                    dialog.updateSubProgress(0)
+                    launch {
+                        dialog.updateSubProgress(0)
+                    }
                 }
 
-                dialog.updateProgress(index + 1)
+                launch {
+                    dialog.updateProgress(index + 1)
+                }
             }
         }
 
