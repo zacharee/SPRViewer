@@ -87,8 +87,8 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
         menuInflater.inflate(R.menu.batch, menu)
 
         menu.findItem(R.id.all).setOnMenuItemClickListener {
-            BaseDimensionInputDialog(this) {
-                handleBatchExport(it)
+            BaseDimensionInputDialog(this) { dimen, rasterizeXmls ->
+                handleBatchExport(dimen, rasterizeXmls)
             }.show()
 
             true
@@ -97,7 +97,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
         return super.onCreateOptionsMenu(menu)
     }
 
-    private fun handleBatchExport(dimen: Int) = launch {
+    private fun handleBatchExport(dimen: Int, rasterizeXmls: Boolean) = launch {
         val items = adapter.allItemsCopy
         val dialog = CircularProgressDialog(this@DrawableListActivity, items.size)
         val d = dialog.show()
@@ -145,34 +145,40 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                     }
                 }
 
-                if (drawableXml == null) {
-                    loaded = try {
-                        withContext(Dispatchers.IO) {
-                            picasso.load(
-                                    Uri.parse(
-                                        "${ContentResolver.SCHEME_ANDROID_RESOURCE}://" +
-                                                "$pkg/" +
-                                                "${remRes.getResourceTypeName(drawableData.id)}/" +
-                                                "${drawableData.id}"
+                loaded = when {
+                    drawableXml == null -> {
+                        try {
+                            withContext(Dispatchers.IO) {
+                                picasso.load(
+                                        Uri.parse(
+                                            "${ContentResolver.SCHEME_ANDROID_RESOURCE}://" +
+                                                    "$pkg/" +
+                                                    "${remRes.getResourceTypeName(drawableData.id)}/" +
+                                                    "${drawableData.id}"
+                                        )
                                     )
-                                )
-                                .get().run {
-                                    if (extensionsToRasterize.contains(ext)) Bitmap.createScaledBitmap(
-                                        this,
-                                        dimen,
-                                        dimen * (height.toFloat() / width.toFloat()).toInt(),
-                                        true
-                                    ).also {
-                                        this.recycle()
+                                    .get().run {
+                                        if (extensionsToRasterize.contains(ext)) Bitmap.createScaledBitmap(
+                                            this,
+                                            dimen,
+                                            dimen * (height.toFloat() / width.toFloat()).toInt(),
+                                            true
+                                        ).also {
+                                            this.recycle()
+                                        }
+                                        else this
                                     }
-                                    else this
-                                }
+                            }
+                        } catch (e: Exception) {
+                            loadBmpFromRes.getOrAwaitResult()
                         }
-                    } catch (e: Exception) {
+                    }
+                    rasterizeXmls -> {
                         loadBmpFromRes.getOrAwaitResult()
                     }
-                } else {
-                    loaded = loadBmpFromRes.getOrAwaitResult()
+                    else -> {
+                        null
+                    }
                 }
 
                 if (loaded != null) {
