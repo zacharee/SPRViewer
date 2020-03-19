@@ -4,32 +4,23 @@ import android.content.ContentResolver
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.drawable.Animatable
-import android.graphics.drawable.AnimationDrawable
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
-import android.widget.ImageView
 import androidx.core.graphics.drawable.toBitmap
 import ar.com.hjg.pngj.*
-import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
-import com.squareup.picasso.Target
 import kotlinx.coroutines.*
 import net.dongliu.apk.parser.ApkFile
 import tk.zwander.sprviewer.R
 import tk.zwander.sprviewer.ui.adapters.DrawableListAdapter
-import tk.zwander.sprviewer.util.extensionsToRasterize
-import tk.zwander.sprviewer.util.getAppRes
-import tk.zwander.sprviewer.util.getExtension
+import tk.zwander.sprviewer.util.*
 import tk.zwander.sprviewer.views.BaseDimensionInputDialog
 import tk.zwander.sprviewer.views.CircularProgressDialog
 import java.io.File
 import java.io.PrintWriter
 import java.util.*
 import java.util.zip.ZipFile
-import kotlin.coroutines.resume
 import kotlin.math.floor
 import kotlin.math.max
 
@@ -116,80 +107,86 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                 val path = zip.entries().asSequence().find { it.name.split("/").last() == ("${drawableData.name}.$ext") }?.name
                 val drawableXml = withContext(Dispatchers.IO) {
                     try {
-                        apk.transBinaryXml(path)
+                        if (ext == "xml") apk.transBinaryXml(path)
+                        else null
                     } catch (e: Exception) {
                         null
                     }
                 }
                 val rasterExtension = if (extensionsToRasterize.contains(ext)) "png" else ext
 
-                var loaded: Bitmap? = null
+                val loaded: Bitmap?
+
+                val loadBmpFromRes by lazyDeferred(context = Dispatchers.IO) {
+                    try {
+                        remRes.getDrawable(drawableData.id, remRes.newTheme()).run {
+                            if (this is Animatable && this::class.java.canonicalName?.contains("SemPathRenderingDrawable") == false) null else toBitmap(
+                                width = max(
+                                    dimen,
+                                    1
+                                ),
+                                height = max(
+                                    (dimen * intrinsicHeight.toFloat() / intrinsicWidth.toFloat()).toInt(),
+                                    1
+                                )
+                            )
+                        }
+                    } catch (e: Exception) {
+                         null
+                    }
+                }
 
                 if (drawableXml == null) {
                     val picasso = Picasso.Builder(this@DrawableListActivity)
                         .build()
 
-                    loaded = withContext(Dispatchers.IO) {
-                        picasso.load(
-                                Uri.parse(
-                                    "${ContentResolver.SCHEME_ANDROID_RESOURCE}://" +
-                                            "$pkg/" +
-                                            "${remRes.getResourceTypeName(drawableData.id)}/" +
-                                            "${drawableData.id}"
-                                )
-                            )
-                            .get()
-                    }
-                } else {
-                    try {
-                        loaded = withContext(Dispatchers.IO) {
-                            remRes.getDrawable(drawableData.id, remRes.newTheme()).run {
-                                if (this is Animatable && this::class.java.canonicalName?.contains("SemPathRenderingDrawable") == false) null else toBitmap(
-                                    width = max(
-                                        dimen,
-                                        1
-                                    ),
-                                    height = max(
-                                        (dimen * intrinsicHeight.toFloat() / intrinsicWidth.toFloat()).toInt(),
-                                        1
+                    loaded = try {
+                        withContext(Dispatchers.IO) {
+                            picasso.load(
+                                    Uri.parse(
+                                        "${ContentResolver.SCHEME_ANDROID_RESOURCE}://" +
+                                                "$pkg/" +
+                                                "${remRes.getResourceTypeName(drawableData.id)}/" +
+                                                "${drawableData.id}"
                                     )
                                 )
-                            }
+                                .get()
                         }
-                    } catch (e: Exception) {}
+                    } catch (e: Exception) {
+                        loadBmpFromRes.getOrAwaitResult()
+                    }
+                } else {
+                    loaded = loadBmpFromRes.getOrAwaitResult()
                 }
 
-                delay(100)
-
                 if (loaded != null) {
-                    val bmp = loaded!!
                     val target = File(dir, "${drawableData.name}.$rasterExtension")
 
                     dialog.setCurrentFileName(target.name)
 
                     target.outputStream().use { output ->
-                        val info = ImageInfo(bmp.width, bmp.height, 8, bmp.hasAlpha())
+                        val info = ImageInfo(loaded.width, loaded.height, 8, loaded.hasAlpha())
                         val writer = PngWriter(output, info)
 
                         writer.setFilterType(FilterType.FILTER_ADAPTIVE_FAST)
                         writer.pixelsWriter.deflaterCompLevel = 0
 
-                        for (row in 0 until bmp.height) {
+                        for (row in 0 until loaded.height) {
                             val line = ImageLineInt(info)
 
                             withContext(Dispatchers.IO) {
-                                for (col in 0 until bmp.width) {
-                                    if (bmp.hasAlpha()) {
+                                for (col in 0 until loaded.width) {
+                                    if (loaded.hasAlpha()) {
                                         ImageLineHelper.setPixelRGBA8(
                                             line,
                                             col,
-                                            bmp.getPixel(col, row)
+                                            loaded.getPixel(col, row)
                                         )
                                     } else {
                                         ImageLineHelper.setPixelRGB8(
                                             line,
                                             col,
-                                            bmp.getPixel(col, row)
+                                            loaded.getPixel(col, row)
                                         )
                                     }
                                 }
@@ -197,7 +194,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                                 writer.writeRow(line)
                             }
 
-                            dialog.updateSubProgress(row + 1, bmp.height)
+                            dialog.updateSubProgress(row + 1, loaded.height)
                         }
 
                         withContext(Dispatchers.IO) {
