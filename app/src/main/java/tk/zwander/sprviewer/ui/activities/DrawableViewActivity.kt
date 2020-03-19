@@ -66,6 +66,10 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
         get() = remRes.getIdentifier(drawableName, "drawable", pkg)
     private val pkg by lazy { intent.getStringExtra(Intent.EXTRA_PACKAGE_NAME) }
     private val remRes by lazy { getAppRes(pkg) }
+    private val picasso: Picasso by lazy {
+        Picasso.Builder(this)
+            .build()
+    }
 
     private val isViewingAnimatedImage: Boolean
         get() = image.anim != null
@@ -87,8 +91,15 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
 
             if (drawableXml == null) {
                 try {
-                    makePicasso().into(image, object : Callback {
-                        override fun onError(e: java.lang.Exception?) {
+                    picasso.load(
+                        Uri.parse(
+                            "${ContentResolver.SCHEME_ANDROID_RESOURCE}://" +
+                                    "$pkg/" +
+                                    "${remRes.getResourceTypeName(drawableId)}/" +
+                                    "$drawableId"
+                        )
+                    ).into(image, object : Callback {
+                        override fun onError(e: Exception?) {
                             try {
                                 image.setImageDrawable(remRes.getDrawable(drawableId, remRes.newTheme()))
 
@@ -132,6 +143,7 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
     override fun onDestroy() {
         super.onDestroy()
 
+        picasso.shutdown()
         cancel()
     }
 
@@ -294,24 +306,6 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
         }
 
         setProgressVisible(false)
-    }
-
-    private fun makePicasso(listener: Picasso.Listener? = null): RequestCreator {
-        return Picasso.Builder(this)
-            .apply {
-                if (listener != null) {
-                    listener(listener)
-                }
-            }
-            .build()
-            .load(
-                Uri.parse(
-                    "${ContentResolver.SCHEME_ANDROID_RESOURCE}://" +
-                            "$pkg/" +
-                            "${remRes.getResourceTypeName(drawableId)}/" +
-                            "$drawableId"
-                )
-            )
     }
 
     private fun setProgressVisible(visible: Boolean, indet: Boolean = false) = launch {

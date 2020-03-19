@@ -46,6 +46,10 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
     }
     private val pkg by lazy { intent.getStringExtra(Intent.EXTRA_PACKAGE_NAME) }
     private val remRes by lazy { getAppRes(pkg) }
+    private val picasso by lazy {
+        Picasso.Builder(this@DrawableListActivity)
+            .build()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,6 +78,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
     override fun onDestroy() {
         super.onDestroy()
 
+        picasso.shutdown()
         cancel()
     }
 
@@ -104,7 +109,9 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                 dialog.setCurrentFileName(drawableData.name)
 
                 val ext = remRes.getExtension(drawableData.id)
-                val path = zip.entries().asSequence().find { it.name.split("/").last() == ("${drawableData.name}.$ext") }?.name
+                val path = withContext(Dispatchers.IO) {
+                    zip.entries().asSequence().find { it.name.split("/").last() == ("${drawableData.name}.$ext") }?.name
+                }
                 val drawableXml = withContext(Dispatchers.IO) {
                     try {
                         if (ext == "xml") apk.transBinaryXml(path)
@@ -114,9 +121,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                     }
                 }
                 val rasterExtension = if (extensionsToRasterize.contains(ext)) "png" else ext
-
                 val loaded: Bitmap?
-
                 val loadBmpFromRes by lazyDeferred(context = Dispatchers.IO) {
                     try {
                         remRes.getDrawable(drawableData.id, remRes.newTheme()).run {
@@ -137,9 +142,6 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                 }
 
                 if (drawableXml == null) {
-                    val picasso = Picasso.Builder(this@DrawableListActivity)
-                        .build()
-
                     loaded = try {
                         withContext(Dispatchers.IO) {
                             picasso.load(
