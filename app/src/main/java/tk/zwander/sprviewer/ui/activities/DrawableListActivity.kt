@@ -18,9 +18,7 @@ import tk.zwander.sprviewer.util.*
 import tk.zwander.sprviewer.views.BaseDimensionInputDialog
 import tk.zwander.sprviewer.views.CircularProgressDialog
 import tk.zwander.sprviewer.views.ExportInfo
-import java.io.ByteArrayInputStream
 import java.io.File
-import java.io.PrintWriter
 import java.util.*
 import java.util.zip.ZipFile
 import kotlin.math.floor

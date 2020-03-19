@@ -31,7 +31,7 @@ class DrawableListAdapter(private val itemSelectedListener: (DrawableData) -> Un
     }
 
     override fun matches(query: String, data: DrawableData): Boolean {
-        return data.name.contains(query, true)
+        return "${data.name}.${data.ext}".contains(query, true)
     }
 
     fun loadItems(context: Context, packageName: String, listener: () -> Unit, progressListener: (Int, Int) -> Unit) {
