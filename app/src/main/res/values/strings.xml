@@ -13,6 +13,8 @@
     <string name="export_xmls">Export XMLs</string>
     <string name="rasterize_astcs">Rasterize ASTCs</string>
     <string name="rasterize_sprs">Rasterize SPRs</string>
+    <string name="export_astcs">Export ASTCs</string>
+    <string name="export_sprs">Export SPRs</string>
 
     <string name="load_image_error">Unable to load image</string>
     <string name="enter_dimensions">Enter export dimensions</string>

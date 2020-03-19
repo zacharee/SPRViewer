@@ -17,6 +17,7 @@ import tk.zwander.sprviewer.ui.adapters.DrawableListAdapter
 import tk.zwander.sprviewer.util.*
 import tk.zwander.sprviewer.views.BaseDimensionInputDialog
 import tk.zwander.sprviewer.views.CircularProgressDialog
+import tk.zwander.sprviewer.views.ExportInfo
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.PrintWriter
@@ -87,8 +88,8 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
         menuInflater.inflate(R.menu.batch, menu)
 
         menu.findItem(R.id.all).setOnMenuItemClickListener {
-            BaseDimensionInputDialog(this) { dimen, rasterizeXmls, exportRasters, exportXmls, rasterizeAstcs, rasterizeSprs ->
-                handleBatchExport(dimen, rasterizeXmls, exportRasters, exportXmls, rasterizeAstcs, rasterizeSprs)
+            BaseDimensionInputDialog(this) { info ->
+                handleBatchExport(info)
             }.show()
 
             true
@@ -98,12 +99,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
     }
 
     private fun handleBatchExport(
-        dimen: Int,
-        rasterizeXmls: Boolean,
-        exportRasters: Boolean,
-        exportXmls: Boolean,
-        rasterizeAstcs: Boolean,
-        rasterizeSprs: Boolean
+        info: ExportInfo
     ) = launch {
         val items = adapter.allItemsCopy
         val dialog = CircularProgressDialog(this@DrawableListActivity, items.size)
@@ -138,11 +134,11 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                         remRes.getDrawable(drawableData.id, remRes.newTheme()).run {
                             if (this is Animatable && this::class.java.canonicalName?.contains("SemPathRenderingDrawable") == false) null else toBitmap(
                                 width = max(
-                                    dimen,
+                                    info.dimen,
                                     1
                                 ),
                                 height = max(
-                                    (dimen * intrinsicHeight.toFloat() / intrinsicWidth.toFloat()).toInt(),
+                                    (info.dimen * intrinsicHeight.toFloat() / intrinsicWidth.toFloat()).toInt(),
                                     1
                                 )
                             )
@@ -157,7 +153,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                         val rasterize = extensionsToRasterize.contains(ext)
                         val isAstc = ext == "astc"
                         val isSpr = ext == "spr"
-                        if ((isAstc && rasterizeAstcs) || (isSpr && rasterizeSprs) || (!rasterize && exportRasters)) {
+                        if ((isAstc && info.rasterizeAstcs) || (isSpr && info.rasterizeSprs) || (!rasterize && info.exportRasters)) {
                             try {
                                 withContext(Dispatchers.IO) {
                                     picasso.load(
@@ -171,8 +167,8 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                                         .get().run {
                                             if (extensionsToRasterize.contains(ext)) Bitmap.createScaledBitmap(
                                                 this,
-                                                dimen,
-                                                dimen * (height.toFloat() / width.toFloat()).toInt(),
+                                                info.dimen,
+                                                info.dimen * (height.toFloat() / width.toFloat()).toInt(),
                                                 true
                                             ).also {
                                                 this.recycle()
@@ -185,7 +181,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                             }
                         } else null
                     }
-                    rasterizeXmls -> {
+                    info.rasterizeXmls -> {
                         loadBmpFromRes.getOrAwaitResult()
                     }
                     else -> {
@@ -247,7 +243,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                     loaded.recycle()
                 }
 
-                if (exportXmls && drawableXml != null) {
+                if (info.exportXmls && drawableXml != null) {
                     val target = File(dir, "${drawableData.name}.xml")
 
                     launch {
@@ -268,6 +264,43 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                                     if (n <= 0) break
 
                                     out.write(buffer, 0, n)
+
+                                    val avail = input.available()
+
+                                    launch(context = Dispatchers.Main) {
+                                        dialog.updateSubProgress(max - avail, max)
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    launch {
+                        dialog.updateSubProgress(0)
+                    }
+                }
+
+                if ((ext == "astc" && info.exportAstcs) || (ext == "spr" && info.exportSprs)) {
+                    val target = File(dir, "${drawableData.name}.ext")
+
+                    launch {
+                        dialog.setCurrentFileName(target.name)
+                    }
+
+                    withContext(Dispatchers.IO) {
+                        target.outputStream().use { output ->
+                            remRes.openRawResource(drawableData.id).use { input ->
+                                val buffer = ByteArray(16384)
+                                val max = input.available()
+
+                                var n: Int
+
+                                while (true) {
+                                    n = input.read(buffer)
+
+                                    if (n <= 0) break
+
+                                    output.write(buffer, 0, n)
 
                                     val avail = input.available()
 

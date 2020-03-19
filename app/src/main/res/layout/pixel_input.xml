@@ -1,64 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:padding="16dp"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <com.google.android.material.textfield.TextInputLayout
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:hint="@string/base_raster_width"
-            android:id="@+id/pixel_text"
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:inputType="number"
-            android:text="512"
+            android:layout_height="wrap_content">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:hint="@string/base_raster_width"
+                android:id="@+id/pixel_text"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:inputType="number"
+                android:text="512"
+                />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <CheckBox
+            android:id="@+id/rasterize_xmls"
+            android:layout_width="match_parent"
+            android:layout_height="?android:listPreferredItemHeightSmall"
+            android:checked="true"
+            android:text="@string/rasterize_xmls"
             />
 
-    </com.google.android.material.textfield.TextInputLayout>
+        <CheckBox
+            android:id="@+id/rasterize_astc"
+            android:layout_width="match_parent"
+            android:layout_height="?android:listPreferredItemHeightSmall"
+            android:checked="true"
+            android:text="@string/rasterize_astcs"
+            />
 
-    <CheckBox
-        android:id="@+id/rasterize_xmls"
-        android:layout_width="match_parent"
-        android:layout_height="?android:listPreferredItemHeightSmall"
-        android:checked="true"
-        android:text="@string/rasterize_xmls"
-        />
+        <CheckBox
+            android:id="@+id/rasterize_spr"
+            android:layout_width="match_parent"
+            android:layout_height="?android:listPreferredItemHeightSmall"
+            android:checked="true"
+            android:text="@string/rasterize_sprs"
+            />
 
-    <CheckBox
-        android:id="@+id/rasterize_astc"
-        android:layout_width="match_parent"
-        android:layout_height="?android:listPreferredItemHeightSmall"
-        android:checked="true"
-        android:text="@string/rasterize_astcs"
-        />
+        <CheckBox
+            android:id="@+id/export_rasters"
+            android:layout_width="match_parent"
+            android:layout_height="?android:listPreferredItemHeightSmall"
+            android:checked="true"
+            android:text="@string/export_rasters"
+            />
 
-    <CheckBox
-        android:id="@+id/rasterize_spr"
-        android:layout_width="match_parent"
-        android:layout_height="?android:listPreferredItemHeightSmall"
-        android:checked="true"
-        android:text="@string/rasterize_sprs"
-        />
+        <CheckBox
+            android:id="@+id/export_xmls"
+            android:layout_width="match_parent"
+            android:layout_height="?android:listPreferredItemHeightSmall"
+            android:checked="true"
+            android:text="@string/export_xmls"
+            />
 
-    <CheckBox
-        android:id="@+id/export_rasters"
-        android:layout_width="match_parent"
-        android:layout_height="?android:listPreferredItemHeightSmall"
-        android:checked="true"
-        android:text="@string/export_rasters"
-        />
+        <CheckBox
+            android:id="@+id/export_astcs"
+            android:layout_width="match_parent"
+            android:layout_height="?android:listPreferredItemHeightSmall"
+            android:checked="true"
+            android:text="@string/export_astcs"
+            />
 
-    <CheckBox
-        android:id="@+id/export_xmls"
-        android:layout_width="match_parent"
-        android:layout_height="?android:listPreferredItemHeightSmall"
-        android:checked="true"
-        android:text="@string/export_xmls"
-        />
+        <CheckBox
+            android:id="@+id/export_sprs"
+            android:layout_width="match_parent"
+            android:layout_height="?android:listPreferredItemHeightSmall"
+            android:checked="true"
+            android:text="@string/export_sprs"
+            />
 
-</LinearLayout>
+    </LinearLayout>
+
+</ScrollView>
