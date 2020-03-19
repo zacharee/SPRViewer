@@ -87,8 +87,8 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
         menuInflater.inflate(R.menu.batch, menu)
 
         menu.findItem(R.id.all).setOnMenuItemClickListener {
-            BaseDimensionInputDialog(this) { dimen, rasterizeXmls, exportRasters, exportXmls ->
-                handleBatchExport(dimen, rasterizeXmls, exportRasters, exportXmls)
+            BaseDimensionInputDialog(this) { dimen, rasterizeXmls, exportRasters, exportXmls, rasterizeOthers ->
+                handleBatchExport(dimen, rasterizeXmls, exportRasters, exportXmls, rasterizeOthers)
             }.show()
 
             true
@@ -101,7 +101,8 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
         dimen: Int,
         rasterizeXmls: Boolean,
         exportRasters: Boolean,
-        exportXmls: Boolean
+        exportXmls: Boolean,
+        rasterizeOthers: Boolean
     ) = launch {
         val items = adapter.allItemsCopy
         val dialog = CircularProgressDialog(this@DrawableListActivity, items.size)
@@ -153,7 +154,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                 loaded = when {
                     drawableXml == null -> {
                         val rasterize = extensionsToRasterize.contains(ext)
-                        if (rasterize || (!rasterize && exportRasters)) {
+                        if ((rasterize && rasterizeOthers) || (!rasterize && exportRasters)) {
                             try {
                                 withContext(Dispatchers.IO) {
                                     picasso.load(
