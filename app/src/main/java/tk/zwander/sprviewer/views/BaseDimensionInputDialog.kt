@@ -8,7 +8,7 @@ import tk.zwander.sprviewer.R
 
 class BaseDimensionInputDialog(
     context: Context,
-    okListener: (dimen: Int, rasterizeXmls: Boolean, exportRasters: Boolean) -> Unit
+    okListener: (dimen: Int, rasterizeXmls: Boolean, exportRasters: Boolean, exportXmls: Boolean) -> Unit
 ) : AlertDialog.Builder(context) {
     init {
         val view = LayoutInflater.from(context).inflate(R.layout.pixel_input, null)
@@ -19,7 +19,8 @@ class BaseDimensionInputDialog(
             okListener(
                 view.pixel_text.text?.toString()?.toInt() ?: 512,
                 view.rasterize_xmls.isChecked,
-                view.export_rasters.isChecked
+                view.export_rasters.isChecked,
+                view.export_xmls.isChecked
             )
         }
 

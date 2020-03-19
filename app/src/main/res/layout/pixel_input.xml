@@ -37,4 +37,12 @@
         android:text="@string/export_rasters"
         />
 
+    <CheckBox
+        android:id="@+id/export_xmls"
+        android:layout_width="match_parent"
+        android:layout_height="?android:listPreferredItemHeightSmall"
+        android:checked="true"
+        android:text="@string/export_xmls"
+        />
+
 </LinearLayout>

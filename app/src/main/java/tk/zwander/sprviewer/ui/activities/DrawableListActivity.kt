@@ -87,8 +87,8 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
         menuInflater.inflate(R.menu.batch, menu)
 
         menu.findItem(R.id.all).setOnMenuItemClickListener {
-            BaseDimensionInputDialog(this) { dimen, rasterizeXmls, exportRasters ->
-                handleBatchExport(dimen, rasterizeXmls, exportRasters)
+            BaseDimensionInputDialog(this) { dimen, rasterizeXmls, exportRasters, exportXmls ->
+                handleBatchExport(dimen, rasterizeXmls, exportRasters, exportXmls)
             }.show()
 
             true
@@ -97,7 +97,12 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
         return super.onCreateOptionsMenu(menu)
     }
 
-    private fun handleBatchExport(dimen: Int, rasterizeXmls: Boolean, exportRasters: Boolean) = launch {
+    private fun handleBatchExport(
+        dimen: Int,
+        rasterizeXmls: Boolean,
+        exportRasters: Boolean,
+        exportXmls: Boolean
+    ) = launch {
         val items = adapter.allItemsCopy
         val dialog = CircularProgressDialog(this@DrawableListActivity, items.size)
         val d = dialog.show()
@@ -235,7 +240,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                     loaded.recycle()
                 }
 
-                if (drawableXml != null) {
+                if (exportXmls && drawableXml != null) {
                     val target = File(dir, "${drawableData.name}.xml")
 
                     launch {

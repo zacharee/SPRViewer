@@ -10,6 +10,7 @@
     <string name="base_raster_width">Base Raster Width</string>
     <string name="rasterize_xmls">Rasterize XMLs</string>
     <string name="export_rasters">Export Rasters</string>
+    <string name="export_xmls">Export XMLs</string>
 
     <string name="load_image_error">Unable to load image</string>
     <string name="enter_dimensions">Enter export dimensions</string>
