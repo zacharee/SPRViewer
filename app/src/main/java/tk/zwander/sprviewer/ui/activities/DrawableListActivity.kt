@@ -151,32 +151,35 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                 }
 
                 loaded = when {
-                    drawableXml == null && exportRasters -> {
-                        try {
-                            withContext(Dispatchers.IO) {
-                                picasso.load(
-                                        Uri.parse(
-                                            "${ContentResolver.SCHEME_ANDROID_RESOURCE}://" +
-                                                    "$pkg/" +
-                                                    "${remRes.getResourceTypeName(drawableData.id)}/" +
-                                                    "${drawableData.id}"
+                    drawableXml == null -> {
+                        val rasterize = extensionsToRasterize.contains(ext)
+                        if (rasterize || (!rasterize && exportRasters)) {
+                            try {
+                                withContext(Dispatchers.IO) {
+                                    picasso.load(
+                                            Uri.parse(
+                                                "${ContentResolver.SCHEME_ANDROID_RESOURCE}://" +
+                                                        "$pkg/" +
+                                                        "${remRes.getResourceTypeName(drawableData.id)}/" +
+                                                        "${drawableData.id}"
+                                            )
                                         )
-                                    )
-                                    .get().run {
-                                        if (extensionsToRasterize.contains(ext)) Bitmap.createScaledBitmap(
-                                            this,
-                                            dimen,
-                                            dimen * (height.toFloat() / width.toFloat()).toInt(),
-                                            true
-                                        ).also {
-                                            this.recycle()
+                                        .get().run {
+                                            if (extensionsToRasterize.contains(ext)) Bitmap.createScaledBitmap(
+                                                this,
+                                                dimen,
+                                                dimen * (height.toFloat() / width.toFloat()).toInt(),
+                                                true
+                                            ).also {
+                                                this.recycle()
+                                            }
+                                            else this
                                         }
-                                        else this
-                                    }
+                                }
+                            } catch (e: Exception) {
+                                loadBmpFromRes.getOrAwaitResult()
                             }
-                        } catch (e: Exception) {
-                            loadBmpFromRes.getOrAwaitResult()
-                        }
+                        } else null
                     }
                     drawableXml != null && rasterizeXmls -> {
                         loadBmpFromRes.getOrAwaitResult()
