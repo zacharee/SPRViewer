@@ -86,6 +86,8 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
             return
         }
 
+        title = "$drawableName.$ext"
+
         launch {
             val drawableXml = drawableXml.getOrAwaitResult()
 
