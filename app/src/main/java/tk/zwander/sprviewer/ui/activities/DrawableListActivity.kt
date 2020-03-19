@@ -182,7 +182,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                             }
                         } else null
                     }
-                    drawableXml != null && rasterizeXmls -> {
+                    rasterizeXmls -> {
                         loadBmpFromRes.getOrAwaitResult()
                     }
                     else -> {
