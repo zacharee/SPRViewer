@@ -94,23 +94,23 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
         val dialog = CircularProgressDialog(this@DrawableListActivity, items.size)
         val d = dialog.show()
 
-        val done = async(context = Dispatchers.IO) {
+        val done = launch(context = Dispatchers.Main) {
             val dir = File(externalCacheDir, "batch/$pkg")
             if (!dir.exists()) dir.mkdirs()
 
             items.forEachIndexed { index, drawableData ->
-                this@DrawableListActivity.launch {
-                    dialog.setCurrentFileName(drawableData.name)
-                }.join()
+                dialog.setCurrentFileName(drawableData.name)
 
-                val drawableXml = try {
-                    apk.transBinaryXml("res/drawable/${drawableData.name}.xml")
-                } catch (e: Exception) {
-                    null
+                val drawableXml = withContext(Dispatchers.IO) {
+                    try {
+                        apk.transBinaryXml("res/drawable/${drawableData.name}.xml")
+                    } catch (e: Exception) {
+                        null
+                    }
                 }
                 val ext = remRes.getExtension(drawableData.id)
                 val rasterExtension = if (extensionsToRasterize.contains(ext)) "png" else ext
-                
+
                 var loaded: Bitmap? = null
 
                 if (drawableXml == null) {
@@ -126,36 +126,34 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                             }
                             override fun onPrepareLoad(placeHolderDrawable: Drawable?) {}
                         }
-                        
-                        this@DrawableListActivity.launch {
-                            Picasso.Builder(this@DrawableListActivity)
-                                .build()
-                                .load(Uri.parse(
-                                    "${ContentResolver.SCHEME_ANDROID_RESOURCE}://" +
-                                            "$pkg/" +
-                                            "${remRes.getResourceTypeName(drawableData.id)}/" +
-                                            "${drawableData.id}"
-                                ))
-                                .into(img)
-                        }
+
+                        Picasso.Builder(this@DrawableListActivity)
+                            .build()
+                            .load(Uri.parse(
+                                "${ContentResolver.SCHEME_ANDROID_RESOURCE}://" +
+                                        "$pkg/" +
+                                        "${remRes.getResourceTypeName(drawableData.id)}/" +
+                                        "${drawableData.id}"
+                            ))
+                            .into(img)
                     }
                 } else {
                     try {
-                        loaded = remRes.getDrawable(drawableData.id, remRes.newTheme()).run { 
-                            toBitmap(width = max(dimen, 1), height = max((dimen * intrinsicWidth.toFloat() / intrinsicHeight.toFloat()).toInt(), 1))
+                        loaded = withContext(Dispatchers.IO) {
+                            remRes.getDrawable(drawableData.id, remRes.newTheme()).run {
+                                toBitmap(width = max(dimen, 1), height = max((dimen * intrinsicWidth.toFloat() / intrinsicHeight.toFloat()).toInt(), 1))
+                            }
                         }
                     } catch (e: Exception) {}
                 }
-                
+
                 delay(100)
 
                 if (loaded != null) {
                     val bmp = loaded!!
                     val target = File(dir, "${drawableData.name}.$rasterExtension")
 
-                    this@DrawableListActivity.launch {
-                        dialog.setCurrentFileName(target.name)
-                    }.join()
+                    dialog.setCurrentFileName(target.name)
 
                     target.outputStream().use { output ->
                         val info = ImageInfo(bmp.width, bmp.height, 8, bmp.hasAlpha())
@@ -166,46 +164,44 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                         for (row in 0 until bmp.height) {
                             val line = ImageLineInt(info)
 
-                            for (col in 0 until bmp.width) {
-                                if (bmp.hasAlpha()) {
-                                    ImageLineHelper.setPixelRGBA8(line, col, bmp.getPixel(col, row))
-                                } else {
-                                    ImageLineHelper.setPixelRGB8(line, col, bmp.getPixel(col, row))
+                            withContext(Dispatchers.IO) {
+                                for (col in 0 until bmp.width) {
+                                    if (bmp.hasAlpha()) {
+                                        ImageLineHelper.setPixelRGBA8(line, col, bmp.getPixel(col, row))
+                                    } else {
+                                        ImageLineHelper.setPixelRGB8(line, col, bmp.getPixel(col, row))
+                                    }
                                 }
+
+                                writer.writeRow(line)
                             }
 
-                            writer.writeRow(line)
-
-                            this@DrawableListActivity.launch {
-                                dialog.updateSubProgress(row + 1, bmp.height)
-                            }.join()
+                            dialog.updateSubProgress(row + 1, bmp.height)
                         }
 
-                        writer.end()
+                        withContext(Dispatchers.IO) {
+                            writer.end()
+                        }
 
-                        this@DrawableListActivity.launch {
-                            dialog.updateSubProgress(0)
-                        }.join()
+                        dialog.updateSubProgress(0)
                     }
                 }
 
                 if (drawableXml != null) {
                     val target = File(dir, "${drawableData.name}.xml")
 
-                    this@DrawableListActivity.launch {
-                        dialog.setCurrentFileName(target.name)
-                    }.join()
+                    dialog.setCurrentFileName(target.name)
 
-                    target.outputStream().use { out ->
-                        PrintWriter(out).use { writer ->
-                            writer.println(drawableXml)
+                    withContext(Dispatchers.IO) {
+                        target.outputStream().use { out ->
+                            PrintWriter(out).use { writer ->
+                                writer.println(drawableXml)
+                            }
                         }
                     }
                 }
 
-                this@DrawableListActivity.launch {
-                    dialog.updateProgress(index + 1)
-                }.join()
+                dialog.updateProgress(index + 1)
             }
         }
 
