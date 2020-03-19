@@ -61,6 +61,12 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                     .toDouble()).toInt()
             }
         }
+
+        launch {
+            title = withContext(Dispatchers.Main) {
+                packageManager.getApplicationLabel(packageManager.getApplicationInfo(pkg, 0))
+            }
+        }
     }
 
     override fun onDestroy() {
