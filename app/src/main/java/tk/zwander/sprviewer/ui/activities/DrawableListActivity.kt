@@ -3,6 +3,7 @@ package tk.zwander.sprviewer.ui.activities
 import android.content.ContentResolver
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.drawable.AnimationDrawable
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.net.Uri
@@ -50,15 +51,17 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (pkg == null)  {
+        if (pkg == null) {
             finish()
             return
         }
 
         adapter.loadItems(this, pkg, this::onLoadFinished) { size, count ->
             progress?.apply {
-                progress += floor((count.toFloat() / size.toFloat() * 100f)
-                    .toDouble()).toInt()
+                progress += floor(
+                    (count.toFloat() / size.toFloat() * 100f)
+                        .toDouble()
+                ).toInt()
             }
         }
 
@@ -115,33 +118,54 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
 
                 if (drawableXml == null) {
                     suspendCancellableCoroutine<Unit> { cont ->
+                        val picasso = Picasso.Builder(this@DrawableListActivity)
+                            .build()
+
                         val img = object : Target {
-                            override fun onBitmapLoaded(bitmap: Bitmap?, from: Picasso.LoadedFrom?) {
+                            override fun onBitmapLoaded(
+                                bitmap: Bitmap?,
+                                from: Picasso.LoadedFrom?
+                            ) {
                                 loaded = bitmap
+                                picasso.shutdown()
                                 cont.resume(Unit)
                             }
 
-                            override fun onBitmapFailed(e: java.lang.Exception?, errorDrawable: Drawable?) {
+                            override fun onBitmapFailed(
+                                e: java.lang.Exception?,
+                                errorDrawable: Drawable?
+                            ) {
+                                picasso.shutdown()
                                 cont.resume(Unit)
                             }
+
                             override fun onPrepareLoad(placeHolderDrawable: Drawable?) {}
                         }
 
-                        Picasso.Builder(this@DrawableListActivity)
-                            .build()
-                            .load(Uri.parse(
-                                "${ContentResolver.SCHEME_ANDROID_RESOURCE}://" +
-                                        "$pkg/" +
-                                        "${remRes.getResourceTypeName(drawableData.id)}/" +
-                                        "${drawableData.id}"
-                            ))
+                        picasso.load(
+                                Uri.parse(
+                                    "${ContentResolver.SCHEME_ANDROID_RESOURCE}://" +
+                                            "$pkg/" +
+                                            "${remRes.getResourceTypeName(drawableData.id)}/" +
+                                            "${drawableData.id}"
+                                )
+                            )
                             .into(img)
                     }
                 } else {
                     try {
                         loaded = withContext(Dispatchers.IO) {
                             remRes.getDrawable(drawableData.id, remRes.newTheme()).run {
-                                toBitmap(width = max(dimen, 1), height = max((dimen * intrinsicWidth.toFloat() / intrinsicHeight.toFloat()).toInt(), 1))
+                                if (this is AnimationDrawable) null else toBitmap(
+                                    width = max(
+                                        dimen,
+                                        1
+                                    ),
+                                    height = max(
+                                        (dimen * intrinsicWidth.toFloat() / intrinsicHeight.toFloat()).toInt(),
+                                        1
+                                    )
+                                )
                             }
                         }
                     } catch (e: Exception) {}
@@ -159,6 +183,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                         val info = ImageInfo(bmp.width, bmp.height, 8, bmp.hasAlpha())
                         val writer = PngWriter(output, info)
 
+                        writer.setFilterType(FilterType.FILTER_ADAPTIVE_FAST)
                         writer.pixelsWriter.deflaterCompLevel = 0
 
                         for (row in 0 until bmp.height) {
@@ -167,9 +192,17 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                             withContext(Dispatchers.IO) {
                                 for (col in 0 until bmp.width) {
                                     if (bmp.hasAlpha()) {
-                                        ImageLineHelper.setPixelRGBA8(line, col, bmp.getPixel(col, row))
+                                        ImageLineHelper.setPixelRGBA8(
+                                            line,
+                                            col,
+                                            bmp.getPixel(col, row)
+                                        )
                                     } else {
-                                        ImageLineHelper.setPixelRGB8(line, col, bmp.getPixel(col, row))
+                                        ImageLineHelper.setPixelRGB8(
+                                            line,
+                                            col,
+                                            bmp.getPixel(col, row)
+                                        )
                                     }
                                 }
 
