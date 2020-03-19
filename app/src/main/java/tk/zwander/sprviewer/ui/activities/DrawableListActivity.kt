@@ -281,7 +281,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                 }
 
                 if ((ext == "astc" && info.exportAstcs) || (ext == "spr" && info.exportSprs)) {
-                    val target = File(dir, "${drawableData.name}.ext")
+                    val target = File(dir, "${drawableData.name}.$ext")
 
                     launch {
                         dialog.setCurrentFileName(target.name)
