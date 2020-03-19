@@ -19,16 +19,17 @@
 package tk.zwander.sprviewer.views
 
 import android.content.Context
-import android.graphics.drawable.AnimationDrawable
-import android.graphics.drawable.Drawable
+import android.graphics.drawable.*
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import android.widget.RemoteViews.RemoteView
+import com.android.internal.graphics.drawable.AnimationScaleListDrawable
 import com.github.chrisbanes.photoview.PhotoView
 
 @RemoteView
 class AnimatedImageView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) : PhotoView(context, attrs) {
-    var anim: AnimationDrawable? = null
+    var anim: Animatable? = null
     internal var attached: Boolean = false
     private var allowAnimation = true
 
@@ -43,7 +44,7 @@ class AnimatedImageView @JvmOverloads constructor(context: Context, attrs: Attri
             updateAnim()
             if (!this.allowAnimation && anim != null) {
                 // Reset drawable such that we show the first frame whenever we're not animating.
-                anim!!.setVisible(visibility == View.VISIBLE, true /* restart */)
+                drawable!!.setVisible(visibility == View.VISIBLE, true /* restart */)
             }
         }
     }
@@ -53,11 +54,24 @@ class AnimatedImageView @JvmOverloads constructor(context: Context, attrs: Attri
         if (attached && anim != null) {
             anim!!.stop()
         }
-        if (drawable is AnimationDrawable) {
+        if (drawable is Animatable) {
             anim = drawable
-            anim!!.isOneShot = false
             if (isShown && allowAnimation) {
                 anim!!.start()
+            }
+
+            if (drawable is Animatable2) {
+                drawable.registerAnimationCallback(object : Animatable2.AnimationCallback() {
+                    override fun onAnimationEnd(drawable: Drawable?) {
+                        post {
+                            anim!!.start()
+                        }
+                    }
+                })
+            }
+
+            if (drawable is AnimationDrawable) {
+                drawable.isOneShot = false
             }
         } else {
             anim = null
@@ -72,6 +86,7 @@ class AnimatedImageView @JvmOverloads constructor(context: Context, attrs: Attri
         } else {
             0
         }
+
         super.setImageDrawable(drawable)
         updateAnim()
     }

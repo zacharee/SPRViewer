@@ -3,6 +3,7 @@ package tk.zwander.sprviewer.ui.activities
 import android.content.ContentResolver
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.drawable.Animatable
 import android.graphics.drawable.AnimationDrawable
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
@@ -156,7 +157,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                     try {
                         loaded = withContext(Dispatchers.IO) {
                             remRes.getDrawable(drawableData.id, remRes.newTheme()).run {
-                                if (this is AnimationDrawable) null else toBitmap(
+                                if (this is Animatable) null else toBitmap(
                                     width = max(
                                         dimen,
                                         1
