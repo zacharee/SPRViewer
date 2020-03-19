@@ -39,6 +39,7 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
 
         private const val SAVE_PNG_REQ = 101
         private const val SAVE_XML_REQ = 102
+        private const val SAVE_ORIG_REQ = 103
     }
 
     private val apkPath by lazy {
@@ -75,6 +76,7 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
         get() = image.anim != null
 
     private var saveImg: MenuItem? = null
+    private var saveOrig: MenuItem? = null
 
     @ExperimentalCoroutinesApi
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -155,8 +157,10 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
 
         saveImg = menu.findItem(R.id.action_save_png)
         val saveXml = menu.findItem(R.id.action_save_xml)
+        saveOrig = menu.findItem(R.id.action_save_orig)
 
         saveImg?.isVisible = !isViewingAnimatedImage
+        saveOrig?.isVisible = ext == "spr" || ext == "astc"
 
         launch {
             saveXml.isVisible = drawableXml.getOrAwaitResult() != null
@@ -173,6 +177,10 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
             }
             R.id.action_save_xml -> {
                 startXmlSave()
+                true
+            }
+            R.id.action_save_orig -> {
+                startOrigSave()
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -192,6 +200,11 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
                     val os = contentResolver.openOutputStream(data!!.data!!)!!
 
                     saveXmlAsync(os)
+                }
+                SAVE_ORIG_REQ -> {
+                    val os = contentResolver.openOutputStream(data!!.data!!)!!
+
+                    saveOrigAsync(os)
                 }
             }
         }
@@ -220,6 +233,16 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
         startActivityForResult(saveIntent, SAVE_XML_REQ)
     }
 
+    private fun startOrigSave() {
+        val saveIntent = Intent(Intent.ACTION_CREATE_DOCUMENT)
+
+        saveIntent.addCategory(Intent.CATEGORY_OPENABLE)
+        saveIntent.type = "image/$ext"
+        saveIntent.putExtra(Intent.EXTRA_TITLE, "$drawableName.$ext")
+
+        startActivityForResult(saveIntent, SAVE_ORIG_REQ)
+    }
+
     private fun saveAsPng(os: OutputStream) {
         if (!extensionsToRasterize.contains(ext)) {
             savePngDirectAsync(os)
@@ -240,7 +263,6 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
 
     private fun compressPngAsync(bmp: Bitmap, os: OutputStream) = async(context = Dispatchers.IO) {
         setProgressVisible(true, indet = false).join()
-        setMaxProgress(bmp.height)
 
         try {
             val info = ImageInfo(bmp.width, bmp.height, 8, bmp.hasAlpha())
@@ -260,7 +282,7 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
                 }
 
                 writer.writeRow(line)
-                setCurrentProgress(row + 1)
+                setCurrentProgress(row + 1, bmp.height)
             }
 
             writer.end()
@@ -278,8 +300,6 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
         setProgressVisible(true).join()
 
         val max = res.available()
-        setMaxProgress(max).join()
-
         var n: Int
 
         try {
@@ -289,7 +309,7 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
                 if (n <= 0) break
 
                 os.write(buffer, 0, n)
-                setCurrentProgress(max - res.available()).join()
+                setCurrentProgress(max - res.available(), max).join()
             }
         } finally {
             res.close()
@@ -301,13 +321,55 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
 
     @ExperimentalCoroutinesApi
     private fun saveXmlAsync(os: OutputStream) = async(context = Dispatchers.IO) {
-        setProgressVisible(visible = true, indet = true)
+        setProgressVisible(visible = true, indet = false)
 
-        os.bufferedWriter().use { writer ->
-            writer.write(drawableXml.getOrAwaitResult() ?: return@use)
+        os.use { output ->
+            drawableXml.getOrAwaitResult()?.byteInputStream()?.use { input ->
+                val buffer = ByteArray(16384)
+                val max = input.available()
+
+                var n: Int
+
+                while (true) {
+                    n = input.read(buffer)
+
+                    if (n <= 0) break
+
+                    output.write(buffer, 0, n)
+
+                    val avail = input.available()
+                    setCurrentProgress(max - avail).join()
+                }
+            }
         }
 
         setProgressVisible(false)
+    }
+
+    private fun saveOrigAsync(os: OutputStream) = async(context = Dispatchers.IO) {
+        setProgressVisible(visible = true, indet = false)
+
+        os.use { output ->
+            remRes.openRawResource(drawableId).use { input ->
+                val buffer = ByteArray(16384)
+                val max = input.available()
+
+                var n: Int
+
+                while (true) {
+                    n = input.read(buffer)
+
+                    if (n <= 0) break
+
+                    output.write(buffer, 0, n)
+
+                    val avail = input.available()
+                    setCurrentProgress(max - avail).join()
+                }
+            }
+        }
+
+        setProgressVisible(false).join()
     }
 
     private fun setProgressVisible(visible: Boolean, indet: Boolean = false) = launch {
@@ -320,7 +382,8 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
         export_progress.max = max
     }
 
-    private fun setCurrentProgress(current: Int) = launch {
+    private fun setCurrentProgress(current: Int, max: Int = 100) = launch {
+        setMaxProgress(max)
         export_progress.progress = current
     }
 

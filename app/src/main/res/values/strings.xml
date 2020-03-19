@@ -2,6 +2,7 @@
     <string name="app_name">SPRViewer</string>
     <string name="save_png">Image</string>
     <string name="save_xml">XML</string>
+    <string name="save_orig">Orig</string>
     <string name="save_all">Save All</string>
 
     <string name="width">Width</string>
