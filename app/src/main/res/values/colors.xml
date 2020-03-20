@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#008577</color>
-    <color name="colorPrimaryDark">#00574B</color>
-    <color name="colorAccent">#D81B60</color>
+    <color name="png">#D32F2F</color>
+    <color name="jpg">#673AB7</color>
+    <color name="xml">#009688</color>
+    <color name="spr">#FBC02D</color>
+    <color name="astc">#4CAF50</color>
+    <color name="webp">#C2185B</color>
+    <color name="ninepng">#8BC34A</color>
+    <color name="other">#444444</color>
 </resources>

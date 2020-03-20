@@ -1,13 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="?android:listPreferredItemHeight"
+    android:layout_height="wrap_content"
+    android:minHeight="?android:listPreferredItemHeight"
     android:padding="8dp"
     android:gravity="center_vertical"
-    android:id="@+id/drawable_name"
     android:clickable="true"
     android:focusable="true"
-    android:background="?android:selectableItemBackground"
-    tools:text="stat_sys_signal_in_5ge_att_1"
-    />
+    android:orientation="horizontal"
+    android:background="?android:selectableItemBackground">
+
+    <tk.zwander.sprviewer.views.ExtensionIndicator
+        android:id="@+id/ext_indicator"
+        android:layout_width="48dp"
+        android:layout_height="48dp">
+
+        <view class="tk.zwander.sprviewer.views.ExtensionIndicator$ExtensionIndicatorText"
+            android:id="@+id/text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="9.png"
+            />
+
+    </tk.zwander.sprviewer.views.ExtensionIndicator>
+
+    <TextView
+        android:id="@+id/drawable_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        tools:text="stat_sys_signal_in_5ge_att_1"
+        />
+
+</LinearLayout>

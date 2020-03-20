@@ -17,6 +17,7 @@ class DrawableListAdapter(private val itemSelectedListener: (DrawableData) -> Un
     override fun onBindViewHolder(holder: BaseVH, position: Int, info: DrawableData) {
         holder.itemView.apply {
             drawable_name.text = "${info.type}/${info.name}.${info.ext}"
+            ext_indicator.setText(info.ext)
 
             setOnClickListener {
                 itemSelectedListener.invoke(getInfo(holder.adapterPosition))
