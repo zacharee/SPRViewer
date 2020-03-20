@@ -100,7 +100,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
     override fun checkCount() {
         super.checkCount()
 
-        if (adapter.itemCount > 0 && saveAll?.isVisible == false) {
+        if (doneLoading && adapter.itemCount > 0 && saveAll?.isVisible == false) {
             saveAll?.isVisible = true
         }
     }

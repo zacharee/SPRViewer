@@ -63,7 +63,7 @@ abstract class BaseActivity<T : BaseListAdapter<out Any>> : AppCompatActivity() 
     }
 
     open fun checkCount() {
-        if (adapter.itemCount > 0 && searchItem?.isVisible == false) {
+        if (doneLoading && adapter.itemCount > 0 && searchItem?.isVisible == false) {
             searchItem?.isVisible = true
         }
     }
