@@ -6,6 +6,8 @@ import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SortedList
+import java.util.*
+import kotlin.collections.ArrayList
 
 abstract class BaseListAdapter<T>(dataClass: Class<T>) : RecyclerView.Adapter<BaseListAdapter.BaseVH>(), SearchView.OnQueryTextListener {
     private val results = SortedList<T>(dataClass, SortCallback())
@@ -89,7 +91,7 @@ abstract class BaseListAdapter<T>(dataClass: Class<T>) : RecyclerView.Adapter<Ba
     internal fun getInfo(position: Int) = results[position]
 
     internal fun filter(query: String): List<T> {
-        val lowerCaseQuery = query.toLowerCase()
+        val lowerCaseQuery = query.toLowerCase(Locale.getDefault())
 
         val filteredModelList = ArrayList<T>()
 

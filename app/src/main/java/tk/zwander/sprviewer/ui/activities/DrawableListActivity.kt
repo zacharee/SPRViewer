@@ -61,10 +61,9 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
 
         adapter.loadItems(this, pkg, this::onLoadFinished) { size, count ->
             progress?.apply {
-                progress += floor(
-                    (count.toFloat() / size.toFloat() * 100f)
-                        .toDouble()
-                ).toInt()
+                //there are lots of values that get skipped, so the progress bar doesn't always actually show anything
+                //arbitrarily impose a min progress of 10%
+                progress = max((count.toFloat() / size.toFloat() * 100f).toInt(), 10)
             }
         }
 

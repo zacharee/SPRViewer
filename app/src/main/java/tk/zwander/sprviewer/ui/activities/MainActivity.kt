@@ -2,8 +2,11 @@ package tk.zwander.sprviewer.ui.activities
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import tk.zwander.sprviewer.R
 import tk.zwander.sprviewer.ui.adapters.AppListAdapter
+import kotlin.math.floor
+import kotlin.math.max
 
 class MainActivity : BaseActivity<AppListAdapter>() {
     override val contentView = R.layout.activity_main
@@ -19,8 +22,7 @@ class MainActivity : BaseActivity<AppListAdapter>() {
 
         adapter.loadItems(this, this::onLoadFinished) { size, count ->
             progress?.apply {
-                progress += Math.floor((count.toFloat() / size.toFloat() * 100f)
-                    .toDouble()).toInt()
+                progress = (count.toFloat() / size.toFloat() * 100f).toInt()
             }
         }
     }

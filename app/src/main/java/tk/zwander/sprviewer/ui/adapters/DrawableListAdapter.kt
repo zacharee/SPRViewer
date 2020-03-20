@@ -39,7 +39,9 @@ class DrawableListAdapter(private val itemSelectedListener: (DrawableData) -> Un
     fun loadItems(context: Context, packageName: String, listener: () -> Unit, progressListener: (Int, Int) -> Unit) {
         GlobalScope.launch {
             context.getAppDrawables(packageName) { data, size, count ->
-                progressListener.invoke(size, count)
+                mainHandler.post {
+                    progressListener.invoke(size, count)
+                }
 
                 add(data)
             }

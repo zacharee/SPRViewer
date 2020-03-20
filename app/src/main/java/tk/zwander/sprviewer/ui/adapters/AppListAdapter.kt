@@ -25,7 +25,7 @@ class AppListAdapter(private val itemSelectedListener: (AppData) -> Unit) : Base
     }
 
     override fun matches(query: String, data: AppData): Boolean {
-        return data.pkg.toLowerCase().contains(query) || data.label.toLowerCase().contains(query)
+        return data.pkg.contains(query, true) || data.label.contains(query, true)
     }
 
     override fun compare(o1: AppData, o2: AppData): Int {
@@ -39,7 +39,9 @@ class AppListAdapter(private val itemSelectedListener: (AppData) -> Unit) : Base
     fun loadItems(context: Context, listener: () -> Unit, progressListener: (Int, Int) -> Unit) {
         GlobalScope.launch {
             context.getInstalledApps {data, size, count ->
-                progressListener.invoke(size, count)
+                mainHandler.post {
+                    progressListener.invoke(size, count)
+                }
 
                 add(data)
             }
