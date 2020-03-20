@@ -58,26 +58,29 @@ fun Context.getAppDrawables(
 ): List<DrawableData> {
     val apk = ApkFile(packageManager.getApplicationInfo(packageName, 0).sourceDir)
     val table = apk.getResourceTable()
+    val pkgCode = if (packageName == "android") 0x00 else 0x7f
+    val resPkg = table.getPackage(pkgCode.toShort())
 
     val res = getAppRes(packageName)
     val list = ArrayList<DrawableData>()
 
-    val drawableStart = findDrawableRangeStart(res, packageName)
-    val mipmapStart = findMipmapRangeStart(res, packageName)
-    val rawStart = findRawRangeStart(res, packageName)
+    val drawableIndex =
+        resPkg.typeSpecMap.filter { it.value.name == "drawable" }.entries.elementAtOrNull(0)
+    val mipmapIndex =
+        resPkg.typeSpecMap.filter { it.value.name == "mipmap" }.entries.elementAtOrNull(0)
+    val rawIndex = resPkg.typeSpecMap.filter { it.value.name == "raw" }.entries.elementAtOrNull(0)
 
-    val drawableMax = drawableStart + 0xffff
-    val drawableSize = drawableMax - drawableStart
+    val drawableStart =
+        if (drawableIndex != null) (drawableIndex.key.toInt() shl 16) or (pkgCode shl 24) else -1
+    val mipmapStart =
+        if (mipmapIndex != null) (mipmapIndex.key.toInt() shl 16) or (pkgCode shl 24) else -1
+    val rawStart =
+        if (rawIndex != null) (rawIndex.key.toInt() shl 16) or (pkgCode shl 24) else -1
 
-    val mipmapMax = mipmapStart + 0xffff
-    val mipmapSize = mipmapMax - mipmapStart
-
-    val rawMax = rawStart + 0xffff
-    val rawSize = rawMax - rawStart
-
-    val totalSize = if (drawableStart != -1) drawableSize else 0 +
-            if (mipmapStart != -1) mipmapSize else 0 +
-                    if (rawStart != -1) rawSize else 0
+    val drawableSize = drawableIndex?.value?.entryFlags?.size ?: 0
+    val mipmapSize = mipmapIndex?.value?.entryFlags?.size ?: 0
+    val rawSize = rawIndex?.value?.entryFlags?.size ?: 0
+    val totalSize = drawableSize + mipmapSize + rawSize
 
     var count = 0
 
@@ -97,7 +100,8 @@ fun Context.getAppDrawables(
 
                     val typeName = res.getResourceTypeName(i)
                     val name = res.getResourceEntryName(i)
-                    val ext = if (fullName.size > 1) fullName.subList(1, fullName.size).joinToString(".") else null
+                    val ext = if (fullName.size > 1) fullName.subList(1, fullName.size)
+                        .joinToString(".") else null
 
                     val data = DrawableData(
                         typeName,
@@ -116,13 +120,13 @@ fun Context.getAppDrawables(
     }
 
     if (drawableStart != -1) {
-        loopRange(drawableStart, drawableMax)
+        loopRange(drawableStart, drawableStart + drawableSize)
     }
     if (mipmapStart != -1) {
-        loopRange(mipmapStart, mipmapMax)
+        loopRange(mipmapStart, mipmapStart + mipmapSize)
     }
     if (rawStart != -1) {
-        loopRange(rawStart, rawMax)
+        loopRange(rawStart, rawStart + rawSize)
     }
 
     return list
@@ -130,34 +134,6 @@ fun Context.getAppDrawables(
 
 fun Context.getAppRes(packageName: String): Resources =
     packageManager.getResourcesForApplication(packageName)
-
-fun findRangeStart(res: Resources, pkg: String, which: String): Int {
-    val base = if (pkg == "android") 0x0 else 0x7f000000
-    val max = 0x7f200000
-
-    val mult = 0x10000
-
-    for (i in base until max step mult) {
-        try {
-            val type = res.getResourceTypeName(i)
-
-            if (type == which) return i
-        } catch (e: Exception) {
-        }
-    }
-
-    return -1
-}
-
-fun findDrawableRangeStart(res: Resources, pkg: String): Int {
-    return findRangeStart(res, pkg, "drawable")
-}
-fun findMipmapRangeStart(res: Resources, pkg: String): Int {
-    return findRangeStart(res, pkg, "mipmap")
-}
-fun findRawRangeStart(res: Resources, pkg: String): Int {
-    return findRangeStart(res, pkg, "raw")
-}
 
 val extensionsToRasterize = arrayOf(
     "spr",

@@ -2,6 +2,7 @@ package tk.zwander.sprviewer.ui.adapters
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.util.Log
 import kotlinx.android.synthetic.main.drawable_info_layout.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async

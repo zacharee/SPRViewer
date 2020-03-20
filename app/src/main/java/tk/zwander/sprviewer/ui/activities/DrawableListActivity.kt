@@ -23,6 +23,7 @@ import java.util.*
 import java.util.zip.ZipFile
 import kotlin.math.max
 
+@Suppress("DeferredResultUnused")
 class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope by MainScope() {
     override val contentView = R.layout.activity_main
     override val adapter = DrawableListAdapter {
@@ -60,9 +61,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
 
         adapter.loadItemsAsync(this, pkg, this::onLoadFinished) { size, count ->
             progress?.apply {
-                //there are lots of values that get skipped, so the progress bar doesn't always actually show anything
-                //arbitrarily impose a min progress of 10%
-                progress = max((count.toFloat() / size.toFloat() * 100f).toInt(), 10)
+                progress = (count.toFloat() / size.toFloat() * 100f).toInt()
             }
         }
 

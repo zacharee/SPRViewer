@@ -2,6 +2,7 @@ package tk.zwander.sprviewer.ui.activities
 
 import android.os.Bundle
 import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import androidx.annotation.CallSuper
 import androidx.appcompat.app.AppCompatActivity
@@ -15,7 +16,10 @@ abstract class BaseActivity<T : BaseListAdapter<out Any>> : AppCompatActivity() 
     abstract val contentView: Int
     abstract val adapter: T
 
+    internal var progressItem: MenuItem? = null
     internal var progress: ProgressCircula? = null
+
+    internal var doneLoading = false
 
     @CallSuper
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,14 +41,19 @@ abstract class BaseActivity<T : BaseListAdapter<out Any>> : AppCompatActivity() 
 
         searchView?.setOnQueryTextListener(adapter)
 
-        val progressItem = menu.findItem(R.id.status_progress)
+        progressItem = menu.findItem(R.id.status_progress)
         progress = progressItem?.actionView as ProgressCircula?
+
+        if (doneLoading) {
+            progressItem?.isVisible = false
+        }
 
         return true
     }
 
     fun onLoadFinished() {
-        progress?.visibility = View.GONE
+        doneLoading = true
+        progressItem?.isVisible = false
     }
 
     fun scrollToTop(smooth: Boolean = true) {
