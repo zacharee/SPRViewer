@@ -129,7 +129,7 @@ fun findImages(
     }
 }
 
-fun Context.getAppRes(packageName: String) =
+fun Context.getAppRes(packageName: String): Resources =
     packageManager.getResourcesForApplication(packageName)
 
 fun findRangeStart(res: Resources, pkg: String, which: String): Int {

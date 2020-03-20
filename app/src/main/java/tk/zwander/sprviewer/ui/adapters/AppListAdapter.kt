@@ -2,12 +2,12 @@ package tk.zwander.sprviewer.ui.adapters
 
 import android.content.Context
 import kotlinx.android.synthetic.main.app_info_layout.view.*
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import tk.zwander.sprviewer.R
 import tk.zwander.sprviewer.data.AppData
 import tk.zwander.sprviewer.util.getInstalledApps
-import tk.zwander.sprviewer.util.mainHandler
 
 class AppListAdapter(private val itemSelectedListener: (AppData) -> Unit) : BaseListAdapter<AppData>(AppData::class.java) {
     override val viewRes = R.layout.app_info_layout
@@ -36,19 +36,17 @@ class AppListAdapter(private val itemSelectedListener: (AppData) -> Unit) : Base
         return oldItem.pkg == newItem.pkg
     }
 
-    fun loadItems(context: Context, listener: () -> Unit, progressListener: (Int, Int) -> Unit) {
-        GlobalScope.launch {
-            context.getInstalledApps {data, size, count ->
-                mainHandler.post {
-                    progressListener.invoke(size, count)
-                }
-
-                add(data)
+    fun loadItemsAsync(context: Context, listener: () -> Unit, progressListener: (Int, Int) -> Unit) = async(Dispatchers.IO) {
+        context.getInstalledApps {data, size, count ->
+            launch(Dispatchers.Main) {
+                progressListener(size, count)
             }
 
-            mainHandler.post {
-                listener.invoke()
-            }
+            add(data)
+        }
+
+        launch(Dispatchers.Main) {
+            listener()
         }
     }
 }

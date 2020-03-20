@@ -5,8 +5,8 @@ import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import androidx.appcompat.app.AlertDialog
 import kotlinx.android.synthetic.main.dimension_input.view.*
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import net.dongliu.apk.parser.Main
 import tk.zwander.sprviewer.R
 import tk.zwander.sprviewer.util.TextWatcherAdapter
 
@@ -64,9 +64,7 @@ class DimensionInputDialog(context: Context, private val drawable: Drawable) : A
                 parseDimen(widthInput, defDimen) to getScaledDimen(widthInput, hwRatio, defDimen)
             }
 
-            GlobalScope.launch {
-                saveListener?.invoke(width, height)
-            }
+            saveListener?.invoke(width, height)
         }
         setNegativeButton(android.R.string.cancel, null)
     }

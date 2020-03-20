@@ -3,12 +3,12 @@ package tk.zwander.sprviewer.ui.adapters
 import android.annotation.SuppressLint
 import android.content.Context
 import kotlinx.android.synthetic.main.drawable_info_layout.view.*
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import tk.zwander.sprviewer.R
 import tk.zwander.sprviewer.data.DrawableData
 import tk.zwander.sprviewer.util.getAppDrawables
-import tk.zwander.sprviewer.util.mainHandler
 
 class DrawableListAdapter(private val itemSelectedListener: (DrawableData) -> Unit) : BaseListAdapter<DrawableData>(DrawableData::class.java) {
     override val viewRes = R.layout.drawable_info_layout
@@ -36,19 +36,17 @@ class DrawableListAdapter(private val itemSelectedListener: (DrawableData) -> Un
         return "${data.type}/${data.name}.${data.ext}".contains(query, true)
     }
 
-    fun loadItems(context: Context, packageName: String, listener: () -> Unit, progressListener: (Int, Int) -> Unit) {
-        GlobalScope.launch {
-            context.getAppDrawables(packageName) { data, size, count ->
-                mainHandler.post {
-                    progressListener.invoke(size, count)
-                }
-
-                add(data)
+    fun loadItemsAsync(context: Context, packageName: String, listener: () -> Unit, progressListener: (Int, Int) -> Unit) = async(Dispatchers.IO) {
+        context.getAppDrawables(packageName) { data, size, count ->
+            launch(Dispatchers.Main) {
+                progressListener(size, count)
             }
 
-            mainHandler.post {
-                listener.invoke()
-            }
+            add(data)
+        }
+
+        launch(Dispatchers.Main) {
+            listener()
         }
     }
 }

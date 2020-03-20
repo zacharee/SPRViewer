@@ -21,7 +21,6 @@ import tk.zwander.sprviewer.views.ExportInfo
 import java.io.File
 import java.util.*
 import java.util.zip.ZipFile
-import kotlin.math.floor
 import kotlin.math.max
 
 class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope by MainScope() {
@@ -59,7 +58,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
             return
         }
 
-        adapter.loadItems(this, pkg, this::onLoadFinished) { size, count ->
+        adapter.loadItemsAsync(this, pkg, this::onLoadFinished) { size, count ->
             progress?.apply {
                 //there are lots of values that get skipped, so the progress bar doesn't always actually show anything
                 //arbitrarily impose a min progress of 10%

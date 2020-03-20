@@ -6,10 +6,13 @@ import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SortedList
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
 import java.util.*
 import kotlin.collections.ArrayList
 
-abstract class BaseListAdapter<T>(dataClass: Class<T>) : RecyclerView.Adapter<BaseListAdapter.BaseVH>(), SearchView.OnQueryTextListener {
+abstract class BaseListAdapter<T>(dataClass: Class<T>) : RecyclerView.Adapter<BaseListAdapter.BaseVH>(), SearchView.OnQueryTextListener, CoroutineScope by MainScope() {
     private val results = SortedList<T>(dataClass, SortCallback())
     private val orig = object : ArrayList<T>() {
         override fun add(element: T): Boolean {
@@ -55,6 +58,7 @@ abstract class BaseListAdapter<T>(dataClass: Class<T>) : RecyclerView.Adapter<Ba
 
     override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
         this.recyclerView = null
+        cancel()
         super.onDetachedFromRecyclerView(recyclerView)
     }
 
