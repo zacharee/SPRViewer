@@ -113,6 +113,18 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                 }
 
                 val ext = remRes.getExtension(drawableData.id)
+
+                if ((!info.rasterizeXmls && !info.exportXmls && ext == "xml")
+                    || (!info.rasterizeAstcs && !info.exportAstcs && ext == "astc")
+                    || (!info.rasterizeSprs && !info.exportSprs && ext == "spr")
+                    || (!info.exportRasters && !extensionsToRasterize.contains(ext))) {
+                    launch {
+                        dialog.updateProgress(index + 1)
+                    }
+
+                    return@forEachIndexed
+                }
+
                 val path = withContext(Dispatchers.IO) {
                     zip.entries().asSequence()
                         .find { it.name.split("/").last() == ("${drawableData.name}.$ext") }?.name
