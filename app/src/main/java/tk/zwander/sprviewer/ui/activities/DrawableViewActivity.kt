@@ -115,8 +115,6 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
 
                                 saveImg?.isVisible = !isViewingAnimatedImage
                             } catch (e: Exception) {
-                                Toast.makeText(this@DrawableViewActivity, R.string.load_image_error, Toast.LENGTH_SHORT).show()
-
                                 image.isVisible = false
                                 text.isVisible = true
 
@@ -124,14 +122,18 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
 
                                 text.text = drawableXml
                             }
+
+                            imageLoadingDone()
                         }
 
                         override fun onSuccess() {
                             saveImg?.isVisible = !isViewingAnimatedImage
+                            imageLoadingDone()
                         }
                     })
                 } catch (e: Exception) {
                     Toast.makeText(this@DrawableViewActivity, R.string.load_image_error, Toast.LENGTH_SHORT).show()
+                    imageLoadingDone()
                 }
             } else {
                 try {
@@ -146,8 +148,15 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
 
                     text.text = drawableXml
                 }
+
+                imageLoadingDone()
             }
         }
+    }
+
+    private fun imageLoadingDone() {
+        loading_progress.isVisible = false
+        image_text_wrapper.isVisible = true
     }
 
     override fun onDestroy() {

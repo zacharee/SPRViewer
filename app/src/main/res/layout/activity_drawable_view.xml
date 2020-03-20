@@ -6,23 +6,41 @@
     android:layout_height="match_parent"
     tools:context=".ui.activities.DrawableViewActivity">
 
-    <tk.zwander.sprviewer.views.AnimatedImageView
-        android:id="@+id/image"
+    <ProgressBar
+        android:id="@+id/loading_progress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        />
+
+    <FrameLayout
+        android:id="@+id/image_text_wrapper"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:scaleType="fitCenter"
+        android:visibility="gone"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/export_progress"
-        />
+        app:layout_constraintBottom_toTopOf="@id/export_progress">
 
-    <TextView
-        android:id="@+id/text"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone"
-        />
+        <tk.zwander.sprviewer.views.AnimatedImageView
+            android:id="@+id/image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitCenter"
+            />
+
+        <TextView
+            android:id="@+id/text"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            />
+
+    </FrameLayout>
 
     <!--<LinearLayout-->
         <!--android:id="@+id/save_wrapper"-->
