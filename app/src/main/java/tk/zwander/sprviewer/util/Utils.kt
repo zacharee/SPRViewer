@@ -36,35 +36,54 @@ fun Context.getInstalledApps(listener: (data: AppData, size: Int, count: Int) ->
     return ret
 }
 
-fun Context.getAppDrawables(packageName: String, drawableFound: (data: DrawableData, size: Int, count: Int) -> Unit): List<DrawableData> {
+fun Context.getAppDrawables(
+    packageName: String,
+    drawableFound: (data: DrawableData, size: Int, count: Int) -> Unit
+): List<DrawableData> {
     val res = getAppRes(packageName)
     val list = ArrayList<DrawableData>()
 
-    findImages(res, list, findDrawableRangeStart(res, packageName), findMipmapRangeStart(res, packageName), drawableFound)
+    findImages(
+        res,
+        list,
+        findDrawableRangeStart(res, packageName),
+        findMipmapRangeStart(res, packageName),
+        findRawRangeStart(res, packageName),
+        drawableFound
+    )
 
     return list
 }
 
-fun findImages(res: Resources, list: MutableList<DrawableData>, drawableStart: Int, mipmapStart: Int, drawableFound: (data: DrawableData, size: Int, count: Int) -> Unit) {
+fun findImages(
+    res: Resources,
+    list: MutableList<DrawableData>,
+    drawableStart: Int,
+    mipmapStart: Int,
+    rawStart: Int,
+    drawableFound: (data: DrawableData, size: Int, count: Int) -> Unit
+) {
     val drawableMax = drawableStart + 0xffff
     val drawableSize = drawableMax - drawableStart
 
     val mipmapMax = mipmapStart + 0xffff
     val mipmapSize = mipmapMax - mipmapStart
 
-    val totalSize = drawableSize + mipmapSize
+    val rawMax = rawStart + 0xffff
+    val rawSize = rawMax - rawStart
+
+    val totalSize = drawableSize + mipmapSize + rawSize
 
     var count = 0
 
     for (i in drawableStart until drawableMax) {
         try {
             val data = DrawableData(
+                res.getResourceTypeName(i),
                 res.getResourceEntryName(i),
                 res.getExtension(i),
                 i
             )
-
-            Log.e("SPRV", "drawable $data")
 
             count++
             list.add(data)
@@ -75,12 +94,26 @@ fun findImages(res: Resources, list: MutableList<DrawableData>, drawableStart: I
     for (i in mipmapStart until mipmapMax) {
         try {
             val data = DrawableData(
+                res.getResourceTypeName(i),
                 res.getResourceEntryName(i),
                 res.getExtension(i),
                 i
             )
 
-            Log.e("SPRV", "mipmap $data")
+            count++
+            list.add(data)
+            mainHandler.post { drawableFound.invoke(data, totalSize, count) }
+        } catch (e: Resources.NotFoundException) {}
+    }
+
+    for (i in rawStart until rawMax) {
+        try {
+            val data = DrawableData(
+                res.getResourceTypeName(i),
+                res.getResourceEntryName(i),
+                res.getExtension(i),
+                i
+            )
 
             count++
             list.add(data)
@@ -103,7 +136,8 @@ fun findDrawableRangeStart(res: Resources, pkg: String): Int {
             val type = res.getResourceTypeName(i)
 
             if (type == "drawable") return i
-        } catch (e: Exception) {}
+        } catch (e: Exception) {
+        }
     }
 
     return base
@@ -120,7 +154,26 @@ fun findMipmapRangeStart(res: Resources, pkg: String): Int {
             val type = res.getResourceTypeName(i)
 
             if (type == "mipmap") return i
-        } catch (e: Exception) {}
+        } catch (e: Exception) {
+        }
+    }
+
+    return base
+}
+
+fun findRawRangeStart(res: Resources, pkg: String): Int {
+    val base = if (pkg == "android") 0x0 else 0x7f000000
+    val max = 0x7f200000
+
+    val mult = 0x10000
+
+    for (i in base until max step mult) {
+        try {
+            val type = res.getResourceTypeName(i)
+
+            if (type == "raw") return i
+        } catch (e: Exception) {
+        }
     }
 
     return base
@@ -145,7 +198,10 @@ fun Resources.getExtension(id: Int): String? {
     }
 }
 
-fun <T> CoroutineScope.lazyDeferred(context: CoroutineContext = Dispatchers.Default, block: suspend CoroutineScope.() -> T): Lazy<Deferred<T>> {
+fun <T> CoroutineScope.lazyDeferred(
+    context: CoroutineContext = Dispatchers.Default,
+    block: suspend CoroutineScope.() -> T
+): Lazy<Deferred<T>> {
     return lazy {
         async(context = context, start = CoroutineStart.LAZY) {
             block.invoke(this)

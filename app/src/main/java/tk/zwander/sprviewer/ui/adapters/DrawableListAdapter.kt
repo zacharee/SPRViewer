@@ -1,5 +1,6 @@
 package tk.zwander.sprviewer.ui.adapters
 
+import android.annotation.SuppressLint
 import android.content.Context
 import kotlinx.android.synthetic.main.drawable_info_layout.view.*
 import kotlinx.coroutines.GlobalScope
@@ -12,9 +13,10 @@ import tk.zwander.sprviewer.util.mainHandler
 class DrawableListAdapter(private val itemSelectedListener: (DrawableData) -> Unit) : BaseListAdapter<DrawableData>(DrawableData::class.java) {
     override val viewRes = R.layout.drawable_info_layout
 
+    @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: BaseVH, position: Int, info: DrawableData) {
         holder.itemView.apply {
-            drawable_name.text = "${info.name}.${info.ext}"
+            drawable_name.text = "${info.type}/${info.name}.${info.ext}"
 
             setOnClickListener {
                 itemSelectedListener.invoke(getInfo(holder.adapterPosition))
@@ -31,7 +33,7 @@ class DrawableListAdapter(private val itemSelectedListener: (DrawableData) -> Un
     }
 
     override fun matches(query: String, data: DrawableData): Boolean {
-        return "${data.name}.${data.ext}".contains(query, true)
+        return "${data.type}/${data.name}.${data.ext}".contains(query, true)
     }
 
     fun loadItems(context: Context, packageName: String, listener: () -> Unit, progressListener: (Int, Int) -> Unit) {
