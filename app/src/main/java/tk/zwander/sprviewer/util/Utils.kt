@@ -5,7 +5,6 @@ import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.util.TypedValue
 import kotlinx.coroutines.*
 import tk.zwander.sprviewer.data.AppData
@@ -72,60 +71,68 @@ fun findImages(
     val rawMax = rawStart + 0xffff
     val rawSize = rawMax - rawStart
 
-    val totalSize = drawableSize + mipmapSize + rawSize
+    val totalSize = if (drawableStart != -1) drawableSize else 0 +
+            if (mipmapStart != -1) mipmapSize else 0 +
+                    if (rawStart != -1) rawSize else 0
 
     var count = 0
 
-    for (i in drawableStart until drawableMax) {
-        try {
-            val data = DrawableData(
-                res.getResourceTypeName(i),
-                res.getResourceEntryName(i),
-                res.getExtension(i),
-                i
-            )
+    if (drawableStart != -1) {
+        for (i in drawableStart until drawableMax) {
+            try {
+                val data = DrawableData(
+                    res.getResourceTypeName(i),
+                    res.getResourceEntryName(i),
+                    res.getExtension(i),
+                    i
+                )
 
-            count++
-            list.add(data)
-            mainHandler.post { drawableFound.invoke(data, totalSize, count) }
-        } catch (e: Resources.NotFoundException) {}
+                count++
+                list.add(data)
+                mainHandler.post { drawableFound.invoke(data, totalSize, count) }
+            } catch (e: Resources.NotFoundException) {}
+        }
     }
 
-    for (i in mipmapStart until mipmapMax) {
-        try {
-            val data = DrawableData(
-                res.getResourceTypeName(i),
-                res.getResourceEntryName(i),
-                res.getExtension(i),
-                i
-            )
+    if (mipmapStart != -1) {
+        for (i in mipmapStart until mipmapMax) {
+            try {
+                val data = DrawableData(
+                    res.getResourceTypeName(i),
+                    res.getResourceEntryName(i),
+                    res.getExtension(i),
+                    i
+                )
 
-            count++
-            list.add(data)
-            mainHandler.post { drawableFound.invoke(data, totalSize, count) }
-        } catch (e: Resources.NotFoundException) {}
+                count++
+                list.add(data)
+                mainHandler.post { drawableFound.invoke(data, totalSize, count) }
+            } catch (e: Resources.NotFoundException) {}
+        }
     }
 
-    for (i in rawStart until rawMax) {
-        try {
-            val data = DrawableData(
-                res.getResourceTypeName(i),
-                res.getResourceEntryName(i),
-                res.getExtension(i),
-                i
-            )
+    if (rawStart != -1) {
+        for (i in rawStart until rawMax) {
+            try {
+                val data = DrawableData(
+                    res.getResourceTypeName(i),
+                    res.getResourceEntryName(i),
+                    res.getExtension(i),
+                    i
+                )
 
-            count++
-            list.add(data)
-            mainHandler.post { drawableFound.invoke(data, totalSize, count) }
-        } catch (e: Resources.NotFoundException) {}
+                count++
+                list.add(data)
+                mainHandler.post { drawableFound.invoke(data, totalSize, count) }
+            } catch (e: Resources.NotFoundException) {}
+        }
     }
 }
 
 fun Context.getAppRes(packageName: String) =
     packageManager.getResourcesForApplication(packageName)
 
-fun findDrawableRangeStart(res: Resources, pkg: String): Int {
+fun findRangeStart(res: Resources, pkg: String, which: String): Int {
     val base = if (pkg == "android") 0x0 else 0x7f000000
     val max = 0x7f200000
 
@@ -135,48 +142,24 @@ fun findDrawableRangeStart(res: Resources, pkg: String): Int {
         try {
             val type = res.getResourceTypeName(i)
 
-            if (type == "drawable") return i
+            if (type == which) return i
         } catch (e: Exception) {
         }
     }
 
-    return base
+    return -1
+}
+
+fun findDrawableRangeStart(res: Resources, pkg: String): Int {
+    return findRangeStart(res, pkg, "drawable")
 }
 
 fun findMipmapRangeStart(res: Resources, pkg: String): Int {
-    val base = if (pkg == "android") 0x0 else 0x7f000000
-    val max = 0x7f200000
-
-    val mult = 0x10000
-
-    for (i in base until max step mult) {
-        try {
-            val type = res.getResourceTypeName(i)
-
-            if (type == "mipmap") return i
-        } catch (e: Exception) {
-        }
-    }
-
-    return base
+    return findRangeStart(res, pkg, "mipmap")
 }
 
 fun findRawRangeStart(res: Resources, pkg: String): Int {
-    val base = if (pkg == "android") 0x0 else 0x7f000000
-    val max = 0x7f200000
-
-    val mult = 0x10000
-
-    for (i in base until max step mult) {
-        try {
-            val type = res.getResourceTypeName(i)
-
-            if (type == "raw") return i
-        } catch (e: Exception) {
-        }
-    }
-
-    return base
+    return findRangeStart(res, pkg, "raw")
 }
 
 val extensionsToRasterize = arrayOf(
