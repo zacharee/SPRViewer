@@ -97,8 +97,8 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
         return super.onCreateOptionsMenu(menu)
     }
 
-    override fun onLoadFinished() {
-        super.onLoadFinished()
+    override fun checkCount() {
+        super.checkCount()
 
         if (adapter.itemCount > 0 && saveAll?.isVisible == false) {
             saveAll?.isVisible = true

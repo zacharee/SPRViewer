@@ -50,6 +50,8 @@ abstract class BaseActivity<T : BaseListAdapter<out Any>> : AppCompatActivity() 
             progressItem?.isVisible = false
         }
 
+        checkCount()
+
         return true
     }
 
@@ -57,6 +59,10 @@ abstract class BaseActivity<T : BaseListAdapter<out Any>> : AppCompatActivity() 
         doneLoading = true
         progressItem?.isVisible = false
 
+        checkCount()
+    }
+
+    open fun checkCount() {
         if (adapter.itemCount > 0 && searchItem?.isVisible == false) {
             searchItem?.isVisible = true
         }
