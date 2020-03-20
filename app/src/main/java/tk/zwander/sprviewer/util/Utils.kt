@@ -42,26 +42,10 @@ fun Context.getAppDrawables(
     val res = getAppRes(packageName)
     val list = ArrayList<DrawableData>()
 
-    findImages(
-        res,
-        list,
-        findDrawableRangeStart(res, packageName),
-        findMipmapRangeStart(res, packageName),
-        findRawRangeStart(res, packageName),
-        drawableFound
-    )
+    val drawableStart = findDrawableRangeStart(res, packageName)
+    val mipmapStart = findMipmapRangeStart(res, packageName)
+    val rawStart = findRawRangeStart(res, packageName)
 
-    return list
-}
-
-fun findImages(
-    res: Resources,
-    list: MutableList<DrawableData>,
-    drawableStart: Int,
-    mipmapStart: Int,
-    rawStart: Int,
-    drawableFound: (data: DrawableData, size: Int, count: Int) -> Unit
-) {
     val drawableMax = drawableStart + 0xffff
     val drawableSize = drawableMax - drawableStart
 
@@ -77,56 +61,34 @@ fun findImages(
 
     var count = 0
 
+    val loopRange: (start: Int, end: Int) -> Unit = { start: Int, end: Int ->
+        for (i in start until end) {
+            try {
+                val data = DrawableData(
+                    res.getResourceTypeName(i),
+                    res.getResourceEntryName(i),
+                    res.getExtension(i),
+                    i
+                )
+
+                count++
+                list.add(data)
+                mainHandler.post { drawableFound.invoke(data, totalSize, count) }
+            } catch (e: Resources.NotFoundException) {}
+        }
+    }
+
     if (drawableStart != -1) {
-        for (i in drawableStart until drawableMax) {
-            try {
-                val data = DrawableData(
-                    res.getResourceTypeName(i),
-                    res.getResourceEntryName(i),
-                    res.getExtension(i),
-                    i
-                )
-
-                count++
-                list.add(data)
-                mainHandler.post { drawableFound.invoke(data, totalSize, count) }
-            } catch (e: Resources.NotFoundException) {}
-        }
+        loopRange(drawableStart, drawableMax)
     }
-
     if (mipmapStart != -1) {
-        for (i in mipmapStart until mipmapMax) {
-            try {
-                val data = DrawableData(
-                    res.getResourceTypeName(i),
-                    res.getResourceEntryName(i),
-                    res.getExtension(i),
-                    i
-                )
-
-                count++
-                list.add(data)
-                mainHandler.post { drawableFound.invoke(data, totalSize, count) }
-            } catch (e: Resources.NotFoundException) {}
-        }
+        loopRange(mipmapStart, mipmapMax)
     }
-
     if (rawStart != -1) {
-        for (i in rawStart until rawMax) {
-            try {
-                val data = DrawableData(
-                    res.getResourceTypeName(i),
-                    res.getResourceEntryName(i),
-                    res.getExtension(i),
-                    i
-                )
-
-                count++
-                list.add(data)
-                mainHandler.post { drawableFound.invoke(data, totalSize, count) }
-            } catch (e: Resources.NotFoundException) {}
-        }
+        loopRange(rawStart, rawMax)
     }
+
+    return list
 }
 
 fun Context.getAppRes(packageName: String): Resources =
@@ -153,11 +115,9 @@ fun findRangeStart(res: Resources, pkg: String, which: String): Int {
 fun findDrawableRangeStart(res: Resources, pkg: String): Int {
     return findRangeStart(res, pkg, "drawable")
 }
-
 fun findMipmapRangeStart(res: Resources, pkg: String): Int {
     return findRangeStart(res, pkg, "mipmap")
 }
-
 fun findRawRangeStart(res: Resources, pkg: String): Int {
     return findRangeStart(res, pkg, "raw")
 }
