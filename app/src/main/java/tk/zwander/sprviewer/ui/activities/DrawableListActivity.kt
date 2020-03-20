@@ -7,6 +7,7 @@ import android.graphics.drawable.Animatable
 import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
+import android.view.MenuItem
 import androidx.core.graphics.drawable.toBitmap
 import ar.com.hjg.pngj.*
 import com.squareup.picasso.Picasso
@@ -51,6 +52,8 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
             .build()
     }
 
+    private var saveAll: MenuItem? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -82,7 +85,8 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.batch, menu)
 
-        menu.findItem(R.id.all).setOnMenuItemClickListener {
+        saveAll = menu.findItem(R.id.all)
+        saveAll?.setOnMenuItemClickListener {
             BaseDimensionInputDialog(this) { info ->
                 handleBatchExport(info)
             }.show()
@@ -91,6 +95,14 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
         }
 
         return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onLoadFinished() {
+        super.onLoadFinished()
+
+        if (adapter.itemCount > 0 && saveAll?.isVisible == false) {
+            saveAll?.isVisible = true
+        }
     }
 
     private fun handleBatchExport(

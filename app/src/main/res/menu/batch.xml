@@ -5,6 +5,7 @@
     <item
         android:id="@+id/all"
         android:title="@string/save_all"
+        android:visible="false"
         app:showAsAction="always"
         />
 

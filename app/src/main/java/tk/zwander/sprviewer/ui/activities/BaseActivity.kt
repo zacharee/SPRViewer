@@ -19,6 +19,8 @@ abstract class BaseActivity<T : BaseListAdapter<out Any>> : AppCompatActivity() 
     internal var progressItem: MenuItem? = null
     internal var progress: ProgressCircula? = null
 
+    internal var searchItem: MenuItem? = null
+
     internal var doneLoading = false
 
     @CallSuper
@@ -36,7 +38,7 @@ abstract class BaseActivity<T : BaseListAdapter<out Any>> : AppCompatActivity() 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.search, menu)
 
-        val searchItem = menu.findItem(R.id.action_search)
+        searchItem = menu.findItem(R.id.action_search)
         val searchView = searchItem?.actionView as SearchView?
 
         searchView?.setOnQueryTextListener(adapter)
@@ -51,9 +53,13 @@ abstract class BaseActivity<T : BaseListAdapter<out Any>> : AppCompatActivity() 
         return true
     }
 
-    fun onLoadFinished() {
+    open fun onLoadFinished() {
         doneLoading = true
         progressItem?.isVisible = false
+
+        if (adapter.itemCount > 0 && searchItem?.isVisible == false) {
+            searchItem?.isVisible = true
+        }
     }
 
     fun scrollToTop(smooth: Boolean = true) {
