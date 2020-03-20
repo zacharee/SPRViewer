@@ -23,6 +23,10 @@ abstract class BaseActivity<T : BaseListAdapter<out Any>> : AppCompatActivity() 
         setContentView(contentView)
 
         recycler.adapter = adapter
+
+        window.decorView?.findViewById<View>(androidx.appcompat.R.id.action_bar)?.setOnClickListener {
+            scrollToTop()
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -41,5 +45,12 @@ abstract class BaseActivity<T : BaseListAdapter<out Any>> : AppCompatActivity() 
 
     fun onLoadFinished() {
         progress?.visibility = View.GONE
+    }
+
+    fun scrollToTop(smooth: Boolean = true) {
+        recycler.apply {
+            if (smooth) smoothScrollToPosition(0)
+            else scrollToPosition(0)
+        }
     }
 }

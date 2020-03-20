@@ -13,7 +13,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 abstract class BaseListAdapter<T>(dataClass: Class<T>) : RecyclerView.Adapter<BaseListAdapter.BaseVH>(), SearchView.OnQueryTextListener, CoroutineScope by MainScope() {
-    private val results = SortedList<T>(dataClass, SortCallback())
+    private val results = SortedList(dataClass, SortCallback())
     private val orig = object : ArrayList<T>() {
         override fun add(element: T): Boolean {
             if (matches(currentQuery, element)) {
