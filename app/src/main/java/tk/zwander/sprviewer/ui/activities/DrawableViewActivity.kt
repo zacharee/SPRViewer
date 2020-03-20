@@ -7,8 +7,6 @@ import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
-import android.util.TypedValue
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
@@ -25,6 +23,7 @@ import kotlinx.android.synthetic.main.activity_drawable_view.*
 import kotlinx.coroutines.*
 import net.dongliu.apk.parser.ApkFile
 import tk.zwander.sprviewer.R
+import tk.zwander.sprviewer.data.DrawableData
 import tk.zwander.sprviewer.util.*
 import tk.zwander.sprviewer.views.DimensionInputDialog
 import java.io.*
@@ -34,7 +33,7 @@ import java.util.zip.ZipFile
 @Suppress("DeferredResultUnused")
 class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     companion object {
-        const val EXTRA_DRAWABLE_NAME = "drawable_name"
+        const val EXTRA_DRAWABLE_INFO = "drawable_info"
 
         private const val SAVE_PNG_REQ = 101
         private const val SAVE_XML_REQ = 102
@@ -60,16 +59,19 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
         }
     }
     private val path by lazy { zip.entries().asSequence().find { it.name.split("/").last() == ("$drawableName.$ext") }?.name }
-    private val ext by lazy { remRes.getExtension(drawableId) }
-    private val drawableName by lazy { intent.getStringExtra(EXTRA_DRAWABLE_NAME) }
-    private val drawableId: Int
-        get() = remRes.getIdentifier(drawableName, "drawable", pkg)
+    private val drawableInfo by lazy { intent.getParcelableExtra<DrawableData>(EXTRA_DRAWABLE_INFO) }
     private val pkg by lazy { intent.getStringExtra(Intent.EXTRA_PACKAGE_NAME) }
     private val remRes by lazy { getAppRes(pkg) }
     private val picasso: Picasso by lazy {
         Picasso.Builder(this)
             .build()
     }
+    private val drawableName: String
+        get() = drawableInfo.name
+    private val drawableId: Int
+        get() = drawableInfo.id
+    private val ext: String?
+        get() = drawableInfo.ext
 
     private val isViewingAnimatedImage: Boolean
         get() = image.anim != null
@@ -82,7 +84,7 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_drawable_view)
 
-        if (drawableName.isNullOrBlank() || pkg.isNullOrBlank()) {
+        if (drawableInfo == null || pkg.isNullOrBlank()) {
             finish()
             return
         }

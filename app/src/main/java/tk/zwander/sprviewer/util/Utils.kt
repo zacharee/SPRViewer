@@ -3,7 +3,6 @@ package tk.zwander.sprviewer.util
 import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.Resources
-import android.graphics.BitmapFactory
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
@@ -41,13 +40,23 @@ fun Context.getAppDrawables(packageName: String, drawableFound: (data: DrawableD
     val res = getAppRes(packageName)
     val list = ArrayList<DrawableData>()
 
-    val start = findDrawableRangeStart(res, packageName)
-    val max = start + 0xffff
-    val size = max - start
+    findImages(res, list, findDrawableRangeStart(res, packageName), findMipmapRangeStart(res, packageName), drawableFound)
+
+    return list
+}
+
+fun findImages(res: Resources, list: MutableList<DrawableData>, drawableStart: Int, mipmapStart: Int, drawableFound: (data: DrawableData, size: Int, count: Int) -> Unit) {
+    val drawableMax = drawableStart + 0xffff
+    val drawableSize = drawableMax - drawableStart
+
+    val mipmapMax = mipmapStart + 0xffff
+    val mipmapSize = mipmapMax - mipmapStart
+
+    val totalSize = drawableSize + mipmapSize
 
     var count = 0
 
-    for (i in start until start + 0xffff) {
+    for (i in drawableStart until drawableMax) {
         try {
             val data = DrawableData(
                 res.getResourceEntryName(i),
@@ -55,13 +64,29 @@ fun Context.getAppDrawables(packageName: String, drawableFound: (data: DrawableD
                 i
             )
 
+            Log.e("SPRV", "drawable $data")
+
             count++
             list.add(data)
-            mainHandler.post { drawableFound.invoke(data, size, count) }
+            mainHandler.post { drawableFound.invoke(data, totalSize, count) }
         } catch (e: Resources.NotFoundException) {}
     }
 
-    return list
+    for (i in mipmapStart until mipmapMax) {
+        try {
+            val data = DrawableData(
+                res.getResourceEntryName(i),
+                res.getExtension(i),
+                i
+            )
+
+            Log.e("SPRV", "mipmap $data")
+
+            count++
+            list.add(data)
+            mainHandler.post { drawableFound.invoke(data, totalSize, count) }
+        } catch (e: Resources.NotFoundException) {}
+    }
 }
 
 fun Context.getAppRes(packageName: String) =
@@ -78,6 +103,23 @@ fun findDrawableRangeStart(res: Resources, pkg: String): Int {
             val type = res.getResourceTypeName(i)
 
             if (type == "drawable") return i
+        } catch (e: Exception) {}
+    }
+
+    return base
+}
+
+fun findMipmapRangeStart(res: Resources, pkg: String): Int {
+    val base = if (pkg == "android") 0x0 else 0x7f000000
+    val max = 0x7f200000
+
+    val mult = 0x10000
+
+    for (i in base until max step mult) {
+        try {
+            val type = res.getResourceTypeName(i)
+
+            if (type == "mipmap") return i
         } catch (e: Exception) {}
     }
 

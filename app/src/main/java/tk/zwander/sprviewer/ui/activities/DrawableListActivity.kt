@@ -28,7 +28,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
     override val contentView = R.layout.activity_main
     override val adapter = DrawableListAdapter {
         val viewIntent = Intent(this, DrawableViewActivity::class.java)
-        viewIntent.putExtra(DrawableViewActivity.EXTRA_DRAWABLE_NAME, it.name)
+        viewIntent.putExtra(DrawableViewActivity.EXTRA_DRAWABLE_INFO, it)
         viewIntent.putExtras(intent)
 
         startActivity(viewIntent)
@@ -112,7 +112,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                     dialog.setBaseFileName(drawableData.name)
                 }
 
-                val ext = remRes.getExtension(drawableData.id)
+                val ext = drawableData.ext
 
                 if ((!info.rasterizeXmls && !info.exportXmls && ext == "xml")
                     || (!info.rasterizeAstcs && !info.exportAstcs && ext == "astc")
