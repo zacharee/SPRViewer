@@ -8,5 +8,6 @@ data class DrawableData(
     val type: String,
     val name: String,
     val ext: String?,
+    val path: String,
     val id: Int
 ) : Parcelable

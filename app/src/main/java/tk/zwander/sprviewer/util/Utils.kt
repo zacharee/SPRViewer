@@ -5,10 +5,17 @@ import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.os.Handler
 import android.os.Looper
-import android.util.TypedValue
 import kotlinx.coroutines.*
+import net.dongliu.apk.parser.AbstractApkFile
+import net.dongliu.apk.parser.ApkFile
+import net.dongliu.apk.parser.parser.ResourceTableParser
+import net.dongliu.apk.parser.struct.AndroidConstants
+import net.dongliu.apk.parser.struct.resource.ResourceTable
 import tk.zwander.sprviewer.data.AppData
 import tk.zwander.sprviewer.data.DrawableData
+import java.nio.ByteBuffer
+import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.coroutines.CoroutineContext
 
 val mainHandler = Handler(Looper.getMainLooper())
@@ -35,10 +42,23 @@ fun Context.getInstalledApps(listener: (data: AppData, size: Int, count: Int) ->
     return ret
 }
 
+fun AbstractApkFile.getResourceTable(): ResourceTable {
+    val data = getFileData(AndroidConstants.RESOURCE_FILE) ?: return ResourceTable()
+    val buffer = ByteBuffer.wrap(data)
+    val parser = ResourceTableParser(buffer)
+
+    parser.parse()
+
+    return parser.resourceTable
+}
+
 fun Context.getAppDrawables(
     packageName: String,
     drawableFound: (data: DrawableData, size: Int, count: Int) -> Unit
 ): List<DrawableData> {
+    val apk = ApkFile(packageManager.getApplicationInfo(packageName, 0).sourceDir)
+    val table = apk.getResourceTable()
+
     val res = getAppRes(packageName)
     val list = ArrayList<DrawableData>()
 
@@ -64,16 +84,33 @@ fun Context.getAppDrawables(
     val loopRange: (start: Int, end: Int) -> Unit = { start: Int, end: Int ->
         for (i in start until end) {
             try {
-                val data = DrawableData(
-                    res.getResourceTypeName(i),
-                    res.getResourceEntryName(i),
-                    res.getExtension(i),
-                    i
-                )
+                val r = table.getResourcesById(i.toLong())
+                if (r.isEmpty()) continue
 
-                count++
-                list.add(data)
-                mainHandler.post { drawableFound.invoke(data, totalSize, count) }
+                val paths = r.map { it.resourceEntry }
+
+                paths.forEach {
+                    val pathOrColor = it.toStringValue(table, Locale.getDefault())
+
+                    val split = pathOrColor.split("/")
+                    val fullName = split.last().split(".")
+
+                    val typeName = res.getResourceTypeName(i)
+                    val name = res.getResourceEntryName(i)
+                    val ext = if (fullName.size > 1) fullName.subList(1, fullName.size).joinToString(".") else null
+
+                    val data = DrawableData(
+                        typeName,
+                        name,
+                        ext,
+                        pathOrColor,
+                        i
+                    )
+
+                    count++
+                    list.add(data)
+                    mainHandler.post { drawableFound.invoke(data, totalSize, count) }
+                }
             } catch (e: Resources.NotFoundException) {}
         }
     }
@@ -127,19 +164,6 @@ val extensionsToRasterize = arrayOf(
     "xml",
     "astc"
 )
-
-fun Resources.getExtension(id: Int): String? {
-    val v = TypedValue()
-    getValue(id, v, false)
-
-    val string = v.coerceToString()
-
-    return try {
-        string.split(".").run { subList(1, size) }.joinToString(".")
-    } catch (e: Exception) {
-        null
-    }
-}
 
 fun <T> CoroutineScope.lazyDeferred(
     context: CoroutineContext = Dispatchers.Default,

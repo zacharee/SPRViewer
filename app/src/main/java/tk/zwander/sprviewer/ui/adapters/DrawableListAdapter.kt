@@ -16,8 +16,9 @@ class DrawableListAdapter(private val itemSelectedListener: (DrawableData) -> Un
     @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: BaseVH, position: Int, info: DrawableData) {
         holder.itemView.apply {
-            drawable_name.text = "${info.type}/${info.name}.${info.ext}"
+            drawable_name.text = "${info.name}.${info.ext}"
             ext_indicator.setText(info.ext)
+            drawable_path.text = info.path
 
             setOnClickListener {
                 itemSelectedListener.invoke(getInfo(holder.adapterPosition))
@@ -26,15 +27,17 @@ class DrawableListAdapter(private val itemSelectedListener: (DrawableData) -> Un
     }
 
     override fun compare(o1: DrawableData, o2: DrawableData): Int {
-        return o1.name.compareTo(o2.name)
+        val names = o1.name.compareTo(o2.name)
+        val paths = o1.path.compareTo(o2.path)
+        return if (names == 0) paths else names
     }
 
     override fun areContentsTheSame(oldItem: DrawableData, newItem: DrawableData): Boolean {
-        return oldItem.id == newItem.id
+        return oldItem.path == newItem.path
     }
 
     override fun matches(query: String, data: DrawableData): Boolean {
-        return "${data.type}/${data.name}.${data.ext}".contains(query, true)
+        return data.path.contains(query, true) || "${data.name}.${data.ext}".contains(query, true)
     }
 
     fun loadItemsAsync(context: Context, packageName: String, listener: () -> Unit, progressListener: (Int, Int) -> Unit) = async(Dispatchers.IO) {

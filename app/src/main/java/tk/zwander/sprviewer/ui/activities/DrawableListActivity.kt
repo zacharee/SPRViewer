@@ -40,8 +40,8 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
         ApkFile(apkPath)
             .apply { preferredLocale = Locale.getDefault() }
     }
-    private val zip by lazy {
-        ZipFile(apkPath)
+    private val table by lazy {
+        apk.getResourceTable()
     }
     private val pkg by lazy { intent.getStringExtra(Intent.EXTRA_PACKAGE_NAME) }
     private val remRes by lazy { getAppRes(pkg) }
@@ -123,10 +123,13 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                     return@forEachIndexed
                 }
 
-                val path = withContext(Dispatchers.IO) {
-                    zip.entries().asSequence()
-                        .find { it.name.split("/").last() == ("${drawableData.name}.$ext") }?.name
+                val paths = withContext(Dispatchers.IO) {
+                    table.getResourcesById(drawableData.id.toLong()).map {
+                        it.resourceEntry.toStringValue(table, Locale.getDefault())
+                    }
                 }
+
+                val path = paths.last()
                 val drawableXml = withContext(Dispatchers.IO) {
                     try {
                         if (ext == "xml") apk.transBinaryXml(path)

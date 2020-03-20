@@ -47,9 +47,6 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
         ApkFile(apkPath)
             .apply { preferredLocale = Locale.getDefault() }
     }
-    private val zip by lazy {
-        ZipFile(apkPath)
-    }
     private val drawableXml by lazyDeferred(context = Dispatchers.IO) {
         try {
             if (ext == "xml") apk.transBinaryXml(path)
@@ -58,13 +55,21 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
             null
         }
     }
-    private val path by lazy { zip.entries().asSequence().find { it.name.split("/").last() == ("$drawableName.$ext") }?.name }
+    private val path by lazy { paths.last() }
     private val drawableInfo by lazy { intent.getParcelableExtra<DrawableData>(EXTRA_DRAWABLE_INFO) }
     private val pkg by lazy { intent.getStringExtra(Intent.EXTRA_PACKAGE_NAME) }
     private val remRes by lazy { getAppRes(pkg) }
     private val picasso: Picasso by lazy {
         Picasso.Builder(this)
             .build()
+    }
+    private val table by lazy {
+        apk.getResourceTable()
+    }
+    private val paths by lazy {
+        table.getResourcesById(drawableId.toLong()).map {
+            it.resourceEntry.toStringValue(table, Locale.getDefault())
+        }
     }
     private val drawableName: String
         get() = drawableInfo.name

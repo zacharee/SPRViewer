@@ -25,12 +25,28 @@
 
     </tk.zwander.sprviewer.views.ExtensionIndicator>
 
-    <TextView
-        android:id="@+id/drawable_name"
+    <LinearLayout
+        android:id="@+id/drawable_info_wrapper"
+        android:layout_marginStart="8dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        tools:text="stat_sys_signal_in_5ge_att_1"
-        />
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/drawable_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+            tools:text="stat_sys_signal_in_5ge_att_1.xml"
+            />
+
+        <TextView
+            android:id="@+id/drawable_path"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:text="res/drawable/stat_sys_signal_in_5ge_att_1.xml"
+            />
+
+    </LinearLayout>
 
 </LinearLayout>
