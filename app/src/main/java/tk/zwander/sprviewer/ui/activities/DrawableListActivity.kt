@@ -263,7 +263,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                 }
 
                 if (info.exportXmls && drawableXml != null) {
-                    val target = File(dir, "${drawableData.path.replace("/", ".")}.xml")
+                    val target = File(dir, drawableData.path.replace("/", "."))
 
                     launch {
                         dialog.setCurrentFileName(target.name)
