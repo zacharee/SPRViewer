@@ -110,7 +110,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
         val d = dialog.show()
 
         val done = launch(context = Dispatchers.Main) {
-            val dir = File(externalCacheDir, "batch/$pkg")
+            val dir = File(getExternalFilesDir(null), "batch/$pkg")
             if (!dir.exists()) dir.mkdirs()
 
             items.forEachIndexed { index, drawableData ->
