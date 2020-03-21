@@ -209,21 +209,21 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                 }
 
                 if (loaded != null) {
-                    val target = File(dir, "${drawableData.name}.$rasterExtension")
+                    val target = File(dir, "${drawableData.path.replace("/", ".")}.$rasterExtension")
 
                     launch {
                         dialog.setCurrentFileName(target.name)
                     }
 
                     target.outputStream().use { output ->
-                        val info = ImageInfo(loaded.width, loaded.height, 8, loaded.hasAlpha())
-                        val writer = PngWriter(output, info)
+                        val imgInfo = ImageInfo(loaded.width, loaded.height, 8, loaded.hasAlpha())
+                        val writer = PngWriter(output, imgInfo)
 
                         writer.setFilterType(FilterType.FILTER_ADAPTIVE_FAST)
                         writer.pixelsWriter.deflaterCompLevel = 0
 
                         for (row in 0 until loaded.height) {
-                            val line = ImageLineInt(info)
+                            val line = ImageLineInt(imgInfo)
 
                             withContext(Dispatchers.IO) {
                                 for (col in 0 until loaded.width) {
@@ -263,7 +263,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                 }
 
                 if (info.exportXmls && drawableXml != null) {
-                    val target = File(dir, "${drawableData.name}.xml")
+                    val target = File(dir, "${drawableData.path.replace("/", ".")}.xml")
 
                     launch {
                         dialog.setCurrentFileName(target.name)
@@ -300,7 +300,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                 }
 
                 if ((ext == "astc" && info.exportAstcs) || (ext == "spr" && info.exportSprs)) {
-                    val target = File(dir, "${drawableData.name}.$ext")
+                    val target = File(dir, "${drawableData.path.replace("/", ".")}.$ext")
 
                     launch {
                         dialog.setCurrentFileName(target.name)
