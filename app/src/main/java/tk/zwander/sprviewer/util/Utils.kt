@@ -36,7 +36,7 @@ fun Context.getInstalledApps(listener: (data: AppData, size: Int, count: Int) ->
         )
 
         ret.add(data)
-        mainHandler.post { listener.invoke(data, installedApps.size, count) }
+        mainHandler.post { listener(data, installedApps.size, count) }
     }
 
     return ret
@@ -68,7 +68,8 @@ fun Context.getAppDrawables(
         resPkg.typeSpecMap.filter { it.value.name == "drawable" }.entries.elementAtOrNull(0)
     val mipmapIndex =
         resPkg.typeSpecMap.filter { it.value.name == "mipmap" }.entries.elementAtOrNull(0)
-    val rawIndex = resPkg.typeSpecMap.filter { it.value.name == "raw" }.entries.elementAtOrNull(0)
+    val rawIndex =
+        resPkg.typeSpecMap.filter { it.value.name == "raw" }.entries.elementAtOrNull(0)
 
     val drawableStart =
         if (drawableIndex != null) (drawableIndex.key.toInt() shl 16) or (pkgCode shl 24) else -1
@@ -113,7 +114,7 @@ fun Context.getAppDrawables(
 
                     count++
                     list.add(data)
-                    mainHandler.post { drawableFound.invoke(data, totalSize, count) }
+                    drawableFound(data, totalSize, count)
                 }
             } catch (e: Resources.NotFoundException) {}
         }
@@ -147,7 +148,7 @@ fun <T> CoroutineScope.lazyDeferred(
 ): Lazy<Deferred<T>> {
     return lazy {
         async(context = context, start = CoroutineStart.LAZY) {
-            block.invoke(this)
+            block(this)
         }
     }
 }

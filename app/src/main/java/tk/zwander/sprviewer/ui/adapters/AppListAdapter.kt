@@ -19,7 +19,7 @@ class AppListAdapter(private val itemSelectedListener: (AppData) -> Unit) : Base
             app_pkg.text = info.pkg
 
             setOnClickListener {
-                itemSelectedListener.invoke(getInfo(holder.adapterPosition))
+                itemSelectedListener(getInfo(holder.adapterPosition))
             }
         }
     }

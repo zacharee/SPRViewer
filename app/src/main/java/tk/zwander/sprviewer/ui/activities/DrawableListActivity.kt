@@ -21,7 +21,6 @@ import tk.zwander.sprviewer.views.CircularProgressDialog
 import tk.zwander.sprviewer.views.ExportInfo
 import java.io.File
 import java.util.*
-import java.util.zip.ZipFile
 import kotlin.math.max
 
 @Suppress("DeferredResultUnused")
@@ -63,9 +62,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
         }
 
         adapter.loadItemsAsync(this, pkg, this::onLoadFinished) { size, count ->
-            progress?.apply {
-                progress = (count.toFloat() / size.toFloat() * 100f).toInt()
-            }
+            progress?.progress = (count.toFloat() / size.toFloat() * 100f).toInt()
         }
 
         launch {

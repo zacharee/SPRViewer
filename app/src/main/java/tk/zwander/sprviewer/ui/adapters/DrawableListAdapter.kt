@@ -2,7 +2,6 @@ package tk.zwander.sprviewer.ui.adapters
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.util.Log
 import kotlinx.android.synthetic.main.drawable_info_layout.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -22,7 +21,7 @@ class DrawableListAdapter(private val itemSelectedListener: (DrawableData) -> Un
             drawable_path.text = info.path
 
             setOnClickListener {
-                itemSelectedListener.invoke(getInfo(holder.adapterPosition))
+                itemSelectedListener(getInfo(holder.adapterPosition))
             }
         }
     }
@@ -45,9 +44,8 @@ class DrawableListAdapter(private val itemSelectedListener: (DrawableData) -> Un
         context.getAppDrawables(packageName) { data, size, count ->
             launch(Dispatchers.Main) {
                 progressListener(size, count)
+                add(data)
             }
-
-            add(data)
         }
 
         launch(Dispatchers.Main) {
