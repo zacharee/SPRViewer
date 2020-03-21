@@ -83,6 +83,7 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
 
     private var saveImg: MenuItem? = null
     private var saveOrig: MenuItem? = null
+    private var saveXml: MenuItem? = null
 
     @ExperimentalCoroutinesApi
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -118,8 +119,6 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
                                 image.isVisible = false
                                 text.isVisible = true
 
-                                saveImg?.isVisible = false
-
                                 text.text = drawableXml
                             }
 
@@ -143,8 +142,6 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
                 } catch (e: Exception) {
                     image.isVisible = false
                     text.isVisible = true
-
-                    saveImg?.isVisible = false
 
                     text.text = drawableXml
                 }
@@ -171,14 +168,13 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
         menuInflater.inflate(R.menu.save, menu)
 
         saveImg = menu.findItem(R.id.action_save_png)
-        val saveXml = menu.findItem(R.id.action_save_xml)
+        saveXml = menu.findItem(R.id.action_save_xml)
         saveOrig = menu.findItem(R.id.action_save_orig)
 
-        saveImg?.isVisible = !isViewingAnimatedImage
         saveOrig?.isVisible = ext == "spr" || ext == "astc"
 
         launch {
-            saveXml.isVisible = drawableXml.getOrAwaitResult() != null
+            saveXml?.isVisible = drawableXml.getOrAwaitResult() != null
         }
 
         return true
