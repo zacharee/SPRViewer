@@ -146,7 +146,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                         null
                     }
                 }
-                val rasterExtension = if (extensionsToRasterize.contains(ext)) "png" else ext
+                val rasterExtension = "png"
                 val loaded: Bitmap?
                 val loadBmpFromRes by lazyDeferred(context = Dispatchers.IO) {
                     try {
