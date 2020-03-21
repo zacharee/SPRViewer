@@ -1,13 +1,14 @@
 package tk.zwander.sprviewer.ui.activities
 
-import android.content.ContentResolver
-import android.content.Intent
+import android.content.*
 import android.graphics.Bitmap
 import android.graphics.drawable.Animatable
 import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.core.graphics.drawable.toBitmap
 import ar.com.hjg.pngj.*
 import com.squareup.picasso.Picasso
@@ -22,6 +23,7 @@ import tk.zwander.sprviewer.views.ExportInfo
 import java.io.File
 import java.util.*
 import kotlin.math.max
+
 
 @Suppress("DeferredResultUnused")
 class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope by MainScope() {
@@ -108,9 +110,9 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
         val items = adapter.allItemsCopy
         val dialog = CircularProgressDialog(this@DrawableListActivity, items.size)
         val d = dialog.show()
+        val dir = File(getExternalFilesDir(null), "batch/$pkg")
 
         val done = launch(context = Dispatchers.Main) {
-            val dir = File(getExternalFilesDir(null), "batch/$pkg")
             if (!dir.exists()) dir.mkdirs()
 
             items.forEachIndexed { index, drawableData ->
@@ -348,5 +350,31 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
 
         done.join()
         d.dismiss()
+
+        val path = dir.absolutePath
+
+        AlertDialog.Builder(this@DrawableListActivity)
+            .setTitle(R.string.save_all_complete)
+            .setMessage(resources.getString(R.string.save_all_complete_desc_template, path))
+            .setPositiveButton(android.R.string.ok, null)
+            .setNegativeButton(R.string.open_dir) { _, _ ->
+                val intent = Intent(Intent.ACTION_VIEW)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                intent.setDataAndType(Uri.parse(path), "resource/folder")
+
+                try {
+                    startActivity(intent)
+                } catch (e: ActivityNotFoundException) {
+                    Toast.makeText(this@DrawableListActivity, R.string.open_dir_error, Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNeutralButton(R.string.copy_path) { _, _ ->
+                val clipboard: ClipboardManager =
+                    getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val clip = ClipData.newPlainText(resources.getString(R.string.batch_path), path)
+                clipboard.primaryClip = clip
+            }
+            .setCancelable(false)
+            .show()
     }
 }
