@@ -26,9 +26,10 @@ import tk.zwander.sprviewer.R
 import tk.zwander.sprviewer.data.DrawableData
 import tk.zwander.sprviewer.util.*
 import tk.zwander.sprviewer.views.DimensionInputDialog
-import java.io.*
+import java.io.ByteArrayInputStream
+import java.io.File
+import java.io.OutputStream
 import java.util.*
-import java.util.zip.ZipFile
 
 @Suppress("DeferredResultUnused")
 class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() {

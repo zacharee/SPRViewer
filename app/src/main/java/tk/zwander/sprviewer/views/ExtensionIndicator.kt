@@ -4,15 +4,10 @@ import android.content.Context
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.Gravity
-import android.view.ViewGroup
-import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.widget.AppCompatTextView
-import androidx.core.view.marginStart
-import androidx.core.view.setPadding
 import androidx.core.widget.TextViewCompat
-import kotlinx.android.synthetic.main.drawable_info_layout.view.*
 import tk.zwander.sprviewer.R
 
 class ExtensionIndicator(context: Context, attrs: AttributeSet) : LinearLayout(context, attrs) {

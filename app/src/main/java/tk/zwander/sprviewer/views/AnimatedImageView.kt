@@ -19,14 +19,14 @@
 package tk.zwander.sprviewer.views
 
 import android.content.Context
-import android.graphics.drawable.*
+import android.graphics.drawable.Animatable
+import android.graphics.drawable.Animatable2
+import android.graphics.drawable.AnimationDrawable
+import android.graphics.drawable.Drawable
 import android.util.AttributeSet
-import android.util.Log
 import android.view.View
 import android.widget.RemoteViews.RemoteView
-import com.android.internal.graphics.drawable.AnimationScaleListDrawable
 import com.github.chrisbanes.photoview.PhotoView
-import java.util.*
 
 @RemoteView
 class AnimatedImageView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) : PhotoView(context, attrs) {

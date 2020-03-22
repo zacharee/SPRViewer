@@ -5,8 +5,6 @@ import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import androidx.appcompat.app.AlertDialog
 import kotlinx.android.synthetic.main.dimension_input.view.*
-import kotlinx.coroutines.*
-import net.dongliu.apk.parser.Main
 import tk.zwander.sprviewer.R
 import tk.zwander.sprviewer.util.TextWatcherAdapter
 
