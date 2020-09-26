@@ -12,7 +12,7 @@ import kotlinx.coroutines.cancel
 import java.util.*
 import kotlin.collections.ArrayList
 
-abstract class BaseListAdapter<T>(dataClass: Class<T>) : RecyclerView.Adapter<BaseListAdapter.BaseVH>(), SearchView.OnQueryTextListener, CoroutineScope by MainScope() {
+abstract class BaseListAdapter<T, VH : BaseListAdapter.BaseVH>(dataClass: Class<T>) : RecyclerView.Adapter<VH>(), SearchView.OnQueryTextListener, CoroutineScope by MainScope() {
     private val results = SortedList(dataClass, SortCallback())
     private val orig = object : ArrayList<T>() {
         override fun add(element: T): Boolean {
@@ -62,21 +62,14 @@ abstract class BaseListAdapter<T>(dataClass: Class<T>) : RecyclerView.Adapter<Ba
         super.onDetachedFromRecyclerView(recyclerView)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseVH {
-        return BaseVH(
-            LayoutInflater.from(parent.context)
-                .inflate(viewRes, parent, false)
-        )
-    }
-
-    final override fun onBindViewHolder(holder: BaseVH, position: Int) {
+    final override fun onBindViewHolder(holder: VH, position: Int) {
         onBindViewHolder(holder, position, results[position])
     }
 
     abstract fun compare(o1: T, o2: T): Int
     abstract fun areContentsTheSame(oldItem: T, newItem: T): Boolean
     abstract fun matches(query: String, data: T): Boolean
-    abstract fun onBindViewHolder(holder: BaseVH, position: Int, info: T)
+    abstract fun onBindViewHolder(holder: VH, position: Int, info: T)
 
     open fun areItemsTheSame(item1: T, item2: T): Boolean {
         return item1 == item2
@@ -91,6 +84,13 @@ abstract class BaseListAdapter<T>(dataClass: Class<T>) : RecyclerView.Adapter<Ba
     }
 
     fun indexOf(item: T) = results.indexOf(item)
+
+    fun createBaseViewHolder(parent: ViewGroup, position: Int): BaseVH {
+        return BaseVH(
+            LayoutInflater.from(parent.context)
+                .inflate(viewRes, parent, false)
+        )
+    }
 
     internal fun getInfo(position: Int) = results[position]
 

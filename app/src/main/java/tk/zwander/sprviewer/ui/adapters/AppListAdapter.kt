@@ -1,6 +1,7 @@
 package tk.zwander.sprviewer.ui.adapters
 
 import android.content.Context
+import android.view.ViewGroup
 import kotlinx.android.synthetic.main.app_info_layout.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -9,8 +10,12 @@ import tk.zwander.sprviewer.R
 import tk.zwander.sprviewer.data.AppData
 import tk.zwander.sprviewer.util.getInstalledApps
 
-class AppListAdapter(private val itemSelectedListener: (AppData) -> Unit) : BaseListAdapter<AppData>(AppData::class.java) {
+class AppListAdapter(private val itemSelectedListener: (AppData) -> Unit) : BaseListAdapter<AppData, BaseListAdapter.BaseVH>(AppData::class.java) {
     override val viewRes = R.layout.app_info_layout
+
+    override fun onCreateViewHolder(parent: ViewGroup, position: Int): BaseVH {
+        return createBaseViewHolder(parent, position)
+    }
 
     override fun onBindViewHolder(holder: BaseVH, position: Int, info: AppData) {
         holder.itemView.apply {

@@ -12,7 +12,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import tk.zwander.sprviewer.R
 import tk.zwander.sprviewer.ui.adapters.BaseListAdapter
 
-abstract class BaseActivity<T : BaseListAdapter<out Any>> : AppCompatActivity() {
+abstract class BaseActivity<T : BaseListAdapter<out Any, out BaseListAdapter.BaseVH>> : AppCompatActivity() {
     abstract val contentView: Int
     abstract val adapter: T
 
