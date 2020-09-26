@@ -1,10 +1,8 @@
 package tk.zwander.sprviewer.util
 
 import android.app.Application
-import android.app.LoadedApk
 import android.app.ResourcesManager
 import android.content.Context
-import android.content.ContextWrapper
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.os.Handler
@@ -16,9 +14,9 @@ import net.dongliu.apk.parser.AbstractApkFile
 import net.dongliu.apk.parser.ApkFile
 import net.dongliu.apk.parser.parser.ResourceTableParser
 import net.dongliu.apk.parser.struct.AndroidConstants
+import net.dongliu.apk.parser.struct.resource.ResourcePackage
 import net.dongliu.apk.parser.struct.resource.ResourceTable
 import tk.zwander.sprviewer.data.AppData
-import tk.zwander.sprviewer.data.DrawableData
 import tk.zwander.sprviewer.data.UDrawableData
 import java.io.File
 import java.nio.ByteBuffer
@@ -67,8 +65,7 @@ fun getAppDrawables(
     drawableFound: (data: UDrawableData, size: Int, count: Int) -> Unit
 ): List<UDrawableData> {
     val table = apk.getResourceTable()
-    val pkgCode = if (apk.apkMeta.packageName == "android") 0x00 else 0x7f
-    val resPkg = table.getPackage(pkgCode.toShort())
+    val (pkgCode, resPkg) = table.packageMap.entries.toList()[0].run { key.toInt() to value }
 
     val list = ArrayList<UDrawableData>()
 
@@ -193,3 +190,10 @@ val Context.picasso: Picasso
         return _picassoInstance ?: Picasso.Builder(this@picasso)
                 .build().apply { _picassoInstance = this }
     }
+
+@Suppress("UNCHECKED_CAST")
+val ResourceTable.packageMap: Map<Short, ResourcePackage>
+    get() = ResourceTable::class.java
+        .getDeclaredField("packageMap")
+        .apply { isAccessible = true }
+        .get(this) as Map<Short, ResourcePackage>
