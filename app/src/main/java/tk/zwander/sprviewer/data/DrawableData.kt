@@ -12,8 +12,7 @@ data class DrawableData(
     val name: String,
     val ext: String?,
     val path: String,
-    val id: Int,
-    val file: File
+    val id: Int
 ) : Parcelable
 
 data class UDrawableData(
@@ -26,8 +25,7 @@ data class UDrawableData(
 ) {
     fun toDrawableData(): DrawableData {
         return DrawableData(
-            type, name, ext, path, id,
-            file.getFile()
+            type, name, ext, path, id
         )
     }
 }
