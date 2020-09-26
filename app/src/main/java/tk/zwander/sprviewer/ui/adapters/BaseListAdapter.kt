@@ -22,6 +22,13 @@ abstract class BaseListAdapter<T, VH : BaseListAdapter.BaseVH>(dataClass: Class<
             return super.add(element)
         }
 
+        override fun addAll(elements: Collection<T>): Boolean {
+            results.beginBatchedUpdates()
+            results.addAll(elements.filter { matches(currentQuery, it) })
+            results.endBatchedUpdates()
+            return super.addAll(elements)
+        }
+
         override fun remove(element: T): Boolean {
             results.remove(element)
             return super.remove(element)
@@ -77,6 +84,10 @@ abstract class BaseListAdapter<T, VH : BaseListAdapter.BaseVH>(dataClass: Class<
 
     fun add(item: T) {
         orig.add(item)
+    }
+
+    fun addAll(items: List<T>) {
+        orig.addAll(items)
     }
 
     fun remove(item: T) {

@@ -56,14 +56,14 @@ class DrawableListAdapter(private val itemSelectedListener: (UDrawableData) -> U
         listener: () -> Unit,
         progressListener: (Int, Int) -> Unit
     ) = async(Dispatchers.IO) {
-        getAppDrawables(apk) { data, size, count ->
+        val drawables = getAppDrawables(apk) { data, size, count ->
             launch(Dispatchers.Main) {
                 progressListener(size, count)
-                add(data)
             }
         }
 
         launch(Dispatchers.Main) {
+            addAll(drawables)
             listener()
         }
     }
