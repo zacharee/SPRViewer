@@ -21,6 +21,7 @@ import tk.zwander.sprviewer.views.BaseDimensionInputDialog
 import tk.zwander.sprviewer.views.CircularProgressDialog
 import tk.zwander.sprviewer.views.ExportInfo
 import java.io.File
+import java.lang.NullPointerException
 import java.util.*
 import kotlin.math.max
 
@@ -74,7 +75,13 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
 
         launch {
             title = withContext(Dispatchers.Main) {
-                apk.apkMeta.label
+                apk.run {
+                    try {
+                        apkMeta.label
+                    } catch (e: NullPointerException) {
+                        pkg
+                    }
+                }
             }
         }
     }
