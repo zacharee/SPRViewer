@@ -11,19 +11,31 @@
     android:orientation="horizontal"
     android:background="?android:selectableItemBackground">
 
-    <tk.zwander.sprviewer.views.ExtensionIndicator
-        android:id="@+id/ext_indicator"
-        android:layout_width="48dp"
-        android:layout_height="48dp">
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent">
 
-        <view class="tk.zwander.sprviewer.views.ExtensionIndicator$ExtensionIndicatorText"
-            android:id="@+id/text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            tools:text="9.png"
+        <tk.zwander.sprviewer.views.ExtensionIndicator
+            android:id="@+id/ext_indicator"
+            android:layout_width="48dp"
+            android:layout_height="48dp">
+
+            <view class="tk.zwander.sprviewer.views.ExtensionIndicator$ExtensionIndicatorText"
+                android:id="@+id/text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="9.png"
+                />
+
+        </tk.zwander.sprviewer.views.ExtensionIndicator>
+
+        <ImageView
+            android:id="@+id/img_preview"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             />
 
-    </tk.zwander.sprviewer.views.ExtensionIndicator>
+    </FrameLayout>
 
     <LinearLayout
         android:id="@+id/drawable_info_wrapper"

@@ -12,7 +12,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.drawable.toBitmap
 import ar.com.hjg.pngj.*
-import com.squareup.picasso.Picasso
 import kotlinx.coroutines.*
 import net.dongliu.apk.parser.ApkFile
 import tk.zwander.sprviewer.R
@@ -35,7 +34,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
     override val contentView = R.layout.activity_main
     override val adapter = DrawableListAdapter {
         val viewIntent = Intent(this, DrawableViewActivity::class.java)
-        viewIntent.putExtra(DrawableViewActivity.EXTRA_DRAWABLE_INFO, it)
+        viewIntent.putExtra(DrawableViewActivity.EXTRA_DRAWABLE_INFO, it.toDrawableData())
         viewIntent.putExtras(intent)
 
         startActivity(viewIntent)
@@ -58,10 +57,6 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
     private val pkg by lazy { intent.getStringExtra(Intent.EXTRA_PACKAGE_NAME) }
     private val file by lazy { intent.getSerializableExtra(EXTRA_FILE) as File? }
     private val remRes by lazy { getAppRes(apkPath!!) }
-    private val picasso by lazy {
-        Picasso.Builder(this@DrawableListActivity)
-            .build()
-    }
 
     private var saveAll: MenuItem? = null
 
@@ -73,7 +68,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
             return
         }
 
-        adapter.loadItemsAsync(this, apkPath!!, apk, this::onLoadFinished) { size, count ->
+        adapter.loadItemsAsync(apk, this::onLoadFinished) { size, count ->
             progress?.progress = (count.toFloat() / size.toFloat() * 100f).toInt()
         }
 
@@ -87,7 +82,6 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
     override fun onDestroy() {
         super.onDestroy()
 
-        picasso.shutdown()
         cancel()
     }
 

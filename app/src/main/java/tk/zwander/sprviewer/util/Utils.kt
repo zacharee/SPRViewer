@@ -10,6 +10,7 @@ import android.content.res.Resources
 import android.os.Handler
 import android.os.Looper
 import android.view.Display
+import com.squareup.picasso.Picasso
 import kotlinx.coroutines.*
 import net.dongliu.apk.parser.AbstractApkFile
 import net.dongliu.apk.parser.ApkFile
@@ -18,11 +19,14 @@ import net.dongliu.apk.parser.struct.AndroidConstants
 import net.dongliu.apk.parser.struct.resource.ResourceTable
 import tk.zwander.sprviewer.data.AppData
 import tk.zwander.sprviewer.data.DrawableData
+import tk.zwander.sprviewer.data.UDrawableData
 import java.io.File
 import java.nio.ByteBuffer
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.coroutines.CoroutineContext
+
+private var _picassoInstance: Picasso? = null
 
 val mainHandler = Handler(Looper.getMainLooper())
 
@@ -60,13 +64,13 @@ fun AbstractApkFile.getResourceTable(): ResourceTable {
 
 fun getAppDrawables(
     apk: ApkFile,
-    drawableFound: (data: DrawableData, size: Int, count: Int) -> Unit
-): List<DrawableData> {
+    drawableFound: (data: UDrawableData, size: Int, count: Int) -> Unit
+): List<UDrawableData> {
     val table = apk.getResourceTable()
     val pkgCode = if (apk.apkMeta.packageName == "android") 0x00 else 0x7f
     val resPkg = table.getPackage(pkgCode.toShort())
 
-    val list = ArrayList<DrawableData>()
+    val list = ArrayList<UDrawableData>()
 
     val drawableIndex =
         resPkg.typeSpecMap.filter { it.value.name == "drawable" }.entries.elementAtOrNull(0)
@@ -110,12 +114,13 @@ fun getAppDrawables(
                     val ext = if (fullName.size > 1) fullName.subList(1, fullName.size)
                         .joinToString(".") else null
 
-                    val data = DrawableData(
+                    val data = UDrawableData(
                         typeName,
                         name,
                         ext,
                         pathOrColor,
-                        i
+                        i,
+                        apk
                     )
 
                     count++
@@ -175,3 +180,16 @@ fun <T> CoroutineScope.lazyDeferred(
 
 @ExperimentalCoroutinesApi
 suspend fun <T> Deferred<T>.getOrAwaitResult() = if (isCompleted) getCompleted() else await()
+
+fun ApkFile.getFile(): File {
+    return ApkFile::class.java
+        .getDeclaredField("apkFile")
+        .apply { isAccessible = true }
+        .get(this) as File
+}
+
+val Context.picasso: Picasso
+    get() {
+        return _picassoInstance ?: Picasso.Builder(this@picasso)
+                .build().apply { _picassoInstance = this }
+    }

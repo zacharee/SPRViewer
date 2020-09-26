@@ -67,10 +67,6 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
     private val pkg by lazy { intent.getStringExtra(Intent.EXTRA_PACKAGE_NAME) }
     private val file by lazy { intent.getSerializableExtra(DrawableListActivity.EXTRA_FILE) as File? }
     private val remRes by lazy { getAppRes(apkPath!!) }
-    private val picasso: Picasso by lazy {
-        Picasso.Builder(this)
-            .build()
-    }
     private val table by lazy {
         apk.getResourceTable()
     }
@@ -168,7 +164,6 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
     override fun onDestroy() {
         super.onDestroy()
 
-        picasso.shutdown()
         cancel()
     }
 
