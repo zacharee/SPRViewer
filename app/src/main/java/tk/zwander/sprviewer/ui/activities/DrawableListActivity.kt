@@ -73,17 +73,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
             progress?.progress = (count.toFloat() / size.toFloat() * 100f).toInt()
         }
 
-        launch {
-            title = withContext(Dispatchers.Main) {
-                apk.run {
-                    try {
-                        apkMeta.label
-                    } catch (e: NullPointerException) {
-                        pkg
-                    }
-                }
-            }
-        }
+        updateTitle()
     }
 
     override fun onDestroy() {
@@ -387,5 +377,23 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
             }
             .setCancelable(false)
             .show()
+    }
+
+    override fun onLoadFinished() {
+        super.onLoadFinished()
+
+        updateTitle(adapter.itemCount)
+    }
+
+    private fun updateTitle(numberApps: Int = -1) = launch {
+        title = withContext(Dispatchers.Main) {
+            apk.run {
+                try {
+                    apkMeta.label
+                } catch (e: NullPointerException) {
+                    pkg
+                }
+            }
+        } + if (numberApps > -1) " ($numberApps)" else ""
     }
 }
