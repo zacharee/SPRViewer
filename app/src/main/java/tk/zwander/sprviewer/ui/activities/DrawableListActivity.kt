@@ -9,6 +9,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.drawable.toBitmap
 import ar.com.hjg.pngj.*
 import com.squareup.picasso.Picasso
@@ -27,6 +28,10 @@ import kotlin.math.max
 
 @Suppress("DeferredResultUnused")
 class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope by MainScope() {
+    companion object {
+        const val EXTRA_FILE = "file"
+    }
+
     override val contentView = R.layout.activity_main
     override val adapter = DrawableListAdapter {
         val viewIntent = Intent(this, DrawableViewActivity::class.java)
@@ -37,7 +42,11 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
     }
 
     private val apkPath by lazy {
-        File(packageManager.getApplicationInfo(pkg, 0).sourceDir)
+        if (pkg != null) {
+            File(packageManager.getApplicationInfo(pkg, 0).sourceDir)
+        } else {
+            file
+        }
     }
     private val apk by lazy {
         ApkFile(apkPath)
@@ -47,7 +56,8 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
         apk.getResourceTable()
     }
     private val pkg by lazy { intent.getStringExtra(Intent.EXTRA_PACKAGE_NAME) }
-    private val remRes by lazy { getAppRes(pkg) }
+    private val file by lazy { intent.getSerializableExtra(EXTRA_FILE) as File? }
+    private val remRes by lazy { getAppRes(apkPath!!) }
     private val picasso by lazy {
         Picasso.Builder(this@DrawableListActivity)
             .build()
@@ -58,18 +68,18 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (pkg == null) {
+        if (pkg == null && file == null) {
             finish()
             return
         }
 
-        adapter.loadItemsAsync(this, pkg, this::onLoadFinished) { size, count ->
+        adapter.loadItemsAsync(this, apkPath!!, apk, this::onLoadFinished) { size, count ->
             progress?.progress = (count.toFloat() / size.toFloat() * 100f).toInt()
         }
 
         launch {
             title = withContext(Dispatchers.Main) {
-                packageManager.getApplicationLabel(packageManager.getApplicationInfo(pkg, 0))
+                apk.apkMeta.label
             }
         }
     }
@@ -99,7 +109,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
     override fun checkCount() {
         super.checkCount()
 
-        if (doneLoading && adapter.itemCount > 0 && saveAll?.isVisible == false) {
+        if (isReadyForMenus()) {
             saveAll?.isVisible = true
         }
     }
@@ -110,7 +120,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
         val items = adapter.allItemsCopy
         val dialog = CircularProgressDialog(this@DrawableListActivity, items.size)
         val d = dialog.show()
-        val dir = File(getExternalFilesDir(null), "batch/$pkg")
+        val dir = File(getExternalFilesDir(null), "batch/${apk.apkMeta.packageName}")
 
         val done = launch(context = Dispatchers.Main) {
             if (!dir.exists()) dir.mkdirs()
@@ -152,7 +162,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                 val loaded: Bitmap?
                 val loadBmpFromRes by lazyDeferred(context = Dispatchers.IO) {
                     try {
-                        remRes.getDrawable(drawableData.id, remRes.newTheme()).run {
+                        ResourcesCompat.getDrawable(remRes, drawableData.id, remRes.newTheme())!!.run {
                             if (this is Animatable && this::class.java.canonicalName?.contains("SemPathRenderingDrawable") == false) null else toBitmap(
                                 width = max(
                                     info.dimen,
@@ -180,7 +190,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                                     picasso.load(
                                             Uri.parse(
                                                 "${ContentResolver.SCHEME_ANDROID_RESOURCE}://" +
-                                                        "$pkg/" +
+                                                        "${apk.apkMeta.packageName}/" +
                                                         "${remRes.getResourceTypeName(drawableData.id)}/" +
                                                         "${drawableData.id}"
                                             )

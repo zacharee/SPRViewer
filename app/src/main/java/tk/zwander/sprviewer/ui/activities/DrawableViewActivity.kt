@@ -7,10 +7,12 @@ import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.isVisible
 import ar.com.hjg.pngj.ImageInfo
@@ -42,9 +44,13 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
     }
 
     private val apkPath by lazy {
-        File(packageManager.getApplicationInfo(pkg, 0).sourceDir)
+        if (pkg != null) {
+            File(packageManager.getApplicationInfo(pkg, 0).sourceDir)
+        } else {
+            file
+        }
     }
-    private val apk by lazy {
+    private val apk: ApkFile by lazy {
         ApkFile(apkPath)
             .apply { preferredLocale = Locale.getDefault() }
     }
@@ -59,7 +65,8 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
     private val path by lazy { paths.last() }
     private val drawableInfo by lazy { intent.getParcelableExtra<DrawableData>(EXTRA_DRAWABLE_INFO) }
     private val pkg by lazy { intent.getStringExtra(Intent.EXTRA_PACKAGE_NAME) }
-    private val remRes by lazy { getAppRes(pkg) }
+    private val file by lazy { intent.getSerializableExtra(DrawableListActivity.EXTRA_FILE) as File? }
+    private val remRes by lazy { getAppRes(apkPath!!) }
     private val picasso: Picasso by lazy {
         Picasso.Builder(this)
             .build()
@@ -91,7 +98,7 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_drawable_view)
 
-        if (drawableInfo == null || pkg.isNullOrBlank()) {
+        if (drawableInfo == null || (pkg.isNullOrBlank() && file == null)) {
             finish()
             return
         }
@@ -106,14 +113,14 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
                     picasso.load(
                         Uri.parse(
                             "${ContentResolver.SCHEME_ANDROID_RESOURCE}://" +
-                                    "$pkg/" +
+                                    "${apk.apkMeta.packageName}/" +
                                     "${remRes.getResourceTypeName(drawableId)}/" +
                                     "$drawableId"
                         )
                     ).into(image, object : Callback {
                         override fun onError(e: Exception?) {
                             try {
-                                image.setImageDrawable(remRes.getDrawable(drawableId, remRes.newTheme()))
+                                image.setImageDrawable(ResourcesCompat.getDrawable(remRes, drawableId, remRes.newTheme()))
 
                                 saveImg?.isVisible = !isViewingAnimatedImage
                             } catch (e: Exception) {
@@ -132,12 +139,13 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
                         }
                     })
                 } catch (e: Exception) {
+                    Log.e("SPRViewer", "ERR", e)
                     Toast.makeText(this@DrawableViewActivity, R.string.load_image_error, Toast.LENGTH_SHORT).show()
                     imageLoadingDone()
                 }
             } else {
                 try {
-                    image.setImageDrawable(remRes.getDrawable(drawableId, remRes.newTheme()))
+                    image.setImageDrawable(ResourcesCompat.getDrawable(remRes, drawableId, remRes.newTheme()))
 
                     saveImg?.isVisible = !isViewingAnimatedImage
                 } catch (e: Exception) {

@@ -5,6 +5,7 @@
     <string name="save_orig">Orig</string>
     <string name="save_all">Save All</string>
     <string name="save_all_complete">Save All Complete</string>
+    <string name="import_apk">Import APK</string>
 
     <string name="width">Width</string>
     <string name="height">Height</string>

@@ -63,7 +63,7 @@ abstract class BaseActivity<T : BaseListAdapter<out Any>> : AppCompatActivity() 
     }
 
     open fun checkCount() {
-        if (doneLoading && adapter.itemCount > 0 && searchItem?.isVisible == false) {
+        if (isReadyForMenus() && searchItem?.isVisible == false) {
             searchItem?.isVisible = true
         }
     }
@@ -73,5 +73,9 @@ abstract class BaseActivity<T : BaseListAdapter<out Any>> : AppCompatActivity() 
             if (smooth) smoothScrollToPosition(0)
             else scrollToPosition(0)
         }
+    }
+
+    internal fun isReadyForMenus(): Boolean {
+        return doneLoading && adapter.itemCount > 0
     }
 }

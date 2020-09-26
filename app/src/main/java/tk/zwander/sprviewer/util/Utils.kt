@@ -1,10 +1,15 @@
 package tk.zwander.sprviewer.util
 
+import android.app.Application
+import android.app.LoadedApk
+import android.app.ResourcesManager
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.os.Handler
 import android.os.Looper
+import android.view.Display
 import kotlinx.coroutines.*
 import net.dongliu.apk.parser.AbstractApkFile
 import net.dongliu.apk.parser.ApkFile
@@ -13,6 +18,7 @@ import net.dongliu.apk.parser.struct.AndroidConstants
 import net.dongliu.apk.parser.struct.resource.ResourceTable
 import tk.zwander.sprviewer.data.AppData
 import tk.zwander.sprviewer.data.DrawableData
+import java.io.File
 import java.nio.ByteBuffer
 import java.util.*
 import kotlin.collections.ArrayList
@@ -52,16 +58,14 @@ fun AbstractApkFile.getResourceTable(): ResourceTable {
     return parser.resourceTable
 }
 
-fun Context.getAppDrawables(
-    packageName: String,
+fun getAppDrawables(
+    apk: ApkFile,
     drawableFound: (data: DrawableData, size: Int, count: Int) -> Unit
 ): List<DrawableData> {
-    val apk = ApkFile(packageManager.getApplicationInfo(packageName, 0).sourceDir)
     val table = apk.getResourceTable()
-    val pkgCode = if (packageName == "android") 0x00 else 0x7f
+    val pkgCode = if (apk.apkMeta.packageName == "android") 0x00 else 0x7f
     val resPkg = table.getPackage(pkgCode.toShort())
 
-    val res = getAppRes(packageName)
     val list = ArrayList<DrawableData>()
 
     val drawableIndex =
@@ -99,8 +103,10 @@ fun Context.getAppDrawables(
                     val split = pathOrColor.split("/")
                     val fullName = split.last().split(".")
 
-                    val typeName = res.getResourceTypeName(i)
-                    val name = res.getResourceEntryName(i)
+                    val typeMask = 0x00ff0000
+                    val typeSpec = resPkg.getTypeSpec(((typeMask and i) - 0xffff).toShort())
+                    val typeName = typeSpec?.name!!
+                    val name = it.key
                     val ext = if (fullName.size > 1) fullName.subList(1, fullName.size)
                         .joinToString(".") else null
 
@@ -133,8 +139,22 @@ fun Context.getAppDrawables(
     return list
 }
 
-fun Context.getAppRes(packageName: String): Resources =
-    packageManager.getResourcesForApplication(packageName)
+fun Context.getAppRes(apk: File): Resources {
+    val resMan = ResourcesManager.getInstance()
+    val pkgInfo = (applicationContext as Application).mLoadedApk
+
+    return resMan.getResources(
+        null,
+        apk.absolutePath,
+        null,
+        null,
+        null,
+        Display.DEFAULT_DISPLAY,
+        null,
+        pkgInfo.compatibilityInfo,
+        pkgInfo.classLoader
+    )
+}
 
 val extensionsToRasterize = arrayOf(
     "spr",
