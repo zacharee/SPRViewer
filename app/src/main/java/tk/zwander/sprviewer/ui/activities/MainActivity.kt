@@ -3,16 +3,11 @@ package tk.zwander.sprviewer.ui.activities
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import net.dongliu.apk.parser.ApkFile
 import tk.zwander.sprviewer.R
-import tk.zwander.sprviewer.data.AppData
 import tk.zwander.sprviewer.ui.adapters.AppListAdapter
-import java.io.BufferedReader
 import java.io.File
-import java.io.InputStreamReader
 
 class MainActivity : BaseActivity<AppListAdapter>() {
     companion object {
@@ -60,13 +55,9 @@ class MainActivity : BaseActivity<AppListAdapter>() {
 
         when (requestCode) {
             REQ_IMPORT_APK -> {
-                Log.e("SPRViewer", "chosen!")
-                Log.e("SPRViewer", "result: $resultCode")
                 if (resultCode == Activity.RESULT_OK) {
-                    Log.e("SPRViewer", "OK!")
 
                     data?.data?.also { uri ->
-                        Log.e("SPRViewer", "uri: $uri")
 
                         contentResolver.openInputStream(uri).use { inputStream ->
                             val apk = File(cacheDir, "temp_apk.apk")
