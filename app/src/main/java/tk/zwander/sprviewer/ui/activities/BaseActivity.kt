@@ -1,13 +1,11 @@
 package tk.zwander.sprviewer.ui.activities
 
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import androidx.annotation.CallSuper
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.hmomeni.progresscircula.ProgressCircula
@@ -18,6 +16,7 @@ import tk.zwander.sprviewer.R
 import tk.zwander.sprviewer.data.BaseData
 import tk.zwander.sprviewer.ui.adapters.BaseListAdapter
 import java.util.*
+import kotlin.math.absoluteValue
 
 abstract class BaseActivity<T : BaseListAdapter<out BaseData, out BaseListAdapter.BaseVH>> : AppCompatActivity() {
     abstract val contentView: Int
@@ -55,12 +54,12 @@ abstract class BaseActivity<T : BaseListAdapter<out BaseData, out BaseListAdapte
                 indicatorCenterY: Int,
                 itemPosition: Int
             ) {
-                recycler.scrollToPosition(0)
+                scrollToPosition(itemPosition)
             }
         }
 
         window.decorView?.findViewById<View>(androidx.appcompat.R.id.action_bar)?.setOnClickListener {
-            scrollToTop()
+            scrollToPosition()
         }
     }
 
@@ -97,15 +96,15 @@ abstract class BaseActivity<T : BaseListAdapter<out BaseData, out BaseListAdapte
         }
     }
 
-    fun scrollToTop() {
+    fun scrollToPosition(position: Int = 0) {
         recycler.apply {
             val lin = (layoutManager as LinearLayoutManager)
             val firstPos = lin.findFirstVisibleItemPosition()
-            val smooth = firstPos < 50
+            val smooth = (position - firstPos).absoluteValue < 50
 
 
-            if (smooth) smoothScrollToPosition(0)
-            else scrollToPosition(0)
+            if (smooth) smoothScrollToPosition(position)
+            else scrollToPosition(position)
         }
     }
 
