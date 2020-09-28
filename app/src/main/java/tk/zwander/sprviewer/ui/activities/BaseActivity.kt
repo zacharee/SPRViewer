@@ -26,6 +26,7 @@ abstract class BaseActivity<T : BaseListAdapter<out BaseData, out BaseListAdapte
     internal var progress: ProgressCircula? = null
 
     internal var searchItem: MenuItem? = null
+    internal var searchView: SearchView? = null
 
     internal var doneLoading = false
 
@@ -67,7 +68,7 @@ abstract class BaseActivity<T : BaseListAdapter<out BaseData, out BaseListAdapte
         menuInflater.inflate(R.menu.search, menu)
 
         searchItem = menu.findItem(R.id.action_search)
-        val searchView = searchItem?.actionView as SearchView?
+        searchView = searchItem?.actionView as SearchView?
 
         searchView?.setOnQueryTextListener(adapter)
 
@@ -81,6 +82,14 @@ abstract class BaseActivity<T : BaseListAdapter<out BaseData, out BaseListAdapte
         checkCount()
 
         return true
+    }
+
+    override fun onBackPressed() {
+        if (searchView?.isIconified == false) {
+            searchView?.onActionViewCollapsed()
+        } else {
+            super.onBackPressed()
+        }
     }
 
     open fun onLoadFinished() {

@@ -14,7 +14,7 @@
         android:title="@android:string/search_go"
         android:visible="false"
         app:actionViewClass="androidx.appcompat.widget.SearchView"
-        app:showAsAction="ifRoom"
+        app:showAsAction="always"
         />
 
 </menu>
