@@ -7,12 +7,14 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.isVisible
 import com.squareup.picasso.Callback
 import kotlinx.android.synthetic.main.drawable_info_layout.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import net.dongliu.apk.parser.ApkFile
 import tk.zwander.sprviewer.R
 import tk.zwander.sprviewer.data.UDrawableData
@@ -20,7 +22,7 @@ import tk.zwander.sprviewer.util.getAppDrawables
 import tk.zwander.sprviewer.util.getAppRes
 import tk.zwander.sprviewer.util.getFile
 import tk.zwander.sprviewer.util.picasso
-import java.lang.Exception
+import kotlin.Exception
 
 class DrawableListAdapter(private val itemSelectedListener: (UDrawableData) -> Unit) : BaseListAdapter<UDrawableData, DrawableListAdapter.ListVH>(UDrawableData::class.java) {
     override val viewRes = R.layout.drawable_info_layout
@@ -89,7 +91,17 @@ class DrawableListAdapter(private val itemSelectedListener: (UDrawableData) -> U
                         )
                     ).into(img_preview, object : Callback {
                         override fun onError(e: Exception?) {
-                            img_preview.isVisible = false
+                            launch {
+                                withContext(Dispatchers.Main) {
+                                    try {
+                                        img_preview.setImageDrawable(
+                                            ResourcesCompat.getDrawable(remRes, info.id, remRes.newTheme()))
+                                        ext_indicator.isVisible = false
+                                    } catch (e: Exception) {
+                                        img_preview.isVisible = false
+                                    }
+                                }
+                            }
                         }
 
                         override fun onSuccess() {
