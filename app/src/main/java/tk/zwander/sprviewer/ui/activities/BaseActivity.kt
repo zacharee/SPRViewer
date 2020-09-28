@@ -1,12 +1,15 @@
 package tk.zwander.sprviewer.ui.activities
 
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import androidx.annotation.CallSuper
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.appcompat.widget.SearchView
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.hmomeni.progresscircula.ProgressCircula
 import com.reddit.indicatorfastscroll.FastScrollItemIndicator
 import com.reddit.indicatorfastscroll.FastScrollerView
@@ -52,7 +55,7 @@ abstract class BaseActivity<T : BaseListAdapter<out BaseData, out BaseListAdapte
                 indicatorCenterY: Int,
                 itemPosition: Int
             ) {
-                recycler.scrollToPosition(itemPosition)
+                recycler.scrollToPosition(0)
             }
         }
 
@@ -94,8 +97,13 @@ abstract class BaseActivity<T : BaseListAdapter<out BaseData, out BaseListAdapte
         }
     }
 
-    fun scrollToTop(smooth: Boolean = true) {
+    fun scrollToTop() {
         recycler.apply {
+            val lin = (layoutManager as LinearLayoutManager)
+            val firstPos = lin.findFirstVisibleItemPosition()
+            val smooth = firstPos < 50
+
+
             if (smooth) smoothScrollToPosition(0)
             else scrollToPosition(0)
         }
