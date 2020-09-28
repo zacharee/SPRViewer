@@ -266,6 +266,7 @@ fun ResourcesManager.getResourcesCompat(apkPath: String, pkgInfo: LoadedApk) : R
                 .apply { isAccessible = true }
                 .invoke(
                     this,
+                    null,
                     apkPath,
                     null,
                     null,
