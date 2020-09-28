@@ -46,4 +46,5 @@ dependencies {
     implementation 'com.github.chrisbanes:PhotoView:2.3.0'
     implementation 'ar.com.hjg:pngj:2.1.0'
     implementation 'com.daimajia.numberprogressbar:library:1.4@aar'
+    implementation 'com.github.ChickenHook:RestrictionBypass:2.2'
 }
