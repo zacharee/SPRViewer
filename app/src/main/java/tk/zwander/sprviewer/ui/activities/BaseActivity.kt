@@ -8,11 +8,15 @@ import androidx.annotation.CallSuper
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import com.hmomeni.progresscircula.ProgressCircula
+import com.reddit.indicatorfastscroll.FastScrollItemIndicator
+import com.reddit.indicatorfastscroll.FastScrollerView
 import kotlinx.android.synthetic.main.activity_main.*
 import tk.zwander.sprviewer.R
+import tk.zwander.sprviewer.data.BaseData
 import tk.zwander.sprviewer.ui.adapters.BaseListAdapter
+import java.util.*
 
-abstract class BaseActivity<T : BaseListAdapter<out Any, out BaseListAdapter.BaseVH>> : AppCompatActivity() {
+abstract class BaseActivity<T : BaseListAdapter<out BaseData, out BaseListAdapter.BaseVH>> : AppCompatActivity() {
     abstract val contentView: Int
     abstract val adapter: T
 
@@ -29,6 +33,28 @@ abstract class BaseActivity<T : BaseListAdapter<out Any, out BaseListAdapter.Bas
         setContentView(contentView)
 
         recycler.adapter = adapter
+
+        scroller.setupWithRecyclerView(
+            recycler,
+            { position ->
+                val item = adapter.getItemAt(position)
+
+                FastScrollItemIndicator.Text(
+                    item.constructLabel()
+                        .substring(0, 1)
+                        .toUpperCase(Locale.getDefault())
+                )
+            }
+        )
+        scroller.itemIndicatorSelectedCallbacks += object : FastScrollerView.ItemIndicatorSelectedCallback {
+            override fun onItemIndicatorSelected(
+                indicator: FastScrollItemIndicator,
+                indicatorCenterY: Int,
+                itemPosition: Int
+            ) {
+                recycler.scrollToPosition(itemPosition)
+            }
+        }
 
         window.decorView?.findViewById<View>(androidx.appcompat.R.id.action_bar)?.setOnClickListener {
             scrollToTop()

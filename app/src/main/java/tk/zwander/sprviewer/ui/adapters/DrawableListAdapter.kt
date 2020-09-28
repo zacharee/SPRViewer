@@ -40,8 +40,8 @@ class DrawableListAdapter(private val itemSelectedListener: (UDrawableData) -> U
     }
 
     override fun compare(o1: UDrawableData, o2: UDrawableData): Int {
-        val names = o1.name.compareTo(o2.name)
-        val paths = o1.path.compareTo(o2.path)
+        val names = o1.name.compareTo(o2.name, true)
+        val paths = o1.path.compareTo(o2.path, true)
         return if (names == 0) paths else names
     }
 

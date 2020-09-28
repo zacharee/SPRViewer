@@ -6,8 +6,12 @@ data class AppData(
     val pkg: String,
     val label: String,
     val icon: Drawable
-) : Comparable<AppData> {
+) : BaseData(), Comparable<AppData> {
     override fun compareTo(other: AppData): Int {
         return pkg.compareTo(other.pkg)
+    }
+
+    override fun constructLabel(): String {
+        return label
     }
 }

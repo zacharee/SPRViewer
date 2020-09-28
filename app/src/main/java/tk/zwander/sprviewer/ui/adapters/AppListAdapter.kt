@@ -34,7 +34,7 @@ class AppListAdapter(private val itemSelectedListener: (AppData) -> Unit) : Base
     }
 
     override fun compare(o1: AppData, o2: AppData): Int {
-        return o1.label.compareTo(o2.label)
+        return o1.label.compareTo(o2.label, true)
     }
 
     override fun areContentsTheSame(oldItem: AppData, newItem: AppData): Boolean {

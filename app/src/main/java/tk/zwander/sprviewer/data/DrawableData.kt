@@ -22,10 +22,14 @@ data class UDrawableData(
     val path: String,
     val id: Int,
     val file: ApkFile
-) {
+) : BaseData() {
     fun toDrawableData(): DrawableData {
         return DrawableData(
             type, name, ext, path, id
         )
+    }
+
+    override fun constructLabel(): String {
+        return "$name.$ext"
     }
 }

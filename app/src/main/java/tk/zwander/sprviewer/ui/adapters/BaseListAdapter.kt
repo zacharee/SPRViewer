@@ -9,10 +9,11 @@ import androidx.recyclerview.widget.SortedList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
+import tk.zwander.sprviewer.data.BaseData
 import java.util.*
 import kotlin.collections.ArrayList
 
-abstract class BaseListAdapter<T, VH : BaseListAdapter.BaseVH>(dataClass: Class<T>) : RecyclerView.Adapter<VH>(), SearchView.OnQueryTextListener, CoroutineScope by MainScope() {
+abstract class BaseListAdapter<T : BaseData, VH : BaseListAdapter.BaseVH>(dataClass: Class<T>) : RecyclerView.Adapter<VH>(), SearchView.OnQueryTextListener, CoroutineScope by MainScope() {
     private val results = SortedList(dataClass, SortCallback())
     private val orig = object : ArrayList<T>() {
         override fun add(element: T): Boolean {
@@ -95,6 +96,8 @@ abstract class BaseListAdapter<T, VH : BaseListAdapter.BaseVH>(dataClass: Class<
     }
 
     fun indexOf(item: T) = results.indexOf(item)
+
+    fun getItemAt(position: Int) = results[position]
 
     fun createBaseViewHolder(parent: ViewGroup, position: Int): BaseVH {
         return BaseVH(
