@@ -30,10 +30,17 @@ abstract class BaseActivity<T : BaseListAdapter<out BaseData, out BaseListAdapte
 
     internal var doneLoading = false
 
+    internal open val hasBackButton = false
+
     @CallSuper
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(contentView)
+
+        if (hasBackButton) {
+            supportActionBar?.setDisplayHomeAsUpEnabled(true)
+            supportActionBar?.setDisplayShowHomeEnabled(true)
+        }
 
         recycler.adapter = adapter
 
@@ -82,6 +89,16 @@ abstract class BaseActivity<T : BaseListAdapter<out BaseData, out BaseListAdapte
         checkCount()
 
         return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        return when (item?.itemId) {
+            android.R.id.home -> {
+                onBackPressed()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     override fun onBackPressed() {

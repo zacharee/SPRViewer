@@ -40,6 +40,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
 
         startActivity(viewIntent)
     }
+    override val hasBackButton = true
 
     private val apkPath by lazy {
         if (pkg != null) {

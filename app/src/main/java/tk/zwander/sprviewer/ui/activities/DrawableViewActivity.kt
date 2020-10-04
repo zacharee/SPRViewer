@@ -99,6 +99,9 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
             return
         }
 
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setDisplayShowHomeEnabled(true)
+
         title = "$drawableName.$ext"
 
         launch {
@@ -196,6 +199,10 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
             }
             R.id.action_save_orig -> {
                 startOrigSave()
+                true
+            }
+            android.R.id.home -> {
+                onBackPressed()
                 true
             }
             else -> super.onOptionsItemSelected(item)
