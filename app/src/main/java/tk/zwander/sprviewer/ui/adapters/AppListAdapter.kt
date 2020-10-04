@@ -20,7 +20,7 @@ class AppListAdapter(private val itemSelectedListener: (AppData) -> Unit) : Base
     override fun onBindViewHolder(holder: BaseVH, position: Int, info: AppData) {
         holder.itemView.apply {
             icon.setImageDrawable(info.icon)
-            app_name.text = info.label
+            app_name.text = info.constructLabel()
             app_pkg.text = info.pkg
 
             setOnClickListener {
@@ -30,11 +30,11 @@ class AppListAdapter(private val itemSelectedListener: (AppData) -> Unit) : Base
     }
 
     override fun matches(query: String, data: AppData): Boolean {
-        return data.pkg.contains(query, true) || data.label.contains(query, true)
+        return data.pkg.contains(query, true) || data.constructLabel().contains(query, true)
     }
 
     override fun compare(o1: AppData, o2: AppData): Int {
-        return o1.label.compareTo(o2.label, true)
+        return o1.constructLabel().compareTo(o2.constructLabel(), true)
     }
 
     override fun areContentsTheSame(oldItem: AppData, newItem: AppData): Boolean {
