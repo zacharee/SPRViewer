@@ -17,6 +17,7 @@
     </style>
 
     <style name="AppTheme.ActionBarStyle" parent="Widget.MaterialComponents.ActionBar.Primary">
+        <item name="background">@drawable/action_bar_background</item>
     </style>
 
 </resources>
