@@ -7,6 +7,12 @@
 
         <item name="colorSecondary">@color/colorSecondary</item>
         <item name="colorSecondaryVariant">@color/colorSecondaryLight</item>
+
+        <item name="android:actionBarStyle">@style/AppTheme.ActionBarStyle</item>
+        <item name="actionBarStyle">@style/AppTheme.ActionBarStyle</item>
+    </style>
+
+    <style name="AppTheme.ActionBarStyle" parent="Widget.MaterialComponents.ActionBar.Primary">
     </style>
 
 </resources>

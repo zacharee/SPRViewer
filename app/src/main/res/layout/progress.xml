@@ -4,7 +4,7 @@
     android:layout_height="?actionBarSize"
     android:padding="16dp"
     app:pgc_indeterminate="true"
-    app:pgc_rimColor="?android:colorAccent"
+    app:pgc_rimColor="?colorSecondaryVariant"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     />
