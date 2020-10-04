@@ -56,6 +56,8 @@ abstract class BaseActivity<T : BaseListAdapter<out BaseData, out BaseListAdapte
                 )
             }
         )
+        scroller_thumb.setupWithFastScroller(scroller)
+
         scroller.itemIndicatorSelectedCallbacks += object : FastScrollerView.ItemIndicatorSelectedCallback {
             override fun onItemIndicatorSelected(
                 indicator: FastScrollItemIndicator,
