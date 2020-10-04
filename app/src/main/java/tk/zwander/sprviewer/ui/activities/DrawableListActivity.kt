@@ -11,6 +11,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.drawable.toBitmap
+import androidx.documentfile.provider.DocumentFile
 import ar.com.hjg.pngj.*
 import kotlinx.coroutines.*
 import net.dongliu.apk.parser.ApkFile
@@ -30,6 +31,8 @@ import kotlin.math.max
 class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope by MainScope() {
     companion object {
         const val EXTRA_FILE = "file"
+
+        const val REQ_CHOOSE_OUTPUT_DIR = 2100
     }
 
     override val contentView = R.layout.activity_main
@@ -88,14 +91,24 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
 
         saveAll = menu.findItem(R.id.all)
         saveAll?.setOnMenuItemClickListener {
-            BaseDimensionInputDialog(this) { info ->
-                handleBatchExport(info)
-            }.show()
+            val openIntent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+            startActivityForResult(openIntent, REQ_CHOOSE_OUTPUT_DIR)
 
             true
         }
 
         return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (resultCode == RESULT_OK && requestCode == REQ_CHOOSE_OUTPUT_DIR
+            && data != null) {
+            BaseDimensionInputDialog(this) { info ->
+                handleBatchExport(info, data.data)
+            }.show()
+        }
     }
 
     override fun checkCount() {
@@ -107,15 +120,18 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
     }
 
     private fun handleBatchExport(
-        info: ExportInfo
+        info: ExportInfo, uri: Uri
     ) = launch {
         val items = adapter.allItemsCopy
         val dialog = CircularProgressDialog(this@DrawableListActivity, items.size)
         val d = dialog.show()
-        val dir = File(getExternalFilesDir(null), "batch/${apk.apkMeta.packageName}")
+
+        val parentDir = DocumentFile.fromTreeUri(this@DrawableListActivity, uri)
+        val dir = parentDir?.createDirectory(apk.apkMeta.packageName)
+//        val dir = File(getExternalFilesDir(null), "batch/${apk.apkMeta.packageName}")
 
         val done = launch(context = Dispatchers.Main) {
-            if (!dir.exists()) dir.mkdirs()
+//            if (!dir.exists()) dir.mkdirs()
 
             items.forEachIndexed { index, drawableData ->
                 launch {
@@ -213,13 +229,14 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                 }
 
                 if (loaded != null) {
-                    val target = File(dir, "${drawableData.path.replace("/", ".")}.$rasterExtension")
+//                    val target = File(dir, "${drawableData.path.replace("/", ".")}.$rasterExtension")
+                    val target = dir?.createFile("image/$rasterExtension", drawableData.path.replace("/", "."))
 
                     launch {
-                        dialog.setCurrentFileName(target.name)
+                        dialog.setCurrentFileName(target!!.name)
                     }
 
-                    target.outputStream().use { output ->
+                    contentResolver.openOutputStream(target!!.uri).use { output ->
                         val imgInfo = ImageInfo(loaded.width, loaded.height, 8, loaded.hasAlpha())
                         val writer = PngWriter(output, imgInfo)
 
@@ -267,14 +284,15 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                 }
 
                 if (info.exportXmls && drawableXml != null) {
-                    val target = File(dir, drawableData.path.replace("/", "."))
+//                    val target = File(dir, drawableData.path.replace("/", "."))
+                    val target = dir?.createFile("text/xml", drawableData.path.replace("/", "."))
 
                     launch {
-                        dialog.setCurrentFileName(target.name)
+                        dialog.setCurrentFileName(target!!.name)
                     }
 
                     withContext(Dispatchers.IO) {
-                        target.outputStream().use { out ->
+                        contentResolver.openOutputStream(target!!.uri).use { out ->
                             drawableXml.byteInputStream().use { input ->
                                 val buffer = ByteArray(16384)
                                 val max = input.available()
@@ -304,14 +322,15 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                 }
 
                 if ((ext == "astc" && info.exportAstcs) || (ext == "spr" && info.exportSprs)) {
-                    val target = File(dir, "${drawableData.path.replace("/", ".")}.$ext")
+//                    val target = File(dir, "${drawableData.path.replace("/", ".")}.$ext")
+                    val target = dir?.createFile("image/$ext", drawableData.path.replace("/", "."))
 
                     launch {
-                        dialog.setCurrentFileName(target.name)
+                        dialog.setCurrentFileName(target!!.name)
                     }
 
                     withContext(Dispatchers.IO) {
-                        target.outputStream().use { output ->
+                        contentResolver.openOutputStream(target!!.uri).use { output ->
                             remRes.openRawResource(drawableData.id).use { input ->
                                 val buffer = ByteArray(16384)
                                 val max = input.available()
@@ -353,28 +372,20 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
         done.join()
         d.dismiss()
 
-        val path = dir.absolutePath
-
         AlertDialog.Builder(this@DrawableListActivity)
             .setTitle(R.string.save_all_complete)
-            .setMessage(resources.getString(R.string.save_all_complete_desc_template, path))
+            .setMessage(resources.getString(R.string.save_all_complete_desc))
             .setPositiveButton(android.R.string.ok, null)
             .setNegativeButton(R.string.open_dir) { _, _ ->
                 val intent = Intent(Intent.ACTION_VIEW)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                intent.setDataAndType(Uri.parse(path), "resource/folder")
+                intent.setDataAndType(dir!!.uri, "resource/folder")
 
                 try {
                     startActivity(intent)
                 } catch (e: ActivityNotFoundException) {
                     Toast.makeText(this@DrawableListActivity, R.string.open_dir_error, Toast.LENGTH_SHORT).show()
                 }
-            }
-            .setNeutralButton(R.string.copy_path) { _, _ ->
-                val clipboard: ClipboardManager =
-                    getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                val clip = ClipData.newPlainText(resources.getString(R.string.batch_path), path)
-                clipboard.primaryClip = clip
             }
             .setCancelable(false)
             .show()

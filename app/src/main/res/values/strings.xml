@@ -10,8 +10,6 @@
     <string name="width">Width</string>
     <string name="height">Height</string>
     <string name="open_dir">Open</string>
-    <string name="copy_path">Copy Path</string>
-    <string name="batch_path">Batch Path</string>
 
     <string name="base_raster_width">Base Raster Width</string>
     <string name="rasterize_xmls">Rasterize XMLs</string>
@@ -25,5 +23,6 @@
     <string name="load_image_error">Unable to load image</string>
     <string name="enter_dimensions">Enter export dimensions</string>
     <string name="open_dir_error">Unable to launch file explorer</string>
-    <string name="save_all_complete_desc_template">Batch export complete! You can find the files at:\n\n%s</string>
+    <string name="save_all_complete_desc">Batch export complete!</string>
+    <string name="batch_export_choose_directory">Choose Output Directory</string>
 </resources>
