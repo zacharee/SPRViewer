@@ -128,11 +128,8 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
 
         val parentDir = DocumentFile.fromTreeUri(this@DrawableListActivity, uri)
         val dir = parentDir?.createDirectory(apk.apkMeta.packageName)
-//        val dir = File(getExternalFilesDir(null), "batch/${apk.apkMeta.packageName}")
 
         val done = launch(context = Dispatchers.Main) {
-//            if (!dir.exists()) dir.mkdirs()
-
             items.forEachIndexed { index, drawableData ->
                 launch {
                     dialog.setBaseFileName(drawableData.name)
