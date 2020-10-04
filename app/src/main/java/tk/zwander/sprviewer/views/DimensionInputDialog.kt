@@ -3,12 +3,12 @@ package tk.zwander.sprviewer.views
 import android.content.Context
 import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
-import androidx.appcompat.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.android.synthetic.main.dimension_input.view.*
 import tk.zwander.sprviewer.R
 import tk.zwander.sprviewer.util.TextWatcherAdapter
 
-class DimensionInputDialog(context: Context, private val drawable: Drawable) : AlertDialog.Builder(context) {
+class DimensionInputDialog(context: Context, private val drawable: Drawable) : MaterialAlertDialogBuilder(context) {
     private val defDimen = 1024
 
     private val intrinsicWidth = drawable.intrinsicWidth

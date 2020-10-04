@@ -3,11 +3,11 @@ package tk.zwander.sprviewer.views
 import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
-import androidx.appcompat.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.android.synthetic.main.determinate_progress.view.*
 import tk.zwander.sprviewer.R
 
-class CircularProgressDialog(context: Context, var maxProgress: Int) : AlertDialog.Builder(context) {
+class CircularProgressDialog(context: Context, var maxProgress: Int) : MaterialAlertDialogBuilder(context) {
     private val view = LayoutInflater.from(context).inflate(R.layout.determinate_progress, null)
     private val progress = view.progress
 

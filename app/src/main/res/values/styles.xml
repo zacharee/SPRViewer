@@ -14,10 +14,21 @@
 
         <item name="android:fitsSystemWindows">true</item>
         <item name="android:windowTranslucentNavigation">true</item>
+
+        <item name="materialAlertDialogTheme">@style/AppTheme.DialogStyle</item>
     </style>
 
     <style name="AppTheme.ActionBarStyle" parent="Widget.MaterialComponents.ActionBar.Primary">
         <item name="background">@drawable/action_bar_background</item>
+    </style>
+
+    <style name="AppTheme.DialogStyle" parent="Theme.MaterialComponents.Dialog.Alert">
+        <item name="dialogCornerRadius">12dp</item>
+        <item name="android:dialogCornerRadius">?dialogCornerRadius</item>
+        <item name="backgroundColor">@android:color/transparent</item>
+        <item name="android:colorBackground">@android:color/transparent</item>
+        <item name="android:background">@drawable/dialog_background</item>
+        <item name="background">@drawable/dialog_background</item>
     </style>
 
 </resources>

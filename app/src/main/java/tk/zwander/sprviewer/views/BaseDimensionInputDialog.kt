@@ -2,14 +2,14 @@ package tk.zwander.sprviewer.views
 
 import android.content.Context
 import android.view.LayoutInflater
-import androidx.appcompat.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.android.synthetic.main.pixel_input.view.*
 import tk.zwander.sprviewer.R
 
 class BaseDimensionInputDialog(
     context: Context,
     okListener: (info: ExportInfo) -> Unit
-) : AlertDialog.Builder(context) {
+) : MaterialAlertDialogBuilder(context) {
     init {
         val view = LayoutInflater.from(context).inflate(R.layout.pixel_input, null)
         setView(view)

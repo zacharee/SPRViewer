@@ -8,11 +8,11 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.documentfile.provider.DocumentFile
 import ar.com.hjg.pngj.*
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.*
 import net.dongliu.apk.parser.ApkFile
 import tk.zwander.sprviewer.R
@@ -372,7 +372,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
         done.join()
         d.dismiss()
 
-        AlertDialog.Builder(this@DrawableListActivity)
+        MaterialAlertDialogBuilder(this@DrawableListActivity)
             .setTitle(R.string.save_all_complete)
             .setMessage(resources.getString(R.string.save_all_complete_desc))
             .setPositiveButton(android.R.string.ok, null)
