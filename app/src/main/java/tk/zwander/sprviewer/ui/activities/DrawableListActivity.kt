@@ -180,7 +180,9 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                                     (info.dimen * intrinsicHeight.toFloat() / intrinsicWidth.toFloat()).toInt(),
                                     1
                                 )
-                            )
+                            ).run {
+                                copy(this.config, this.isMutable).also { this.recycle() }
+                            }
                         }
                     } catch (e: Exception) {
                         null
@@ -212,7 +214,9 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                                             ).also {
                                                 this.recycle()
                                             }
-                                            else this
+                                            else this.run {
+                                                copy(this.config, this.isMutable).also { this.recycle() }
+                                            }
                                         }
                                 }
                             } catch (e: Exception) {
@@ -276,10 +280,9 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
 
                         launch {
                             dialog.updateSubProgress(0)
+                            loaded.recycle()
                         }
                     }
-
-                    loaded.recycle()
                 }
 
                 if (info.exportXmls && drawableXml != null) {
