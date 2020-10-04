@@ -1,64 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:minHeight="?android:listPreferredItemHeight"
-    android:padding="8dp"
-    android:gravity="center_vertical"
     android:clickable="true"
     android:focusable="true"
-    android:orientation="horizontal"
-    android:background="?android:selectableItemBackground">
-
-    <FrameLayout
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent">
-
-        <tk.zwander.sprviewer.views.ExtensionIndicator
-            android:id="@+id/ext_indicator"
-            android:layout_width="48dp"
-            android:layout_height="48dp">
-
-            <view class="tk.zwander.sprviewer.views.ExtensionIndicator$ExtensionIndicatorText"
-                android:id="@+id/text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                tools:text="9.png"
-                />
-
-        </tk.zwander.sprviewer.views.ExtensionIndicator>
-
-        <ImageView
-            android:id="@+id/img_preview"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            />
-
-    </FrameLayout>
+    android:layout_margin="4dp"
+    app:contentPadding="8dp">
 
     <LinearLayout
-        android:id="@+id/drawable_info_wrapper"
-        android:layout_marginStart="8dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_marginEnd="@dimen/scrollbar_width"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/drawable_name"
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <tk.zwander.sprviewer.views.ExtensionIndicator
+                android:id="@+id/ext_indicator"
+                android:layout_width="48dp"
+                android:layout_height="48dp">
+
+                <view class="tk.zwander.sprviewer.views.ExtensionIndicator$ExtensionIndicatorText"
+                    android:id="@+id/text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="9.png"
+                    />
+
+            </tk.zwander.sprviewer.views.ExtensionIndicator>
+
+            <ImageView
+                android:id="@+id/img_preview"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                />
+
+        </FrameLayout>
+
+        <LinearLayout
+            android:id="@+id/drawable_info_wrapper"
+            android:layout_marginStart="8dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
-            tools:text="stat_sys_signal_in_5ge_att_1.xml"
-            />
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/drawable_path"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            tools:text="res/drawable/stat_sys_signal_in_5ge_att_1.xml"
-            />
+            <TextView
+                android:id="@+id/drawable_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+                tools:text="stat_sys_signal_in_5ge_att_1.xml"
+                />
+
+            <TextView
+                android:id="@+id/drawable_path"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:text="res/drawable/stat_sys_signal_in_5ge_att_1.xml"
+                />
+
+        </LinearLayout>
 
     </LinearLayout>
 
-</LinearLayout>
+</com.google.android.material.card.MaterialCardView>

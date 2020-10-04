@@ -10,7 +10,6 @@
         android:visibility="visible"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingEnd="24dp"
         android:fitsSystemWindows="true"
         android:clipToPadding="false"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
@@ -28,7 +27,7 @@
 
     <com.reddit.indicatorfastscroll.FastScrollerView
         android:id="@+id/scroller"
-        android:layout_width="24dp"
+        android:layout_width="@dimen/scrollbar_width"
         android:layout_height="match_parent"
         app:layout_constraintEnd_toEndOf="parent"
         />
