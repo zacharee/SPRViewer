@@ -229,7 +229,6 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                 }
 
                 if (loaded != null) {
-//                    val target = File(dir, "${drawableData.path.replace("/", ".")}.$rasterExtension")
                     val target = dir?.createFile("image/$rasterExtension", drawableData.path.replace("/", "."))
 
                     launch {
@@ -284,7 +283,6 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                 }
 
                 if (info.exportXmls && drawableXml != null) {
-//                    val target = File(dir, drawableData.path.replace("/", "."))
                     val target = dir?.createFile("text/xml", drawableData.path.replace("/", "."))
 
                     launch {
@@ -322,7 +320,6 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
                 }
 
                 if ((ext == "astc" && info.exportAstcs) || (ext == "spr" && info.exportSprs)) {
-//                    val target = File(dir, "${drawableData.path.replace("/", ".")}.$ext")
                     val target = dir?.createFile("image/$ext", drawableData.path.replace("/", "."))
 
                     launch {
