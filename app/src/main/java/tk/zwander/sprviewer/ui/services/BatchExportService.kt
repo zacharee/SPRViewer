@@ -157,7 +157,7 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
     private fun onNewExportQueued(session: BatchExportSessionData) {
         queuedExports.add(session)
 
-        if (currentExport == null || !currentExport!!.isActive) {
+        if (currentExport == null || currentExport!!.isCompleted) {
             startNewExport(session)
         }
     }
