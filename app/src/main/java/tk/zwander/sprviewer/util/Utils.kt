@@ -28,6 +28,7 @@ import net.dongliu.apk.parser.struct.resource.ResourceTable
 import tk.zwander.sprviewer.R
 import tk.zwander.sprviewer.data.AppData
 import tk.zwander.sprviewer.data.UDrawableData
+import tk.zwander.sprviewer.ui.App
 import java.io.File
 import java.nio.ByteBuffer
 import java.util.*
@@ -342,3 +343,6 @@ fun Activity.showTitleSnackBar(anchor: View) {
         }
     }
 }
+
+val Context.app: App
+    get() = applicationContext as App

@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="tk.zwander.sprviewer">
 
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -10,9 +12,14 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:vmSafeMode="true"
+        android:name=".ui.App"
         tools:ignore="AllowBackup,GoogleAppIndexingWarning">
         <activity android:name=".ui.activities.DrawableViewActivity" />
         <activity android:name=".ui.activities.DrawableListActivity" />
+        <activity android:name=".ui.activities.BatchExportDialogActivity"
+            android:excludeFromRecents="true"
+            android:theme="@style/AppTheme.DialogActivity"
+            />
         <activity android:name=".ui.activities.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -20,6 +27,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service android:name=".ui.services.BatchExportService"
+            />
     </application>
 
 </manifest>

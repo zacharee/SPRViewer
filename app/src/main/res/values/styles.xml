@@ -31,4 +31,15 @@
         <item name="background">@drawable/dialog_background</item>
     </style>
 
+    <style name="AppTheme.DialogActivity" parent="Theme.MaterialComponents.Dialog">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorPrimaryVariant">@color/colorPrimaryLight</item>
+
+        <item name="colorSecondary">@color/colorSecondary</item>
+        <item name="colorSecondaryVariant">@color/colorSecondaryLight</item>
+
+        <item name="materialAlertDialogTheme">@style/AppTheme.DialogStyle</item>
+    </style>
+
 </resources>

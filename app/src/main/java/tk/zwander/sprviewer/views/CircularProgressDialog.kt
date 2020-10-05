@@ -7,7 +7,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.android.synthetic.main.determinate_progress.view.*
 import tk.zwander.sprviewer.R
 
-class CircularProgressDialog(context: Context, var maxProgress: Int) : MaterialAlertDialogBuilder(context) {
+class CircularProgressDialog(context: Context, var maxProgress: Int = 0) : MaterialAlertDialogBuilder(context) {
     private val view = LayoutInflater.from(context).inflate(R.layout.determinate_progress, null)
     private val progress = view.progress
 
@@ -18,7 +18,6 @@ class CircularProgressDialog(context: Context, var maxProgress: Int) : MaterialA
 
     init {
         setView(view)
-        setCancelable(false)
 
         setNegativeButton(android.R.string.cancel) { _, _ ->
             onCancelListener?.invoke()
@@ -34,7 +33,7 @@ class CircularProgressDialog(context: Context, var maxProgress: Int) : MaterialA
     }
 
     @SuppressLint("SetTextI18n")
-    fun updateProgress(progress: Int) {
+    fun updateProgress(progress: Int, maxProgress: Int = this.maxProgress) {
         val new = (progress.toFloat() / maxProgress.toFloat() * 100f).toInt()
 
         if (new != currentPercent) {

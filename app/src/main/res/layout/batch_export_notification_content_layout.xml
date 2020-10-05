@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/total_progress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="@android:style/TextAppearance.StatusBar.EventContent"
+        tools:text="678/900"
+        />
+
+    <ProgressBar
+        android:id="@+id/base_progress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:indeterminate="false"
+        android:layout_marginBottom="8dp"
+        style="?android:attr/progressBarStyleHorizontal"
+        />
+
+    <TextView
+        android:id="@+id/base_filename"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="@android:style/TextAppearance.StatusBar.EventContent"
+        tools:text="some_weird_filename"
+        />
+
+    <TextView
+        android:id="@+id/current_filename"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="@android:style/TextAppearance.StatusBar.EventContent"
+        tools:text="some_weird_filename.xml.png"
+        />
+
+    <ProgressBar
+        android:id="@+id/current_progress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:indeterminate="false"
+        style="?android:attr/progressBarStyleHorizontal"
+        />
+
+    <Button
+        android:id="@+id/cancel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="?android:textColorPrimary"
+        android:text="@android:string/cancel"
+        android:textAppearance="@android:style/TextAppearance.StatusBar.EventContent"
+        style="@android:style/Widget.ActionButton"
+        />
+
+</LinearLayout>

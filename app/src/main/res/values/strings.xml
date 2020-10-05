@@ -25,4 +25,7 @@
     <string name="open_dir_error">Unable to launch file explorer</string>
     <string name="save_all_complete_desc">Batch export complete!</string>
     <string name="batch_export_choose_directory">Choose Output Directory</string>
+
+    <string name="export_notification_title">Exporting (%1$i/%2$i done)</string>
+    <string name="export_notification_channel_name">Batch Export Progress</string>
 </resources>

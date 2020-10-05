@@ -1,8 +1,10 @@
 package tk.zwander.sprviewer.views
 
 import android.content.Context
+import android.os.Parcelable
 import android.view.LayoutInflater
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.pixel_input.view.*
 import tk.zwander.sprviewer.R
 
@@ -36,6 +38,7 @@ class BaseDimensionInputDialog(
     }
 }
 
+@Parcelize
 data class ExportInfo(
     val dimen: Int,
     val rasterizeXmls: Boolean,
@@ -45,4 +48,4 @@ data class ExportInfo(
     val exportXmls: Boolean,
     val exportAstcs: Boolean,
     val exportSprs: Boolean
-)
+) : Parcelable

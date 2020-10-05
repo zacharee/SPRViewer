@@ -13,7 +13,14 @@ data class DrawableData(
     val ext: String?,
     val path: String,
     val id: Int
-) : Parcelable
+) : Parcelable {
+    fun toUDrawableData(): UDrawableData {
+        return UDrawableData(
+            type, name, ext, path, id,
+            ApkFile(path)
+        )
+    }
+}
 
 data class UDrawableData(
     val type: String,
