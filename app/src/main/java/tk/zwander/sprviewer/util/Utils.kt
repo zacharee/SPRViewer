@@ -21,12 +21,12 @@ import net.dongliu.apk.parser.parser.ResourceTableParser
 import net.dongliu.apk.parser.struct.AndroidConstants
 import net.dongliu.apk.parser.struct.resource.ResourcePackage
 import net.dongliu.apk.parser.struct.resource.ResourceTable
-import net.dongliu.apk.parser.utils.ResourceLoader
 import tk.zwander.sprviewer.data.AppData
 import tk.zwander.sprviewer.data.UDrawableData
 import java.io.File
 import java.nio.ByteBuffer
 import java.util.*
+import java.util.zip.ZipFile
 import kotlin.collections.ArrayList
 import kotlin.coroutines.CoroutineContext
 
@@ -34,14 +34,16 @@ private var _picassoInstance: Picasso? = null
 
 val mainHandler = Handler(Looper.getMainLooper())
 
-fun Context.getInstalledApps(listener: (data: AppData, size: Int, count: Int) -> Unit): List<AppData> {
+suspend fun Context.getInstalledApps(listener: (data: AppData, size: Int, count: Int) -> Unit): List<AppData> {
     val installedApps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
     val ret = ArrayList<AppData>()
 
     var count = 0
 
-    installedApps.forEach {
+    installedApps.forEachParallel {
         count++
+
+        val apk = ApkFile(it.sourceDir)
 
         val data = AppData(
             it.packageName,
@@ -49,8 +51,25 @@ fun Context.getInstalledApps(listener: (data: AppData, size: Int, count: Int) ->
             it.loadIcon(packageManager)
         )
 
-        ret.add(data)
-        mainHandler.post { listener(data, installedApps.size, count) }
+        val hasDrawables = {
+            apk.getZipFile().entries().run {
+                while (hasMoreElements()) {
+                    val entry = nextElement()
+                    if (entry.name.run {
+                            contains("drawable", true)
+                                    || contains("mipmap", true)
+                                    || contains("raw", true)
+                        })
+                        return@run true
+                }
+                return@run false
+            }
+        }
+
+        if (hasDrawables()) {
+            ret.add(data)
+            mainHandler.post { listener(data, installedApps.size, count) }
+        }
     }
 
     return ret
@@ -181,6 +200,13 @@ fun ApkFile.getFile(): File {
         .get(this) as File
 }
 
+fun ApkFile.getZipFile(): ZipFile {
+    return ApkFile::class.java
+        .getDeclaredField("zf")
+        .apply { isAccessible = true }
+        .get(this) as ZipFile
+}
+
 val Context.picasso: Picasso
     get() {
         return _picassoInstance ?: Picasso.Builder(this@picasso)
@@ -279,4 +305,16 @@ fun ResourcesManager.getResourcesCompat(apkPath: String, pkgInfo: LoadedApk) : R
                 ) as Resources
         }
     }
+}
+
+suspend fun <T> Collection<T>.forEachParallel(context: CoroutineContext = Dispatchers.IO, block: suspend CoroutineScope.(T) -> Unit) = coroutineScope {
+    val jobs = ArrayList<Deferred<*>>(size)
+    forEach {
+        jobs.add(
+            async(context) {
+                block(it)
+            }
+        )
+    }
+    jobs.awaitAll()
 }
