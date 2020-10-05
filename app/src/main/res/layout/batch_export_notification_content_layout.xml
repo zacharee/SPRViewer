@@ -8,9 +8,12 @@
     android:padding="16dp">
     
     <TextView
-        android:id="@android:id/title"
+        android:id="@+id/batch_queue"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:textAppearance="@android:style/TextAppearance.StatusBar.EventContent.Title"
+        android:layout_marginBottom="8dp"
+        tools:text="@string/export_notification_queue"
         />
 
     <TextView
@@ -18,7 +21,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="@android:style/TextAppearance.StatusBar.EventContent"
-        tools:text="678/900"
+        tools:text="@string/export_notification_drawable_progress"
         />
 
     <ProgressBar

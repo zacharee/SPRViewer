@@ -9,6 +9,7 @@ import android.graphics.drawable.Animatable
 import android.net.Uri
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -279,14 +280,14 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
             currentFileProgress,
             currentBaseProgress,
             currentBaseMaxProgress,
-            currentDrawableName
+            currentDrawableName,
+            currentSession
         )
 
         return progressNotification
             .setContent(progressContent)
             .setCustomBigContentView(progressContent)
             .setNotificationSilent()
-            .setContentTitle("${queuedExports.indexOf(currentSession) + 1} / ${queuedExports.size}")
             .build()
     }
 
@@ -296,6 +297,7 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
         currentBaseProgress: Int? = null,
         currentBaseMaxProgress: Int? = null,
         currentDrawableName: String? = null,
+        currentSession: BatchExportSessionData
     ): RemoteViews {
         progressViews.setOnClickPendingIntent(
             R.id.cancel,
@@ -308,17 +310,26 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
             )
         )
 
-        if (currentBaseProgress != null && currentBaseMaxProgress != null) {
+        try {
             progressViews.setTextViewText(
-                R.id.total_progress,
-                "$currentBaseProgress / $currentBaseMaxProgress"
+                R.id.batch_queue,
+                resources.getString(R.string.export_notification_queue, queuedExports.indexOf(currentSession) + 1, queuedExports.size)
             )
-            progressViews.setProgressBar(
-                R.id.base_progress,
-                100,
-                ((currentBaseProgress.toDouble() / currentBaseMaxProgress) * 100).toInt(),
-                false
-            )
+
+            if (currentBaseProgress != null && currentBaseMaxProgress != null) {
+                progressViews.setTextViewText(
+                    R.id.total_progress,
+                    resources.getString(R.string.export_notification_drawable_progress, currentBaseProgress, currentBaseMaxProgress)
+                )
+                progressViews.setProgressBar(
+                    R.id.base_progress,
+                    100,
+                    ((currentBaseProgress.toDouble() / currentBaseMaxProgress) * 100).toInt(),
+                    false
+                )
+            }
+        } catch (e: Exception) {
+            Log.e("SPRViewer", "error", e)
         }
 
         if (currentDrawableName != null) {
