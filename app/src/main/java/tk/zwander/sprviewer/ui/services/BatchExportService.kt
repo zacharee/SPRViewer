@@ -143,7 +143,7 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
             val session = BatchExportSessionData(
                 uri, drawables, exportInfo, appName,
                 appFile, apkFile,
-                packageManager.getResourcesForApplication(apkFile.apkMeta.packageName)
+                getAppRes(appFile)
             )
 
             onNewExportQueued(session)
