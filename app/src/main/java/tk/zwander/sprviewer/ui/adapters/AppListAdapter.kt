@@ -4,8 +4,8 @@ import android.content.Context
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.app_info_layout.view.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import tk.zwander.sprviewer.R
 import tk.zwander.sprviewer.data.AppData
 import tk.zwander.sprviewer.util.getInstalledApps
@@ -41,16 +41,14 @@ class AppListAdapter(private val itemSelectedListener: (AppData) -> Unit) : Base
         return oldItem.pkg == newItem.pkg
     }
 
-    fun loadItemsAsync(context: Context, listener: () -> Unit, progressListener: (Int, Int) -> Unit) = async(Dispatchers.IO) {
-        val apps = context.getInstalledApps { _, size, count ->
-            launch(Dispatchers.Main) {
+    fun loadItemsAsync(context: Context, listener: () -> Unit, progressListener: (Int, Int) -> Unit) = launch {
+        val apps = withContext(Dispatchers.IO) {
+            context.getInstalledApps { _, size, count ->
                 progressListener(size, count)
             }
         }
 
-        launch(Dispatchers.Main) {
-            addAll(apps)
-            listener()
-        }
+        addAll(apps)
+        listener()
     }
 }

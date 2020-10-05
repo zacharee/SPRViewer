@@ -10,9 +10,7 @@ import android.content.res.CompatibilityInfo
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.os.Build
-import android.os.Handler
 import android.os.IBinder
-import android.os.Looper
 import android.view.Display
 import android.view.View
 import com.skydoves.balloon.ArrowOrientation
@@ -35,10 +33,9 @@ import java.util.*
 import java.util.zip.ZipFile
 import kotlin.collections.ArrayList
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 private var _picassoInstance: Picasso? = null
-
-val mainHandler = Handler(Looper.getMainLooper())
 
 suspend fun Context.getInstalledApps(listener: (data: AppData, size: Int, count: Int) -> Unit): List<AppData> {
     val installedApps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
@@ -46,7 +43,7 @@ suspend fun Context.getInstalledApps(listener: (data: AppData, size: Int, count:
 
     var count = 0
 
-    installedApps.forEachParallel {
+    installedApps.forEachParallel(Dispatchers.IO) {
         count++
 
         val apk = ApkFile(it.sourceDir)
@@ -57,24 +54,30 @@ suspend fun Context.getInstalledApps(listener: (data: AppData, size: Int, count:
             it.loadIcon(packageManager)
         )
 
-        val hasDrawables = {
-            apk.getZipFile().entries().run {
-                while (hasMoreElements()) {
-                    val entry = nextElement()
+        val hasDrawables: suspend CoroutineScope.() -> Boolean = {
+            apk.getZipFile().entries().run label@ {
+                var found = false
+
+                forEachRemaining { entry, shortCircuit ->
                     if (entry.name.run {
                             contains("drawable", true)
                                     || contains("mipmap", true)
                                     || contains("raw", true)
-                        })
-                        return@run true
+                        }) {
+                        found = true
+                        shortCircuit()
+                    }
                 }
-                return@run false
+
+                return@label found
             }
         }
 
         if (hasDrawables()) {
             ret.add(data)
-            mainHandler.post { listener(data, installedApps.size, count) }
+            launch(Dispatchers.Main) {
+                listener(data, installedApps.size, count)
+            }
         }
     }
 
@@ -313,7 +316,7 @@ fun ResourcesManager.getResourcesCompat(apkPath: String, pkgInfo: LoadedApk) : R
     }
 }
 
-suspend fun <T> Collection<T>.forEachParallel(context: CoroutineContext = Dispatchers.IO, block: suspend CoroutineScope.(T) -> Unit) = coroutineScope {
+suspend fun <T> Collection<T>.forEachParallel(context: CoroutineContext = EmptyCoroutineContext, block: suspend CoroutineScope.(T) -> Unit) = coroutineScope {
     val jobs = ArrayList<Deferred<*>>(size)
     forEach {
         jobs.add(
@@ -346,3 +349,13 @@ fun Activity.showTitleSnackBar(anchor: View) {
 
 val Context.app: App
     get() = applicationContext as App
+
+fun <T> Enumeration<T>.forEachRemaining(consumer: (T, shortCircuit: () -> Unit) -> Unit) {
+    var running = true
+
+    while (hasMoreElements() && running) {
+        consumer(nextElement()) {
+            running = false
+        }
+    }
+}
