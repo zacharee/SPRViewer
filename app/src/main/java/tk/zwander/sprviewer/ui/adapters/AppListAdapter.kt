@@ -42,15 +42,14 @@ class AppListAdapter(private val itemSelectedListener: (AppData) -> Unit) : Base
     }
 
     fun loadItemsAsync(context: Context, listener: () -> Unit, progressListener: (Int, Int) -> Unit) = async(Dispatchers.IO) {
-        context.getInstalledApps { data, size, count ->
+        val apps = context.getInstalledApps { _, size, count ->
             launch(Dispatchers.Main) {
                 progressListener(size, count)
             }
-
-            add(data)
         }
 
         launch(Dispatchers.Main) {
+            addAll(apps)
             listener()
         }
     }
