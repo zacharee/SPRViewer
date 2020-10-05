@@ -52,7 +52,6 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
     }
     private val pkg by lazy { intent.getStringExtra(Intent.EXTRA_PACKAGE_NAME) }
     private val file by lazy { intent.getSerializableExtra(EXTRA_FILE) as File? }
-    private val remRes by lazy { getAppRes(apkPath!!) }
 
     private var saveAll: MenuItem? = null
 
@@ -111,6 +110,9 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
     }
 
     private fun handleBatchExport(info: ExportInfo, uri: Uri) {
+        contentResolver.takePersistableUriPermission(uri,
+            Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+
         BatchExportService.startBatchExport(
             this,
             uri,
