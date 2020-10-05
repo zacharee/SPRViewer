@@ -43,7 +43,7 @@ dependencies {
 
     implementation 'com.hmomeni.progresscircula:progresscircula:0.1.3'
     implementation 'com.squareup.picasso:picasso:2.71828'
-    implementation 'net.dongliu:apk-parser:2.6.5'
+    implementation 'net.dongliu:apk-parser:2.6.10'
     implementation 'com.github.chrisbanes:PhotoView:2.3.0'
     implementation 'ar.com.hjg:pngj:2.1.0'
     implementation 'com.daimajia.numberprogressbar:library:1.4@aar'
