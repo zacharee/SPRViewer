@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.res.ResourcesCompat
@@ -103,6 +104,14 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
         supportActionBar?.setDisplayShowHomeEnabled(true)
 
         title = "$drawableName.$ext"
+
+        window.decorView?.findViewById<View>(androidx.appcompat.R.id.action_bar)?.apply {
+            setOnLongClickListener {
+                showTitleSnackBar(it)
+
+                true
+            }
+        }
 
         launch {
             val drawableXml = drawableXml.getOrAwaitResult()

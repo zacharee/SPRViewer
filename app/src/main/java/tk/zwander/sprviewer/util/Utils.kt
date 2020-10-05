@@ -1,5 +1,6 @@
 package tk.zwander.sprviewer.util
 
+import android.app.Activity
 import android.app.Application
 import android.app.LoadedApk
 import android.app.ResourcesManager
@@ -13,6 +14,9 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.view.Display
+import android.view.View
+import com.skydoves.balloon.ArrowOrientation
+import com.skydoves.balloon.createBalloon
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.*
 import net.dongliu.apk.parser.AbstractApkFile
@@ -21,6 +25,7 @@ import net.dongliu.apk.parser.parser.ResourceTableParser
 import net.dongliu.apk.parser.struct.AndroidConstants
 import net.dongliu.apk.parser.struct.resource.ResourcePackage
 import net.dongliu.apk.parser.struct.resource.ResourceTable
+import tk.zwander.sprviewer.R
 import tk.zwander.sprviewer.data.AppData
 import tk.zwander.sprviewer.data.UDrawableData
 import java.io.File
@@ -317,4 +322,23 @@ suspend fun <T> Collection<T>.forEachParallel(context: CoroutineContext = Dispat
         )
     }
     jobs.awaitAll()
+}
+
+fun Activity.showTitleSnackBar(anchor: View) {
+    createBalloon(this) {
+        text = title.toString()
+        setPadding(16)
+        setCornerRadius(12f)
+        autoDismissDuration = 2500L
+        setTextSize(20f)
+        widthRatio = 1.0f
+        setBackgroundColorResource(R.color.colorSecondaryLight)
+        setArrowOrientation(ArrowOrientation.TOP)
+        arrowPosition = 0.2f
+    }.apply {
+        showAlignBottom(anchor)
+        setOnBalloonOutsideTouchListener { _, _ ->
+            dismiss()
+        }
+    }
 }

@@ -15,6 +15,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import tk.zwander.sprviewer.R
 import tk.zwander.sprviewer.data.BaseData
 import tk.zwander.sprviewer.ui.adapters.BaseListAdapter
+import tk.zwander.sprviewer.util.showTitleSnackBar
 import java.util.*
 import kotlin.math.absoluteValue
 
@@ -68,8 +69,16 @@ abstract class BaseActivity<T : BaseListAdapter<out BaseData, out BaseListAdapte
             }
         }
 
-        window.decorView?.findViewById<View>(androidx.appcompat.R.id.action_bar)?.setOnClickListener {
-            scrollToPosition()
+        window.decorView?.findViewById<View>(androidx.appcompat.R.id.action_bar)?.apply {
+            setOnClickListener {
+                scrollToPosition()
+            }
+
+            setOnLongClickListener {
+                showTitleSnackBar(it)
+
+                true
+            }
         }
     }
 
