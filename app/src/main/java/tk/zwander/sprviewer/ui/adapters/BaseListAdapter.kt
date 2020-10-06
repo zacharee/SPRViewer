@@ -1,14 +1,13 @@
 package tk.zwander.sprviewer.ui.adapters
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SortedList
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.*
 import tk.zwander.sprviewer.data.BaseData
 import java.util.*
 import kotlin.collections.ArrayList
@@ -25,7 +24,7 @@ abstract class BaseListAdapter<T : BaseData, VH : BaseListAdapter.BaseVH>(dataCl
 
         override fun addAll(elements: Collection<T>): Boolean {
             results.beginBatchedUpdates()
-            results.addAll(elements.filter { matches(currentQuery, it) })
+            results.addAll(elements)
             results.endBatchedUpdates()
             return super.addAll(elements)
         }

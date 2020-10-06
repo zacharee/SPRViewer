@@ -11,6 +11,7 @@ import android.content.res.Configuration
 import android.content.res.Resources
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import android.view.Display
 import android.view.View
 import com.skydoves.balloon.ArrowOrientation
@@ -94,10 +95,10 @@ fun AbstractApkFile.getResourceTable(): ResourceTable {
     return parser.resourceTable
 }
 
-fun getAppDrawables(
+suspend fun getAppDrawables(
     apk: ApkFile,
     drawableFound: (data: UDrawableData, size: Int, count: Int) -> Unit
-): List<UDrawableData> {
+): List<UDrawableData> = coroutineScope {
     val table = apk.getResourceTable()
     val (pkgCode, resPkg) = table.packageMap.entries.toList()[0].run { key.toInt() to value }
 
@@ -124,7 +125,7 @@ fun getAppDrawables(
 
     var count = 0
 
-    val loopRange: (start: Int, end: Int) -> Unit = { start: Int, end: Int ->
+    val loopRange: suspend CoroutineScope.(start: Int, end: Int) -> Unit = { start: Int, end: Int ->
         for (i in start until end) {
             try {
                 val r = table.getResourcesById(i.toLong())
@@ -172,7 +173,7 @@ fun getAppDrawables(
         loopRange(rawStart, rawStart + rawSize)
     }
 
-    return list
+    return@coroutineScope list
 }
 
 fun Context.getAppRes(apk: File): Resources {

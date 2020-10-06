@@ -57,17 +57,17 @@ class DrawableListAdapter(private val itemSelectedListener: (UDrawableData) -> U
         apk: ApkFile,
         listener: () -> Unit,
         progressListener: (Int, Int) -> Unit
-    ) = async(Dispatchers.IO) {
-        val drawables = getAppDrawables(apk) { data, size, count ->
-            launch(Dispatchers.Main) {
-                progressListener(size, count)
+    ) = launch {
+        val drawables = withContext(Dispatchers.IO) {
+            getAppDrawables(apk) { _, size, count ->
+                launch(Dispatchers.Main) {
+                    progressListener(size, count)
+                }
             }
         }
 
-        launch(Dispatchers.Main) {
-            addAll(drawables)
-            listener()
-        }
+        addAll(drawables)
+        listener()
     }
 
     inner class ListVH(view: View) : BaseVH(view) {

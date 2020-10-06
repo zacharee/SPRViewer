@@ -1,6 +1,7 @@
 package tk.zwander.sprviewer.ui.activities
 
 import android.content.*
+import android.content.pm.PackageParser
 import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
@@ -14,7 +15,6 @@ import tk.zwander.sprviewer.util.*
 import tk.zwander.sprviewer.views.BaseDimensionInputDialog
 import tk.zwander.sprviewer.views.ExportInfo
 import java.io.File
-import java.lang.NullPointerException
 import java.util.*
 
 
@@ -49,6 +49,10 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
     }
     private val pkg by lazy { intent.getStringExtra(Intent.EXTRA_PACKAGE_NAME) }
     private val file by lazy { intent.getSerializableExtra(EXTRA_FILE) as File? }
+    private val appLabel by lazyDeferred { packageInfo.applicationInfo.loadLabel(packageManager).toString() }
+
+    private val parser = PackageParser()
+    private val packageInfo by lazy { parser.parsePackage(apk.getFile(), 0, true) }
 
     private var saveAll: MenuItem? = null
 
@@ -106,16 +110,16 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
         }
     }
 
-    private fun handleBatchExport(info: ExportInfo, uri: Uri) {
+    private fun handleBatchExport(info: ExportInfo, uri: Uri) = launch {
         contentResolver.takePersistableUriPermission(uri,
             Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
 
         BatchExportService.startBatchExport(
-            this,
+            this@DrawableListActivity,
             uri,
             adapter.allItemsCopy,
             info,
-            apk.apkMeta.label,
+            appLabel.await(),
             apk.getFile()
         )
     }
@@ -126,15 +130,9 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
         updateTitle(adapter.itemCount)
     }
 
-    private fun updateTitle(numberApps: Int = -1) = launch {
-        title = withContext(Dispatchers.Main) {
-            apk.run {
-                try {
-                    apkMeta.label
-                } catch (e: NullPointerException) {
-                    pkg
-                }
-            }
-        } + if (numberApps > -1) " ($numberApps)" else ""
+    private fun updateTitle(numberDrawables: Int = -1) = launch {
+        title = withContext(Dispatchers.IO) {
+            appLabel.await()
+        } + if (numberDrawables > -1) " ($numberDrawables)" else ""
     }
 }
