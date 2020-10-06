@@ -47,9 +47,6 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
         ApkFile(apkPath)
             .apply { preferredLocale = Locale.getDefault() }
     }
-    private val table by lazy {
-        apk.getResourceTable()
-    }
     private val pkg by lazy { intent.getStringExtra(Intent.EXTRA_PACKAGE_NAME) }
     private val file by lazy { intent.getSerializableExtra(EXTRA_FILE) as File? }
 
