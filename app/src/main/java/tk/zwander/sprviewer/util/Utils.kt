@@ -6,6 +6,7 @@ import android.app.LoadedApk
 import android.app.ResourcesManager
 import android.content.Context
 import android.content.pm.PackageManager
+import android.content.pm.PackageParser
 import android.content.res.CompatibilityInfo
 import android.content.res.Configuration
 import android.content.res.Resources
@@ -97,6 +98,7 @@ fun AbstractApkFile.getResourceTable(): ResourceTable {
 
 suspend fun getAppDrawables(
     apk: ApkFile,
+    packageInfo: PackageParser.Package,
     drawableFound: (data: UDrawableData, size: Int, count: Int) -> Unit
 ): List<UDrawableData> = coroutineScope {
     val table = apk.getResourceTable()
@@ -152,7 +154,8 @@ suspend fun getAppDrawables(
                         ext,
                         pathOrColor,
                         i,
-                        apk
+                        apk,
+                        packageInfo
                     )
 
                     count++
@@ -358,5 +361,13 @@ fun <T> Enumeration<T>.forEachRemaining(consumer: (T, shortCircuit: () -> Unit) 
         consumer(nextElement()) {
             running = false
         }
+    }
+}
+
+fun PackageParser.parsePackageCompat(packageFile: File, flags: Int, useCaches: Boolean): PackageParser.Package {
+    return if (Build.VERSION.SDK_INT > Build.VERSION_CODES.N_MR1) {
+        parsePackage(packageFile, flags, useCaches)
+    } else {
+        parsePackage(packageFile, flags)
     }
 }

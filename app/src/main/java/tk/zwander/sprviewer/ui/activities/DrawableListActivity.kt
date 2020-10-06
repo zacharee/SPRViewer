@@ -52,7 +52,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
     private val appLabel by lazyDeferred { packageInfo.applicationInfo.loadLabel(packageManager).toString() }
 
     private val parser = PackageParser()
-    private val packageInfo by lazy { parser.parsePackage(apk.getFile(), 0, true) }
+    private val packageInfo by lazy { parser.parsePackageCompat(apk.getFile(), 0, true) }
 
     private var saveAll: MenuItem? = null
 
@@ -64,7 +64,7 @@ class DrawableListActivity : BaseActivity<DrawableListAdapter>(), CoroutineScope
             return
         }
 
-        adapter.loadItemsAsync(apk, this::onLoadFinished) { size, count ->
+        adapter.loadItemsAsync(apk, packageInfo, this::onLoadFinished) { size, count ->
             progress?.progress = (count.toFloat() / size.toFloat() * 100f).toInt()
         }
 

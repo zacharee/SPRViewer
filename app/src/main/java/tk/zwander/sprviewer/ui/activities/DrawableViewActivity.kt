@@ -3,6 +3,7 @@ package tk.zwander.sprviewer.ui.activities
 import android.app.Activity
 import android.content.ContentResolver
 import android.content.Intent
+import android.content.pm.PackageParser
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.net.Uri
@@ -76,6 +77,8 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
             it.resourceEntry.toStringValue(table, Locale.getDefault())
         }
     }
+    private val parser = PackageParser()
+    private val packageInfo by lazy { parser.parsePackageCompat(apk.getFile(), 0, true) }
     private val drawableName: String
         get() = drawableInfo.name
     private val drawableId: Int
@@ -121,7 +124,7 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
                     picasso.load(
                         Uri.parse(
                             "${ContentResolver.SCHEME_ANDROID_RESOURCE}://" +
-                                    "${apk.apkMeta.packageName}/" +
+                                    "${packageInfo.packageName}/" +
                                     "${remRes.getResourceTypeName(drawableId)}/" +
                                     "$drawableId"
                         )

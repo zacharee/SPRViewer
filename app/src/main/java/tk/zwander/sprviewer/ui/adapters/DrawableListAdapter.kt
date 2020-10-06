@@ -2,6 +2,7 @@ package tk.zwander.sprviewer.ui.adapters
 
 import android.annotation.SuppressLint
 import android.content.ContentResolver
+import android.content.pm.PackageParser
 import android.net.Uri
 import android.util.Log
 import android.view.LayoutInflater
@@ -55,11 +56,12 @@ class DrawableListAdapter(private val itemSelectedListener: (UDrawableData) -> U
 
     fun loadItemsAsync(
         apk: ApkFile,
+        packageInfo: PackageParser.Package,
         listener: () -> Unit,
         progressListener: (Int, Int) -> Unit
     ) = launch {
         val drawables = withContext(Dispatchers.IO) {
-            getAppDrawables(apk) { _, size, count ->
+            getAppDrawables(apk, packageInfo) { _, size, count ->
                 launch(Dispatchers.Main) {
                     progressListener(size, count)
                 }
@@ -85,7 +87,7 @@ class DrawableListAdapter(private val itemSelectedListener: (UDrawableData) -> U
                     context.picasso.load(
                         Uri.parse(
                             "${ContentResolver.SCHEME_ANDROID_RESOURCE}://" +
-                                    "${info.file.apkMeta.packageName}/" +
+                                    "${info.packageInfo.packageName}/" +
                                     "${remRes.getResourceTypeName(info.id)}/" +
                                     "${info.id}"
                         )

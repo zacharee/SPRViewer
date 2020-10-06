@@ -4,6 +4,7 @@ import android.app.*
 import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageParser
 import android.graphics.Bitmap
 import android.graphics.drawable.Animatable
 import android.net.Uri
@@ -74,6 +75,8 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
     private var currentExport: Deferred<*>? = null
 
     private val nm by lazy { NotificationManagerCompat.from(this) }
+
+    private val parser = PackageParser()
 
     private val progressViews by lazy {
         RemoteViews(
@@ -365,9 +368,10 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
         val apk = session.apkFile
         val table = session.apkResourceTable
         val remRes = session.remRes
+        val packageInfo = parser.parsePackageCompat(apk.getFile(), 0, true)
 
         val parentDir = DocumentFile.fromTreeUri(context, uri)
-        val dir = parentDir?.createDirectory(apk.apkMeta.packageName)
+        val dir = parentDir?.createDirectory(packageInfo.packageName)
 
         items.forEachIndexed { index, drawableData ->
             launch {
@@ -454,7 +458,7 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
                                 val picassoBmp = picasso.load(
                                     Uri.parse(
                                         "${ContentResolver.SCHEME_ANDROID_RESOURCE}://" +
-                                                "${apk.apkMeta.packageName}/" +
+                                                "${packageInfo.packageName}/" +
                                                 "${remRes.getResourceTypeName(drawableData.id)}/" +
                                                 "${drawableData.id}"
                                     )
