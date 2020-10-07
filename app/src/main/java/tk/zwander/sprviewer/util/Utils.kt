@@ -12,7 +12,6 @@ import android.content.res.Configuration
 import android.content.res.Resources
 import android.os.Build
 import android.os.IBinder
-import android.util.Log
 import android.view.Display
 import android.view.View
 import com.skydoves.balloon.ArrowOrientation
@@ -48,38 +47,15 @@ suspend fun Context.getInstalledApps(listener: (data: AppData, size: Int, count:
     installedApps.forEachParallel(Dispatchers.IO) {
         count++
 
-        val apk = ApkFile(it.sourceDir)
-
         val data = AppData(
             it.packageName,
             it.loadLabel(packageManager).toString(),
             it.loadIcon(packageManager)
         )
 
-        val hasDrawables: suspend CoroutineScope.() -> Boolean = {
-            apk.getZipFile().entries().run label@ {
-                var found = false
-
-                forEachRemaining { entry, shortCircuit ->
-                    if (entry.name.run {
-                            contains("drawable", true)
-                                    || contains("mipmap", true)
-                                    || contains("raw", true)
-                        }) {
-                        found = true
-                        shortCircuit()
-                    }
-                }
-
-                return@label found
-            }
-        }
-
-        if (hasDrawables()) {
-            ret.add(data)
-            launch(Dispatchers.Main) {
-                listener(data, installedApps.size, count)
-            }
+        ret.add(data)
+        launch(Dispatchers.Main) {
+            listener(data, installedApps.size, count)
         }
     }
 
@@ -162,7 +138,8 @@ suspend fun getAppDrawables(
                     list.add(data)
                     drawableFound(data, totalSize, count)
                 }
-            } catch (e: Resources.NotFoundException) {}
+            } catch (e: Resources.NotFoundException) {
+            }
         }
     }
 
@@ -223,7 +200,7 @@ fun ApkFile.getZipFile(): ZipFile {
 val Context.picasso: Picasso
     get() {
         return _picassoInstance ?: Picasso.Builder(this@picasso)
-                .build().apply { _picassoInstance = this }
+            .build().apply { _picassoInstance = this }
     }
 
 @Suppress("UNCHECKED_CAST")
@@ -233,7 +210,7 @@ val ResourceTable.packageMap: Map<Short, ResourcePackage>
         .apply { isAccessible = true }
         .get(this) as Map<Short, ResourcePackage>
 
-fun ResourcesManager.getResourcesCompat(apkPath: String, pkgInfo: LoadedApk) : Resources {
+fun ResourcesManager.getResourcesCompat(apkPath: String, pkgInfo: LoadedApk): Resources {
     return when {
         Build.VERSION.SDK_INT < Build.VERSION_CODES.N -> {
             ResourcesManager::class.java
@@ -320,7 +297,10 @@ fun ResourcesManager.getResourcesCompat(apkPath: String, pkgInfo: LoadedApk) : R
     }
 }
 
-suspend fun <T> Collection<T>.forEachParallel(context: CoroutineContext = EmptyCoroutineContext, block: suspend CoroutineScope.(T) -> Unit) = coroutineScope {
+suspend fun <T> Collection<T>.forEachParallel(
+    context: CoroutineContext = EmptyCoroutineContext,
+    block: suspend CoroutineScope.(T) -> Unit
+) = coroutineScope {
     val jobs = ArrayList<Deferred<*>>(size)
     forEach {
         jobs.add(
@@ -364,7 +344,11 @@ fun <T> Enumeration<T>.forEachRemaining(consumer: (T, shortCircuit: () -> Unit) 
     }
 }
 
-fun PackageParser.parsePackageCompat(packageFile: File, flags: Int, useCaches: Boolean): PackageParser.Package {
+fun PackageParser.parsePackageCompat(
+    packageFile: File,
+    flags: Int,
+    useCaches: Boolean
+): PackageParser.Package {
     return if (Build.VERSION.SDK_INT > Build.VERSION_CODES.N_MR1) {
         parsePackage(packageFile, flags, useCaches)
     } else {
