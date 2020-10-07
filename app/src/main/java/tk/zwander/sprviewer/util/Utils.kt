@@ -1,11 +1,8 @@
 package tk.zwander.sprviewer.util
 
 import android.app.Activity
-import android.app.Application
 import android.app.LoadedApk
 import android.app.ResourcesManager
-import android.content.Context
-import android.content.pm.PackageManager
 import android.content.pm.PackageParser
 import android.content.res.CompatibilityInfo
 import android.content.res.Configuration
@@ -16,7 +13,6 @@ import android.view.Display
 import android.view.View
 import com.skydoves.balloon.ArrowOrientation
 import com.skydoves.balloon.createBalloon
-import com.squareup.picasso.Picasso
 import kotlinx.coroutines.*
 import net.dongliu.apk.parser.AbstractApkFile
 import net.dongliu.apk.parser.ApkFile
@@ -25,52 +21,13 @@ import net.dongliu.apk.parser.struct.AndroidConstants
 import net.dongliu.apk.parser.struct.resource.ResourcePackage
 import net.dongliu.apk.parser.struct.resource.ResourceTable
 import tk.zwander.sprviewer.R
-import tk.zwander.sprviewer.data.AppData
 import tk.zwander.sprviewer.data.UDrawableData
-import tk.zwander.sprviewer.ui.App
 import java.io.File
 import java.nio.ByteBuffer
 import java.util.*
 import java.util.zip.ZipFile
 import kotlin.collections.ArrayList
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
-
-private var _picassoInstance: Picasso? = null
-
-suspend fun Context.getInstalledApps(listener: (data: AppData, size: Int, count: Int) -> Unit): List<AppData> {
-    val installedApps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
-    val ret = ArrayList<AppData>()
-
-    var count = 0
-
-    installedApps.forEachParallel(Dispatchers.IO) {
-        count++
-
-        val data = AppData(
-            it.packageName,
-            it.loadLabel(packageManager).toString(),
-            it.loadIcon(packageManager)
-        )
-
-        ret.add(data)
-        launch(Dispatchers.Main) {
-            listener(data, installedApps.size, count)
-        }
-    }
-
-    return ret
-}
-
-fun AbstractApkFile.getResourceTable(): ResourceTable {
-    val data = getFileData(AndroidConstants.RESOURCE_FILE) ?: return ResourceTable()
-    val buffer = ByteBuffer.wrap(data)
-    val parser = ResourceTableParser(buffer)
-
-    parser.parse()
-
-    return parser.resourceTable
-}
 
 suspend fun getAppDrawables(
     apk: ApkFile,
@@ -156,19 +113,6 @@ suspend fun getAppDrawables(
     return@coroutineScope list
 }
 
-fun Context.getAppRes(apk: File): Resources {
-    val resMan = ResourcesManager.getInstance()
-    val pkgInfo = (applicationContext as Application).mLoadedApk
-
-    return resMan.getResourcesCompat(apk.absolutePath, pkgInfo)
-}
-
-val extensionsToRasterize = arrayOf(
-    "spr",
-    "xml",
-    "astc"
-)
-
 fun <T> CoroutineScope.lazyDeferred(
     context: CoroutineContext = Dispatchers.Default,
     block: suspend CoroutineScope.() -> T
@@ -182,135 +126,6 @@ fun <T> CoroutineScope.lazyDeferred(
 
 @ExperimentalCoroutinesApi
 suspend fun <T> Deferred<T>.getOrAwaitResult() = if (isCompleted) getCompleted() else await()
-
-fun ApkFile.getFile(): File {
-    return ApkFile::class.java
-        .getDeclaredField("apkFile")
-        .apply { isAccessible = true }
-        .get(this) as File
-}
-
-fun ApkFile.getZipFile(): ZipFile {
-    return ApkFile::class.java
-        .getDeclaredField("zf")
-        .apply { isAccessible = true }
-        .get(this) as ZipFile
-}
-
-val Context.picasso: Picasso
-    get() {
-        return _picassoInstance ?: Picasso.Builder(this@picasso)
-            .build().apply { _picassoInstance = this }
-    }
-
-@Suppress("UNCHECKED_CAST")
-val ResourceTable.packageMap: Map<Short, ResourcePackage>
-    get() = ResourceTable::class.java
-        .getDeclaredField("packageMap")
-        .apply { isAccessible = true }
-        .get(this) as Map<Short, ResourcePackage>
-
-fun ResourcesManager.getResourcesCompat(apkPath: String, pkgInfo: LoadedApk): Resources {
-    return when {
-        Build.VERSION.SDK_INT < Build.VERSION_CODES.N -> {
-            ResourcesManager::class.java
-                .getDeclaredMethod(
-                    "getTopLevelResources",
-                    String::class.java,
-                    Array<String>::class.java,
-                    Array<String>::class.java,
-                    Array<String>::class.java,
-                    Int::class.java,
-                    Configuration::class.java,
-                    CompatibilityInfo::class.java
-                )
-                .apply { isAccessible = true }
-                .invoke(
-                    this,
-                    apkPath,
-                    null,
-                    null,
-                    null,
-                    Display.DEFAULT_DISPLAY,
-                    null,
-                    pkgInfo.compatibilityInfo
-                ) as Resources
-        }
-        Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q -> {
-            ResourcesManager::class.java
-                .getDeclaredMethod(
-                    "getResources",
-                    IBinder::class.java,
-                    String::class.java,
-                    Array<String>::class.java,
-                    Array<String>::class.java,
-                    Array<String>::class.java,
-                    Int::class.java,
-                    Configuration::class.java,
-                    CompatibilityInfo::class.java,
-                    ClassLoader::class.java
-                )
-                .apply { isAccessible = true }
-                .invoke(
-                    this,
-                    null,
-                    apkPath,
-                    null,
-                    null,
-                    null,
-                    Display.DEFAULT_DISPLAY,
-                    null,
-                    pkgInfo.compatibilityInfo,
-                    pkgInfo.classLoader
-                ) as Resources
-        }
-        else -> {
-            ResourcesManager::class.java
-                .getDeclaredMethod(
-                    "getResources",
-                    IBinder::class.java,
-                    String::class.java,
-                    Array<String>::class.java,
-                    Array<String>::class.java,
-                    Array<String>::class.java,
-                    Int::class.java,
-                    Configuration::class.java,
-                    CompatibilityInfo::class.java,
-                    ClassLoader::class.java,
-                    List::class.java
-                )
-                .apply { isAccessible = true }
-                .invoke(
-                    this,
-                    null,
-                    apkPath,
-                    null,
-                    null,
-                    null,
-                    Display.DEFAULT_DISPLAY,
-                    null,
-                    pkgInfo.compatibilityInfo,
-                    pkgInfo.classLoader,
-                    null
-                ) as Resources
-        }
-    }
-}
-
-suspend fun <T> Collection<T>.forEachParallel(
-    context: CoroutineContext = EmptyCoroutineContext,
-    block: suspend CoroutineScope.(T) -> Unit
-) = coroutineScope {
-    val jobs = ArrayList<Deferred<*>>(size)
-    forEach {
-        jobs.add(
-            async(context) {
-                block(it)
-            }
-        )
-    }
-    jobs.awaitAll()
-}
 
 fun Activity.showTitleSnackBar(anchor: View) {
     createBalloon(this) {
@@ -328,30 +143,5 @@ fun Activity.showTitleSnackBar(anchor: View) {
         setOnBalloonOutsideTouchListener { _, _ ->
             dismiss()
         }
-    }
-}
-
-val Context.app: App
-    get() = applicationContext as App
-
-fun <T> Enumeration<T>.forEachRemaining(consumer: (T, shortCircuit: () -> Unit) -> Unit) {
-    var running = true
-
-    while (hasMoreElements() && running) {
-        consumer(nextElement()) {
-            running = false
-        }
-    }
-}
-
-fun PackageParser.parsePackageCompat(
-    packageFile: File,
-    flags: Int,
-    useCaches: Boolean
-): PackageParser.Package {
-    return if (Build.VERSION.SDK_INT > Build.VERSION_CODES.N_MR1) {
-        parsePackage(packageFile, flags, useCaches)
-    } else {
-        parsePackage(packageFile, flags)
     }
 }
