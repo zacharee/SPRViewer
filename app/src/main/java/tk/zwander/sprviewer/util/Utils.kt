@@ -138,7 +138,7 @@ suspend fun <T> Deferred<T>.getOrAwaitResult() = if (isCompleted) getCompleted()
 fun Activity.showTitleSnackBar(anchor: View) {
     createBalloon(this) {
         setPadding(8)
-        setPaddingTop(20)
+        setPaddingTop(16)
         setCornerRadius(12f)
         setBackgroundDrawableResource(R.drawable.snackbar_background)
         setTextSize(20f)
