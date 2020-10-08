@@ -137,8 +137,8 @@ suspend fun <T> Deferred<T>.getOrAwaitResult() = if (isCompleted) getCompleted()
 @SuppressLint("Range")
 fun Activity.showTitleSnackBar(anchor: View) {
     createBalloon(this) {
-        setPadding(12)
-        setPaddingTop(24)
+        setPadding(8)
+        setPaddingTop(20)
         setCornerRadius(12f)
         setBackgroundDrawableResource(R.drawable.snackbar_background)
         setTextSize(20f)
@@ -155,12 +155,16 @@ fun Activity.showTitleSnackBar(anchor: View) {
             .get(this) as PopupWindow
 
         popupWindow.overlapAnchor = true
-        popupWindow.elevation = 4f
 
         show(anchor, 0,
             window.decorView
                 .findViewById<View>(androidx.appcompat.R.id.action_bar)
-                .height - dpAsPx(13))
+                .height - dpAsPx(12))
+
+        getContentView().doOnAttach {
+            it.rootView.findViewById<View>(R.id.balloon_card).elevation = 0f
+            (it.parent.parent as ViewGroup).elevation = 0f
+        }
 
         setOnBalloonOutsideTouchListener { _, _ ->
             dismiss()

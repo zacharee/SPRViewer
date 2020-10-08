@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <set xmlns:android="http://schemas.android.com/apk/res/android"
-    android:interpolator="@android:anim/overshoot_interpolator"
-    android:duration="@android:integer/config_mediumAnimTime">
-    <translate
-        android:fromYDelta="-100%"
-        android:toYDelta="0%"
-        />
+    android:fillAfter="true"
+    android:duration="@android:integer/config_shortAnimTime"
+    android:interpolator="@android:anim/decelerate_interpolator">
     <alpha
         android:fromAlpha="0.0"
         android:toAlpha="1.0"
@@ -16,6 +13,6 @@
         android:toXScale="1.0"
         android:toYScale="1.0"
         android:pivotX="50%"
-        android:pivotY="50%"
+        android:pivotY="0%"
         />
 </set>

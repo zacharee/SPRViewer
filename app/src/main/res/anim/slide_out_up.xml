@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <set xmlns:android="http://schemas.android.com/apk/res/android"
-    android:interpolator="@android:anim/anticipate_interpolator"
-    android:duration="@android:integer/config_mediumAnimTime">
-    <translate
-        android:fromYDelta="0"
-        android:toYDelta="-100%"
-        />
+    android:interpolator="@android:anim/accelerate_interpolator"
+    android:duration="@android:integer/config_shortAnimTime">
     <alpha
         android:fromAlpha="1.0"
         android:toAlpha="0.0"
@@ -16,6 +12,6 @@
         android:toXScale="0.0"
         android:toYScale="0.0"
         android:pivotX="50%"
-        android:pivotY="50%"
+        android:pivotY="0%"
         />
 </set>
