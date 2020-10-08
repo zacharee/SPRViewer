@@ -5,16 +5,19 @@ import android.app.ResourcesManager
 import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.Resources
+import android.util.TypedValue
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import tk.zwander.sprviewer.data.AppData
 import tk.zwander.sprviewer.ui.App
 import java.io.File
+import java.util.concurrent.ConcurrentLinkedDeque
+import kotlin.math.roundToInt
 
-suspend fun Context.getInstalledApps(listener: (data: AppData, size: Int, count: Int) -> Unit): List<AppData> {
+suspend fun Context.getInstalledApps(listener: (data: AppData, size: Int, count: Int) -> Unit): Collection<AppData> {
     val installedApps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
-    val ret = ArrayList<AppData>()
+    val ret = ConcurrentLinkedDeque<AppData>()
 
     var count = 0
 
@@ -42,6 +45,18 @@ fun Context.getAppRes(apk: File): Resources {
 
     return resMan.getResourcesCompat(apk.absolutePath, pkgInfo)
 }
+
+/**
+ * Convert a certain DP value to its equivalent in px
+ * @param dpVal the chosen DP value
+ * @return the DP value in terms of px
+ */
+fun Context.dpAsPx(dpVal: Number) =
+    TypedValue.applyDimension(
+        TypedValue.COMPLEX_UNIT_DIP,
+        dpVal.toFloat(),
+        resources.displayMetrics
+    ).roundToInt()
 
 private var _picassoInstance: Picasso? = null
 

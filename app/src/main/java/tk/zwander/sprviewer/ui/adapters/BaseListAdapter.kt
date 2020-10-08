@@ -86,7 +86,7 @@ abstract class BaseListAdapter<T : BaseData, VH : BaseListAdapter.BaseVH>(dataCl
         orig.add(item)
     }
 
-    fun addAll(items: List<T>) {
+    fun addAll(items: Collection<T>) {
         orig.addAll(items)
     }
 

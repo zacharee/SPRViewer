@@ -1,5 +1,6 @@
 package tk.zwander.sprviewer.util
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.LoadedApk
 import android.app.ResourcesManager
@@ -9,9 +10,15 @@ import android.content.res.Configuration
 import android.content.res.Resources
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import android.view.Display
 import android.view.View
+import android.view.ViewGroup
+import android.view.WindowManager
+import android.widget.PopupWindow
+import androidx.core.view.doOnAttach
 import com.skydoves.balloon.ArrowOrientation
+import com.skydoves.balloon.BalloonAnimation
 import com.skydoves.balloon.createBalloon
 import kotlinx.coroutines.*
 import net.dongliu.apk.parser.AbstractApkFile
@@ -127,19 +134,34 @@ fun <T> CoroutineScope.lazyDeferred(
 @ExperimentalCoroutinesApi
 suspend fun <T> Deferred<T>.getOrAwaitResult() = if (isCompleted) getCompleted() else await()
 
+@SuppressLint("Range")
 fun Activity.showTitleSnackBar(anchor: View) {
     createBalloon(this) {
-        text = title.toString()
-        setPadding(16)
+        setPadding(12)
+        setPaddingTop(24)
         setCornerRadius(12f)
-        autoDismissDuration = 2500L
+        setBackgroundDrawableResource(R.drawable.snackbar_background)
         setTextSize(20f)
+        setArrowSize(0)
+        setBalloonAnimationStyle(R.style.SnackbarAnimStyle)
+
+        text = title.toString()
+        autoDismissDuration = -1L
         widthRatio = 1.0f
-        setBackgroundColorResource(R.color.colorSecondaryLight)
-        setArrowOrientation(ArrowOrientation.TOP)
-        arrowPosition = 0.2f
+        arrowVisible = false
     }.apply {
-        showAlignBottom(anchor)
+        val popupWindow = this::class.java.getDeclaredField("bodyWindow")
+            .apply { isAccessible = true }
+            .get(this) as PopupWindow
+
+        popupWindow.overlapAnchor = true
+        popupWindow.elevation = 4f
+
+        show(anchor, 0,
+            window.decorView
+                .findViewById<View>(androidx.appcompat.R.id.action_bar)
+                .height - dpAsPx(13))
+
         setOnBalloonOutsideTouchListener { _, _ ->
             dismiss()
         }

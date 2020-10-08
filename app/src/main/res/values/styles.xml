@@ -41,5 +41,10 @@
 
         <item name="materialAlertDialogTheme">@style/AppTheme.DialogStyle</item>
     </style>
+    
+    <style name="SnackbarAnimStyle">
+        <item name="android:windowEnterAnimation">@anim/slide_in_down</item>
+        <item name="android:windowExitAnimation">@anim/slide_out_up</item>
+    </style>
 
 </resources>
