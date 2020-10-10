@@ -13,7 +13,7 @@ import androidx.core.view.isVisible
 import com.squareup.picasso.Callback
 import kotlinx.android.synthetic.main.drawable_info_layout.view.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.dongliu.apk.parser.ApkFile
@@ -50,8 +50,8 @@ class DrawableListAdapter(private val itemSelectedListener: (UDrawableData) -> U
         return oldItem.path == newItem.path
     }
 
-    override fun matches(query: String, data: UDrawableData): Boolean {
-        return data.path.contains(query, true) || "${data.name}.${data.ext}".contains(query, true)
+    override suspend fun matches(query: String, data: UDrawableData): Boolean = withContext(Dispatchers.Main) {
+        data.path.contains(query, true) || "${data.name}.${data.ext}".contains(query, true)
     }
 
     fun loadItemsAsync(
@@ -72,7 +72,7 @@ class DrawableListAdapter(private val itemSelectedListener: (UDrawableData) -> U
         listener()
     }
 
-    inner class ListVH(view: View) : BaseVH(view) {
+    inner open class ListVH(view: View) : BaseVH(view) {
         @SuppressLint("SetTextI18n")
         fun onBind(info: UDrawableData) {
             itemView.apply {

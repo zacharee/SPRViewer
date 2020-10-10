@@ -2,39 +2,88 @@ package tk.zwander.sprviewer.util
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.app.LoadedApk
 import android.app.ResourcesManager
+import android.content.Context
 import android.content.pm.PackageParser
-import android.content.res.CompatibilityInfo
-import android.content.res.Configuration
 import android.content.res.Resources
-import android.os.Build
-import android.os.IBinder
 import android.util.Log
-import android.view.Display
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
 import android.widget.PopupWindow
 import androidx.core.view.doOnAttach
-import com.skydoves.balloon.ArrowOrientation
-import com.skydoves.balloon.BalloonAnimation
 import com.skydoves.balloon.createBalloon
 import kotlinx.coroutines.*
-import net.dongliu.apk.parser.AbstractApkFile
 import net.dongliu.apk.parser.ApkFile
-import net.dongliu.apk.parser.parser.ResourceTableParser
-import net.dongliu.apk.parser.struct.AndroidConstants
-import net.dongliu.apk.parser.struct.resource.ResourcePackage
-import net.dongliu.apk.parser.struct.resource.ResourceTable
 import tk.zwander.sprviewer.R
+import tk.zwander.sprviewer.data.LocalizedValueData
 import tk.zwander.sprviewer.data.UDrawableData
-import java.io.File
-import java.nio.ByteBuffer
+import tk.zwander.sprviewer.data.UValueData
 import java.util.*
-import java.util.zip.ZipFile
 import kotlin.collections.ArrayList
 import kotlin.coroutines.CoroutineContext
+
+suspend fun getAppValues(
+    apk: ApkFile,
+    packageInfo: PackageParser.Package,
+    valueFound: (data: UValueData, size: Int, count: Int) -> Unit
+): List<UValueData> = coroutineScope {
+    val table = apk.getResourceTable()
+    val (pkgCode, resPkg) = table.packageMap.entries.toList()[0].run { key.toInt() to value }
+
+    val list = ArrayList<UValueData>()
+
+    val stringsIndex =
+        resPkg.typeSpecMap.filter { it.value.name == "string" }.entries.elementAtOrNull(0)
+
+    val stringsStart =
+        if (stringsIndex != null) (stringsIndex.key.toInt() shl 16) or (pkgCode shl 24) else -1
+
+    val stringsSize = stringsIndex?.value?.entryFlags?.size ?: 0
+
+    val totalSize = stringsSize
+
+    var count = 0
+
+    val loopRange: suspend CoroutineScope.(start: Int, end: Int) -> Unit = { start: Int, end: Int ->
+        for (i in start until end) {
+            try {
+                val r = table.getResourcesById(i.toLong())
+                if (r.isEmpty()) continue
+
+                val data = UValueData(
+                    "string",
+                    r[0].resourceEntry.key,
+                    apk.getFile().absolutePath,
+                    i,
+                    apk,
+                    packageInfo,
+                    r[0].resourceEntry.toStringValue(table, Locale.getDefault()),
+                    mutableListOf()
+                )
+
+                r.forEach {
+                    data.values.add(
+                        LocalizedValueData(
+                            it.type.locale,
+                            it.resourceEntry.toStringValue(table, it.type.locale)
+                        )
+                    )
+
+                    count++
+                    list.add(data)
+                    valueFound(data, totalSize, count)
+                }
+            } catch (e: Resources.NotFoundException) {
+            }
+        }
+    }
+
+    if (stringsStart != -1) {
+        loopRange(stringsStart, stringsStart + stringsSize)
+    }
+
+    return@coroutineScope list
+}
 
 suspend fun getAppDrawables(
     apk: ApkFile,

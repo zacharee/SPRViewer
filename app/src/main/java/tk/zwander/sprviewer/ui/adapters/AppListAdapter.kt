@@ -10,7 +10,7 @@ import tk.zwander.sprviewer.R
 import tk.zwander.sprviewer.data.AppData
 import tk.zwander.sprviewer.util.getInstalledApps
 
-class AppListAdapter(private val itemSelectedListener: (AppData) -> Unit) : BaseListAdapter<AppData, BaseListAdapter.BaseVH>(AppData::class.java) {
+class AppListAdapter(private val itemSelectedListener: (AppData) -> Unit, private val valuesSelectedListener: (AppData) -> Unit) : BaseListAdapter<AppData, BaseListAdapter.BaseVH>(AppData::class.java) {
     override val viewRes = R.layout.app_info_layout
 
     override fun onCreateViewHolder(parent: ViewGroup, position: Int): BaseVH {
@@ -26,11 +26,15 @@ class AppListAdapter(private val itemSelectedListener: (AppData) -> Unit) : Base
             setOnClickListener {
                 itemSelectedListener(getInfo(holder.adapterPosition))
             }
+
+            list_values.setOnClickListener {
+                valuesSelectedListener(getInfo(holder.adapterPosition))
+            }
         }
     }
 
-    override fun matches(query: String, data: AppData): Boolean {
-        return data.pkg.contains(query, true) || data.constructLabel().contains(query, true)
+    override suspend fun matches(query: String, data: AppData): Boolean = withContext(Dispatchers.Main) {
+        data.pkg.contains(query, true) || data.constructLabel().contains(query, true)
     }
 
     override fun compare(o1: AppData, o2: AppData): Int {

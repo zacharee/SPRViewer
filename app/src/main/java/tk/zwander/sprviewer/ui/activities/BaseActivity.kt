@@ -7,21 +7,26 @@ import android.view.View
 import androidx.annotation.CallSuper
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.hmomeni.progresscircula.ProgressCircula
 import com.reddit.indicatorfastscroll.FastScrollItemIndicator
 import com.reddit.indicatorfastscroll.FastScrollerView
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.*
 import tk.zwander.sprviewer.R
 import tk.zwander.sprviewer.data.BaseData
 import tk.zwander.sprviewer.ui.adapters.BaseListAdapter
+import tk.zwander.sprviewer.ui.adapters.DrawableListAdapter
 import tk.zwander.sprviewer.util.showTitleSnackBar
 import java.util.*
 import kotlin.math.absoluteValue
+import kotlin.math.min
 
-abstract class BaseActivity<T : BaseListAdapter<out BaseData, out BaseListAdapter.BaseVH>> : AppCompatActivity() {
+abstract class BaseActivity<Data : BaseData, VH : BaseListAdapter.BaseVH> : AppCompatActivity(), CoroutineScope by MainScope() {
     abstract val contentView: Int
-    abstract val adapter: T
+    abstract val adapter: BaseListAdapter<Data, VH>
 
     internal var progressItem: MenuItem? = null
     internal var progress: ProgressCircula? = null
@@ -82,6 +87,12 @@ abstract class BaseActivity<T : BaseListAdapter<out BaseData, out BaseListAdapte
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+
+        cancel()
+    }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.search, menu)
 
@@ -95,6 +106,11 @@ abstract class BaseActivity<T : BaseListAdapter<out BaseData, out BaseListAdapte
 
         if (doneLoading) {
             progressItem?.isVisible = false
+        }
+
+        searchView?.setOnCloseListener {
+            adapter.onQueryTextSubmit(null)
+            false
         }
 
         checkCount()
@@ -115,6 +131,7 @@ abstract class BaseActivity<T : BaseListAdapter<out BaseData, out BaseListAdapte
     override fun onBackPressed() {
         if (searchView?.isIconified == false) {
             searchView?.onActionViewCollapsed()
+            adapter.onQueryTextSubmit(null)
         } else {
             super.onBackPressed()
         }
@@ -123,6 +140,7 @@ abstract class BaseActivity<T : BaseListAdapter<out BaseData, out BaseListAdapte
     open fun onLoadFinished() {
         doneLoading = true
         progressItem?.isVisible = false
+        recycler.isVisible = true
 
         checkCount()
     }

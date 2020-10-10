@@ -16,6 +16,7 @@
         tools:ignore="AllowBackup,GoogleAppIndexingWarning">
         <activity android:name=".ui.activities.DrawableViewActivity" />
         <activity android:name=".ui.activities.DrawableListActivity" />
+        <activity android:name=".ui.activities.ValueListActivity" />
         <activity android:name=".ui.activities.BatchExportDialogActivity"
             android:excludeFromRecents="true"
             android:theme="@style/AppTheme.DialogActivity"

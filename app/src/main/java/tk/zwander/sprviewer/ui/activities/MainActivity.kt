@@ -6,18 +6,25 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import tk.zwander.sprviewer.R
+import tk.zwander.sprviewer.data.AppData
 import tk.zwander.sprviewer.ui.adapters.AppListAdapter
+import tk.zwander.sprviewer.ui.adapters.BaseListAdapter
 import java.io.File
 
-class MainActivity : BaseActivity<AppListAdapter>() {
+class MainActivity : BaseActivity<AppData, BaseListAdapter.BaseVH>() {
     companion object {
         const val REQ_IMPORT_APK = 1000
     }
 
     override val contentView = R.layout.activity_main
-    override val adapter = AppListAdapter {
-        openDrawableActivity(it.pkg)
-    }
+    override val adapter = AppListAdapter(
+        itemSelectedListener = {
+            openDrawableActivity(it.pkg)
+        },
+        valuesSelectedListener = {
+            openValuesActivity(it.pkg)
+        }
+    )
 
     private var importItem: MenuItem? = null
 
@@ -94,5 +101,12 @@ class MainActivity : BaseActivity<AppListAdapter>() {
         drawableIntent.putExtra(DrawableListActivity.EXTRA_FILE, apk)
 
         startActivity(drawableIntent)
+    }
+
+    private fun openValuesActivity(pkg: String) {
+        val valueIntent = Intent(this, ValueListActivity::class.java)
+        valueIntent.putExtra(Intent.EXTRA_PACKAGE_NAME, pkg)
+
+        startActivity(valueIntent)
     }
 }
