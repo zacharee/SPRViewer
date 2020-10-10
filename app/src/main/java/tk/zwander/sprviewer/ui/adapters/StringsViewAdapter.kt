@@ -54,6 +54,8 @@ class StringsViewAdapter(private val itemSelectedCallback: (item: StringData) ->
                 drawable_name.text = info.key
                 drawable_path.text = info.value
 
+                ext_indicator.setText("STR")
+
                 setOnClickListener {
                     itemSelectedCallback(getInfo(adapterPosition))
                 }
