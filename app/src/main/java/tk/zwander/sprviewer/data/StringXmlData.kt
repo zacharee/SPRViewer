@@ -25,7 +25,7 @@ data class StringXmlData(
         builder.appendLine("<?xml version=\"1.0\" encoding=\"utf-8\"?>")
         builder.appendLine("<resources>")
         values.forEach { (t, u) ->
-            builder.appendLine("    <string mame=\"$t\">$u</string>")
+            builder.appendLine("    <string name=\"$t\">$u</string>")
         }
         builder.appendLine("</resources>")
 
