@@ -50,8 +50,8 @@ class DrawableListAdapter(private val itemSelectedListener: (UDrawableData) -> U
         return oldItem.path == newItem.path
     }
 
-    override suspend fun matches(query: String, data: UDrawableData): Boolean = withContext(Dispatchers.Main) {
-        data.path.contains(query, true) || "${data.name}.${data.ext}".contains(query, true)
+    override fun matches(query: String, data: UDrawableData): Boolean {
+        return data.path.contains(query, true) || "${data.name}.${data.ext}".contains(query, true)
     }
 
     fun loadItemsAsync(

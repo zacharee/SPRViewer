@@ -29,3 +29,13 @@ suspend fun <T> Collection<T>.forEachParallel(
     }
     jobs.awaitAll()
 }
+
+fun <T> Collection<T>.get(index: Int): T {
+    forEachIndexed { i, t ->
+        if (i == index) {
+            return t
+        }
+    }
+
+    throw IndexOutOfBoundsException()
+}

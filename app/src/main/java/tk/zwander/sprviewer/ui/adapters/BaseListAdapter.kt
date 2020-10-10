@@ -5,36 +5,31 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
-import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.SortedList
+import androidx.recyclerview.widget.*
 import kotlinx.coroutines.*
 import tk.zwander.sprviewer.data.BaseData
-import tk.zwander.sprviewer.util.forEachParallel
+import tk.zwander.sprviewer.util.get
 import java.util.*
 import kotlin.collections.ArrayList
 
 abstract class BaseListAdapter<T : BaseData, VH : BaseListAdapter.BaseVH>(dataClass: Class<T>) : RecyclerView.Adapter<VH>(), SearchView.OnQueryTextListener, CoroutineScope by MainScope() {
     private val batchedCallback = SortedList.BatchedCallback(InnerSortCallback())
-    private val actuallyVisible = SortedList(dataClass, batchedCallback)
+    internal val actuallyVisible = TreeSet<T> { o1, o2 -> compare(o1, o2) }
 
     private val orig = object : ArrayList<T>() {
         override fun add(element: T): Boolean {
             launch {
                 if (matches(currentQuery, element)) {
                     actuallyVisible.add(element)
+                    notifyItemInserted(actuallyVisible.indexOf(element))
                 }
             }
             return super.add(element)
         }
 
         override fun addAll(elements: Collection<T>): Boolean {
-            var t = System.currentTimeMillis()
             replaceAll(elements)
-            Log.e("SPRViewer", "replaceAll: ${System.currentTimeMillis() - t}")
-            t = System.currentTimeMillis()
-            return super.addAll(elements).also {
-                Log.e("SPRViewer", "addAll: ${System.currentTimeMillis() - t}")
-            }
+            return super.addAll(elements)
         }
 
         override fun remove(element: T): Boolean {
@@ -51,24 +46,34 @@ abstract class BaseListAdapter<T : BaseData, VH : BaseListAdapter.BaseVH>(dataCl
     val allItemsCopy: MutableList<T>
         get() = ArrayList(orig)
 
-    override fun getItemCount() = actuallyVisible.size()
+    val fullItemCount: Int
+        get() = orig.size
+
+    override fun getItemCount() = actuallyVisible.size
+
+    override fun getItemId(position: Int): Long {
+        return actuallyVisible.get(position).hashCode().toLong()
+    }
 
     override fun onQueryTextChange(newText: String?): Boolean {
-        return if (orig.size > 4000) {
-            false
-        } else {
-            doFilter(newText)
-            true
-        }
+//        return if (orig.size > 4000) {
+//            false
+//        } else {
+//            doFilter(newText)
+//            true
+//        }
+        return false
     }
 
     override fun onQueryTextSubmit(query: String?): Boolean {
-        return if (orig.size > 4000) {
-            doFilter(query)
-            true
-        } else {
-            false
-        }
+//        return if (orig.size > 4000) {
+//            doFilter(query)
+//            true
+//        } else {
+//            false
+//        }
+        doFilter(query)
+        return true
     }
 
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
@@ -83,24 +88,25 @@ abstract class BaseListAdapter<T : BaseData, VH : BaseListAdapter.BaseVH>(dataCl
     }
 
     final override fun onBindViewHolder(holder: VH, position: Int) {
-        onBindViewHolder(holder, position, actuallyVisible[position])
+        onBindViewHolder(holder, position, actuallyVisible.get(position))
     }
 
     private fun doFilter(newText: String?) {
-        launch {
-            withContext(Dispatchers.Main) {
-                currentQuery = newText ?: ""
+        runBlocking {
+            currentQuery = newText ?: ""
 
-                replaceAll(filter(currentQuery))
-
-                recyclerView?.scrollToPosition(0)
+            val filtered = withContext(Dispatchers.IO) {
+                filter(currentQuery)
             }
+
+            replaceAll(filtered)
+            recyclerView?.scrollToPosition(0)
         }
     }
 
     abstract fun compare(o1: T, o2: T): Int
     abstract fun areContentsTheSame(oldItem: T, newItem: T): Boolean
-    abstract suspend fun matches(query: String, data: T): Boolean
+    abstract fun matches(query: String, data: T): Boolean
     abstract fun onBindViewHolder(holder: VH, position: Int, info: T)
 
     open fun areItemsTheSame(item1: T, item2: T): Boolean {
@@ -121,8 +127,6 @@ abstract class BaseListAdapter<T : BaseData, VH : BaseListAdapter.BaseVH>(dataCl
 
     fun indexOf(item: T) = actuallyVisible.indexOf(item)
 
-    fun getItemAt(position: Int) = actuallyVisible[position]
-
     fun addToActuallyVisible(items: Collection<T>) {
         actuallyVisible.addAll(items)
     }
@@ -134,25 +138,24 @@ abstract class BaseListAdapter<T : BaseData, VH : BaseListAdapter.BaseVH>(dataCl
         )
     }
 
-    internal fun getInfo(position: Int) = actuallyVisible[position]
+    internal fun getInfo(position: Int) = actuallyVisible.get(position)
 
-    internal suspend fun filter(query: String): List<T> {
+    internal fun filter(query: String): List<T> {
         val lowerCaseQuery = query.toLowerCase(Locale.getDefault())
 
         val filteredModelList = LinkedList<T>()
 
-        orig.forEachParallel { item ->
+        orig.forEach { item ->
             if (matches(lowerCaseQuery, item)) filteredModelList.add(item)
         }
 
         return filteredModelList
     }
 
-    private fun replaceAll(newItems: Collection<T>) {
-        actuallyVisible.beginBatchedUpdates()
+    private fun replaceAll(newItems: Collection<T>) = runBlocking {
         actuallyVisible.clear()
         actuallyVisible.addAll(newItems)
-        actuallyVisible.endBatchedUpdates()
+        notifyDataSetChanged()
     }
 
     inner class InnerSortCallback : SortedList.Callback<T>() {

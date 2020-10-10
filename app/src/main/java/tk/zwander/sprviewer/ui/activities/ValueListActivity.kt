@@ -6,6 +6,8 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import androidx.recyclerview.widget.LinearLayoutManager
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
 import net.dongliu.apk.parser.ApkFile
 import tk.zwander.sprviewer.R

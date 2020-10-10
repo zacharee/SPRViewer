@@ -34,16 +34,16 @@ class ValueListAdapter(private val itemSelectedListener: (UValueData) -> Unit) :
 
     override fun compare(o1: UValueData, o2: UValueData): Int {
         val names = o1.name.compareTo(o2.name, true)
-        val paths = o1.path.compareTo(o2.path, true)
-        return if (names == 0) paths else names
+        val paths = o1.defaultValue?.compareTo(o2.defaultValue ?: "", true) ?: 0
+        return if (names == 0) if (paths == 0) 1 else paths else names
     }
 
     override fun areContentsTheSame(oldItem: UValueData, newItem: UValueData): Boolean {
         return oldItem.path == newItem.path
     }
 
-    override suspend fun matches(query: String, data: UValueData): Boolean = withContext(Dispatchers.Main) {
-        "${data.type}/${data.name}".contains(query, true) || data.defaultValue?.contains(query, true) == true
+    override fun matches(query: String, data: UValueData): Boolean {
+        return "${data.type}/${data.name}".contains(query, true) || data.defaultValue?.contains(query, true) == true
     }
 
     fun loadItemsAsync(

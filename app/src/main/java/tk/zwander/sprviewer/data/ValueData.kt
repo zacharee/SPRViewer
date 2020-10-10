@@ -57,4 +57,14 @@ data class UValueData(
     override fun constructLabel(): String {
         return name
     }
+
+    override fun equals(other: Any?): Boolean {
+        return other is UValueData
+                && name == other.name
+                && defaultValue == other.defaultValue
+    }
+
+    override fun hashCode(): Int {
+        return Objects.hash(name, defaultValue)
+    }
 }

@@ -48,12 +48,20 @@ abstract class BaseActivity<Data : BaseData, VH : BaseListAdapter.BaseVH> : AppC
             supportActionBar?.setDisplayShowHomeEnabled(true)
         }
 
+        recycler.layoutManager = object : LinearLayoutManager(this) {
+            override fun supportsPredictiveItemAnimations(): Boolean {
+                return true
+            }
+        }
+
+        adapter.setHasStableIds(true)
+
         recycler.adapter = adapter
 
         scroller.setupWithRecyclerView(
             recycler,
             { position ->
-                val item = adapter.getItemAt(position)
+                val item = adapter.getInfo(position)
 
                 FastScrollItemIndicator.Text(
                     item.constructLabel()
@@ -100,6 +108,7 @@ abstract class BaseActivity<Data : BaseData, VH : BaseListAdapter.BaseVH> : AppC
         searchView = searchItem?.actionView as SearchView?
 
         searchView?.setOnQueryTextListener(adapter)
+        searchView?.isSubmitButtonEnabled = true
 
         progressItem = menu.findItem(R.id.status_progress)
         progress = progressItem?.actionView as ProgressCircula?

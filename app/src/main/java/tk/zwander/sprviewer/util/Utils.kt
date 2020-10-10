@@ -10,6 +10,7 @@ import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupWindow
+import androidx.collection.ArraySet
 import androidx.core.view.doOnAttach
 import com.skydoves.balloon.createBalloon
 import kotlinx.coroutines.*
@@ -26,11 +27,11 @@ suspend fun getAppValues(
     apk: ApkFile,
     packageInfo: PackageParser.Package,
     valueFound: (data: UValueData, size: Int, count: Int) -> Unit
-): List<UValueData> = coroutineScope {
+): Collection<UValueData> = coroutineScope {
     val table = apk.getResourceTable()
     val (pkgCode, resPkg) = table.packageMap.entries.toList()[0].run { key.toInt() to value }
 
-    val list = ArrayList<UValueData>()
+    val list = ArraySet<UValueData>()
 
     val stringsIndex =
         resPkg.typeSpecMap.filter { it.value.name == "string" }.entries.elementAtOrNull(0)

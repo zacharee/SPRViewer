@@ -33,8 +33,8 @@ class AppListAdapter(private val itemSelectedListener: (AppData) -> Unit, privat
         }
     }
 
-    override suspend fun matches(query: String, data: AppData): Boolean = withContext(Dispatchers.Main) {
-        data.pkg.contains(query, true) || data.constructLabel().contains(query, true)
+    override fun matches(query: String, data: AppData): Boolean {
+        return data.pkg.contains(query, true) || data.constructLabel().contains(query, true)
     }
 
     override fun compare(o1: AppData, o2: AppData): Int {
