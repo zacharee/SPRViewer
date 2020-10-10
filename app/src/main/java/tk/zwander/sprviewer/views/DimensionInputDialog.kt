@@ -1,9 +1,17 @@
 package tk.zwander.sprviewer.views
 
+import android.app.Activity
 import android.content.Context
+import android.graphics.Color
 import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.ShapeDrawable
 import android.view.LayoutInflater
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentActivity
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.jaredrummler.android.colorpicker.ColorPickerDialog
+import com.jaredrummler.android.colorpicker.ColorPickerDialogListener
 import kotlinx.android.synthetic.main.dimension_input.view.*
 import tk.zwander.sprviewer.R
 import tk.zwander.sprviewer.util.TextWatcherAdapter
@@ -19,6 +27,9 @@ class DimensionInputDialog(context: Context, private val drawable: Drawable) : M
 
     private val view = LayoutInflater.from(context)
         .inflate(R.layout.dimension_input, null)
+
+    private val tintDrawable = ContextCompat.getDrawable(context, R.drawable.outlined_circle)!!.mutate() as GradientDrawable
+    private var tintColor = Color.TRANSPARENT
 
     private val widthListener: TextWatcherAdapter = object : TextWatcherAdapter() {
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
@@ -40,11 +51,39 @@ class DimensionInputDialog(context: Context, private val drawable: Drawable) : M
         }
     }
 
-    var saveListener: ((width: Int, height: Int) -> Unit)? = null
+    var saveListener: ((width: Int, height: Int, tint: Int) -> Unit)? = null
 
     init {
         view.width_input.addTextChangedListener(widthListener)
         view.height_input.addTextChangedListener(heightListener)
+
+        view.drawable_tint
+            .setCompoundDrawablesRelativeWithIntrinsicBounds(
+                tintDrawable,
+                null,
+                null,
+                null
+            )
+
+        view.drawable_tint_card.setOnClickListener {
+            ColorPickerDialog.newBuilder()
+                .setColor(tintColor)
+                .setShowAlphaSlider(true)
+                .setAllowCustom(true)
+                .create().apply {
+                    setColorPickerDialogListener(object : ColorPickerDialogListener {
+                        override fun onColorSelected(dialogId: Int, color: Int) {
+                            tintColor = color
+                            tintDrawable.setColor(color)
+                        }
+
+                        override fun onDialogDismissed(dialogId: Int) {}
+                    })
+
+                    val activity = context as FragmentActivity
+                    show(activity.supportFragmentManager, "color-picker-dialog")
+                }
+        }
 
         setTitle(R.string.enter_dimensions)
         setView(view)
@@ -62,7 +101,7 @@ class DimensionInputDialog(context: Context, private val drawable: Drawable) : M
                 parseDimen(widthInput, defDimen) to getScaledDimen(widthInput, hwRatio, defDimen)
             }
 
-            saveListener?.invoke(width, height)
+            saveListener?.invoke(width, height, tintColor)
         }
         setNegativeButton(android.R.string.cancel, null)
     }

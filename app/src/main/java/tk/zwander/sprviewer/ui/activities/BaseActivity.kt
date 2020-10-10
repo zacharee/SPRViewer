@@ -9,7 +9,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.hmomeni.progresscircula.ProgressCircula
 import com.reddit.indicatorfastscroll.FastScrollItemIndicator
 import com.reddit.indicatorfastscroll.FastScrollerView
@@ -18,11 +17,9 @@ import kotlinx.coroutines.*
 import tk.zwander.sprviewer.R
 import tk.zwander.sprviewer.data.BaseData
 import tk.zwander.sprviewer.ui.adapters.BaseListAdapter
-import tk.zwander.sprviewer.ui.adapters.DrawableListAdapter
 import tk.zwander.sprviewer.util.showTitleSnackBar
 import java.util.*
 import kotlin.math.absoluteValue
-import kotlin.math.min
 
 abstract class BaseActivity<Data : BaseData, VH : BaseListAdapter.BaseVH> : AppCompatActivity(), CoroutineScope by MainScope() {
     abstract val contentView: Int

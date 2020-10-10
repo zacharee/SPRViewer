@@ -424,7 +424,11 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
     private fun getDimensions(drawable: Drawable, os: OutputStream) = launch {
         DimensionInputDialog(this@DrawableViewActivity, drawable)
             .apply {
-                saveListener = { width, height -> compressPngAsync(drawable.toBitmap(width, height), os) }
+                saveListener = { width, height, tint -> compressPngAsync(
+                    drawable.mutate().apply {
+                        setTint(tint)
+                    }.toBitmap(width, height), os)
+                }
             }
             .show()
     }
