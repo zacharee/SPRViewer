@@ -604,7 +604,7 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
 
                                 launch(context = Dispatchers.Main) {
                                     progressCallback(
-                                        target!!.name,
+                                        target.name,
                                         ((max - avail).toDouble() / max).toInt(),
                                         index + 1,
                                         items.size,

@@ -2,17 +2,16 @@ package tk.zwander.sprviewer.ui.activities
 
 import android.content.*
 import android.content.pm.PackageParser
-import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import androidx.documentfile.provider.DocumentFile
 import kotlinx.coroutines.*
 import net.dongliu.apk.parser.ApkFile
 import tk.zwander.sprviewer.R
 import tk.zwander.sprviewer.data.StringXmlData
 import tk.zwander.sprviewer.ui.adapters.StringsListAdapter
 import tk.zwander.sprviewer.util.*
-import tk.zwander.sprviewer.views.ExportInfo
 import java.io.File
 import java.util.*
 
@@ -67,8 +66,7 @@ class StringsListActivity : BaseActivity<StringXmlData, StringsListAdapter.Strin
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        //TODO: implement batch
-//        menuInflater.inflate(R.menu.batch, menu)
+        menuInflater.inflate(R.menu.batch, menu)
 
         saveAll = menu.findItem(R.id.all)
         saveAll?.setOnMenuItemClickListener {
@@ -86,7 +84,33 @@ class StringsListActivity : BaseActivity<StringXmlData, StringsListAdapter.Strin
 
         if (resultCode == RESULT_OK && requestCode == REQ_CHOOSE_OUTPUT_DIR
             && data != null) {
-            //TODO: fill in
+            contentResolver.takePersistableUriPermission(data.data,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+
+            progressItem?.isVisible = true
+            progress?.progress = 0
+
+            launch {
+                withContext(Dispatchers.IO) {
+                    val parentDir = DocumentFile.fromTreeUri(this@StringsListActivity, data.data)
+                    val dir = parentDir?.createDirectory(packageInfo.packageName)
+                    val items = adapter.allItemsCopy
+
+                    items.forEachIndexed { index, stringXmlData ->
+                        val file = dir?.createFile("text/xml", "strings_${stringXmlData.locale}.xml")
+
+                        contentResolver.openOutputStream(file!!.uri).bufferedWriter().use { writer ->
+                            writer.write(stringXmlData.asXmlString())
+                        }
+
+                        withContext(Dispatchers.Main) {
+                            progress?.progress = ((index + 1f) / items.size.toFloat() * 100f).toInt()
+                        }
+                    }
+                }
+
+                progressItem?.isVisible = false
+            }
         }
     }
 
@@ -96,20 +120,6 @@ class StringsListActivity : BaseActivity<StringXmlData, StringsListAdapter.Strin
         if (isReadyForMenus()) {
             saveAll?.isVisible = true
         }
-    }
-
-    private fun handleBatchExport(info: ExportInfo, uri: Uri) = launch {
-        contentResolver.takePersistableUriPermission(uri,
-            Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-
-//        BatchExportService.startBatchExport(
-//            this@ValueListActivity,
-//            uri,
-//            adapter.allItemsCopy,
-//            info,
-//            appLabel.await(),
-//            apk.getFile()
-//        )
     }
 
     override fun onLoadFinished() {
