@@ -15,13 +15,81 @@ import androidx.core.view.doOnAttach
 import com.skydoves.balloon.createBalloon
 import kotlinx.coroutines.*
 import net.dongliu.apk.parser.ApkFile
+import net.dongliu.apk.parser.struct.resource.ResourceTable
 import tk.zwander.sprviewer.R
-import tk.zwander.sprviewer.data.LocalizedValueData
-import tk.zwander.sprviewer.data.UDrawableData
-import tk.zwander.sprviewer.data.UValueData
+import tk.zwander.sprviewer.data.*
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.collections.ArrayList
 import kotlin.coroutines.CoroutineContext
+
+suspend fun getAppStringXmls(
+    apk: ApkFile,
+    stringXmlFound: (data: StringXmlData, size: Int, count: Int) -> Unit
+): Collection<StringXmlData> = coroutineScope {
+    val table = apk.getResourceTable()
+    val (pkgCode, resPkg) = table.packageMap.entries.toList()[0].run { key.toInt() to value }
+
+    val stringsIndex =
+        resPkg.typeSpecMap.filter { it.value.name == "string" }.entries.elementAtOrNull(0)
+
+    val stringsStart =
+        if (stringsIndex != null) (stringsIndex.key.toInt() shl 16) or (pkgCode shl 24) else -1
+
+    val stringsSize = stringsIndex?.value?.entryFlags?.size ?: 0
+
+    var totalSize = 0
+
+    var count = 0
+
+    val resInfos = LinkedList<List<ResourceTable.Resource>>()
+    val map = ConcurrentHashMap<Locale, StringXmlData>()
+
+    val loopRange: suspend CoroutineScope.(start: Int, end: Int) -> Unit = { start: Int, end: Int ->
+        for (i in start until end) {
+            try {
+                val r = table.getResourcesById(i.toLong())
+                if (r.isEmpty()) continue
+
+                resInfos.add(r)
+                totalSize += r.size
+            } catch (e: Resources.NotFoundException) {}
+        }
+    }
+
+    if (stringsStart != -1) {
+        loopRange(stringsStart, stringsStart + stringsSize)
+
+        resInfos.forEach {
+            it.forEach { res ->
+                val locale = res.type.locale
+
+                if (map.containsKey(locale)) {
+                    map[locale]!!.apply {
+                        values.add(StringData(
+                            res.resourceEntry.key,
+                            res.resourceEntry.toStringValue(table, locale)
+                        ))
+                    }
+                } else {
+                    map[locale] = StringXmlData(
+                        locale
+                    ).apply {
+                        values.add(StringData(
+                            res.resourceEntry.key,
+                            res.resourceEntry.toStringValue(table, locale)
+                        ))
+                    }
+                }
+
+                count++
+                stringXmlFound(map[locale]!!, totalSize, count)
+            }
+        }
+    }
+
+    return@coroutineScope map.values
+}
 
 suspend fun getAppValues(
     apk: ApkFile,

@@ -6,24 +6,19 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import androidx.recyclerview.widget.LinearLayoutManager
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
 import net.dongliu.apk.parser.ApkFile
 import tk.zwander.sprviewer.R
-import tk.zwander.sprviewer.data.UValueData
-import tk.zwander.sprviewer.ui.adapters.DrawableListAdapter
-import tk.zwander.sprviewer.ui.adapters.ValueListAdapter
-import tk.zwander.sprviewer.ui.services.BatchExportService
+import tk.zwander.sprviewer.data.StringXmlData
+import tk.zwander.sprviewer.ui.adapters.StringsListAdapter
 import tk.zwander.sprviewer.util.*
-import tk.zwander.sprviewer.views.BaseDimensionInputDialog
 import tk.zwander.sprviewer.views.ExportInfo
 import java.io.File
 import java.util.*
 
 
 @Suppress("DeferredResultUnused")
-class ValueListActivity : BaseActivity<UValueData, ValueListAdapter.ListVH>() {
+class StringsListActivity : BaseActivity<StringXmlData, StringsListAdapter.StringListVH>() {
     companion object {
         const val EXTRA_FILE = "file"
 
@@ -31,13 +26,8 @@ class ValueListActivity : BaseActivity<UValueData, ValueListAdapter.ListVH>() {
     }
 
     override val contentView = R.layout.activity_main
-    override val adapter = ValueListAdapter {
-        //TODO: extract selection
-//        val viewIntent = Intent(this, DrawableViewActivity::class.java)
-//        viewIntent.putExtra(DrawableViewActivity.EXTRA_DRAWABLE_INFO, it.toDrawableData())
-//        viewIntent.putExtras(intent)
-//
-//        startActivity(viewIntent)
+    override val adapter = StringsListAdapter {
+        StringsViewActivity.start(this, it, packageInfo.packageName)
     }
     override val hasBackButton = true
 
@@ -69,7 +59,7 @@ class ValueListActivity : BaseActivity<UValueData, ValueListAdapter.ListVH>() {
             return
         }
 
-        adapter.loadItemsAsync(apk, packageInfo, this::onLoadFinished) { size, count ->
+        adapter.loadItemsAsync(apk, this::onLoadFinished) { size, count ->
             progress?.progress = (count.toFloat() / size.toFloat() * 100f).toInt()
         }
 
@@ -96,9 +86,7 @@ class ValueListActivity : BaseActivity<UValueData, ValueListAdapter.ListVH>() {
 
         if (resultCode == RESULT_OK && requestCode == REQ_CHOOSE_OUTPUT_DIR
             && data != null) {
-            BaseDimensionInputDialog(this) { info ->
-                handleBatchExport(info, data.data)
-            }.show()
+            //TODO: fill in
         }
     }
 
@@ -130,9 +118,9 @@ class ValueListActivity : BaseActivity<UValueData, ValueListAdapter.ListVH>() {
         updateTitle(adapter.itemCount)
     }
 
-    private fun updateTitle(numberDrawables: Int = -1) = launch {
+    private fun updateTitle(numberLocales: Int = -1) = launch {
         title = withContext(Dispatchers.IO) {
             appLabel.await()
-        } + if (numberDrawables > -1) " ($numberDrawables)" else ""
+        } + if (numberLocales > -1) " ($numberLocales)" else ""
     }
 }

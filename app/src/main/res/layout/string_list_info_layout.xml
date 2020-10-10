@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="?android:listPreferredItemHeight"
+    android:clickable="true"
+    android:focusable="true"
+    android:layout_margin="4dp"
+    app:contentPadding="8dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/scrollbar_width"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <tk.zwander.sprviewer.views.ExtensionIndicator
+                android:id="@+id/ext_indicator"
+                android:layout_width="48dp"
+                android:layout_height="48dp">
+
+                <view class="tk.zwander.sprviewer.views.ExtensionIndicator$ExtensionIndicatorText"
+                    android:id="@+id/text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="9.png"
+                    />
+
+            </tk.zwander.sprviewer.views.ExtensionIndicator>
+
+            <ImageView
+                android:id="@+id/img_preview"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                />
+
+        </FrameLayout>
+
+        <LinearLayout
+            android:id="@+id/string_info_wrapper"
+            android:layout_marginStart="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/string_file_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+                tools:text="strings.xml"
+                />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

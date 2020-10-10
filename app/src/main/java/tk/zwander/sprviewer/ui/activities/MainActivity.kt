@@ -104,7 +104,7 @@ class MainActivity : BaseActivity<AppData, BaseListAdapter.BaseVH>() {
     }
 
     private fun openValuesActivity(pkg: String) {
-        val valueIntent = Intent(this, ValueListActivity::class.java)
+        val valueIntent = Intent(this, StringsListActivity::class.java)
         valueIntent.putExtra(Intent.EXTRA_PACKAGE_NAME, pkg)
 
         startActivity(valueIntent)
