@@ -4,14 +4,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.drawable_info_layout.view.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import net.dongliu.apk.parser.ApkFile
+import kotlinx.coroutines.*
 import tk.zwander.sprviewer.R
 import tk.zwander.sprviewer.data.StringData
 import tk.zwander.sprviewer.data.StringXmlData
-import tk.zwander.sprviewer.util.getAppStringXmls
 
 class StringsViewAdapter(private val itemSelectedCallback: (item: StringData) -> Unit) : BaseListAdapter<StringData, StringsViewAdapter.StringViewVH>(StringData::class.java) {
     override val viewRes = R.layout.drawable_info_layout
@@ -44,6 +40,8 @@ class StringsViewAdapter(private val itemSelectedCallback: (item: StringData) ->
         listener: () -> Unit
     ) = launch {
         withContext(Dispatchers.Main) {
+            delay(100)
+
             addAll(info.values)
 
             listener()

@@ -58,6 +58,13 @@
                 tools:text="strings.xml"
                 />
 
+            <TextView
+                android:id="@+id/string_count"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:text="198"
+                />
+
         </LinearLayout>
 
     </LinearLayout>

@@ -73,6 +73,7 @@ class StringsListAdapter(private val itemSelectedListener: (StringXmlData) -> Un
                 img_preview.isVisible = true
 
                 string_file_name.text = info.constructLabel()
+                string_count.text = info.values.size.toString()
 
                 setOnClickListener {
                     itemSelectedListener(getInfo(adapterPosition))
