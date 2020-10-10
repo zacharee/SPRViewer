@@ -11,7 +11,7 @@ import tk.zwander.sprviewer.ui.adapters.AppListAdapter
 import tk.zwander.sprviewer.ui.adapters.BaseListAdapter
 import java.io.File
 
-class MainActivity : BaseActivity<AppData, BaseListAdapter.BaseVH>() {
+class MainActivity : BaseActivity<AppData, AppListAdapter.AppVH>() {
     companion object {
         const val REQ_IMPORT_APK = 1000
     }
