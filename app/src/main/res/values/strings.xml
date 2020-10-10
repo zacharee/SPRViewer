@@ -11,6 +11,7 @@
     <string name="height">Height</string>
     <string name="open_dir">Open</string>
     <string name="tint">Tint</string>
+    <string name="copied">Copied</string>
 
     <string name="base_raster_width">Base Raster Width</string>
     <string name="rasterize_xmls">Rasterize XMLs</string>

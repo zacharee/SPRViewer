@@ -1,12 +1,10 @@
 package tk.zwander.sprviewer.ui.activities
 
-import android.content.Context
-import android.content.Intent
-import android.content.pm.PackageParser
+import android.content.*
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Toast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -14,9 +12,6 @@ import tk.zwander.sprviewer.R
 import tk.zwander.sprviewer.data.StringData
 import tk.zwander.sprviewer.data.StringXmlData
 import tk.zwander.sprviewer.ui.adapters.StringsViewAdapter
-import tk.zwander.sprviewer.util.getFile
-import tk.zwander.sprviewer.util.parsePackageCompat
-import java.io.File
 
 class StringsViewActivity : BaseActivity<StringData, StringsViewAdapter.StringViewVH>() {
     companion object {
@@ -38,7 +33,11 @@ class StringsViewActivity : BaseActivity<StringData, StringsViewAdapter.StringVi
     override val hasBackButton = true
 
     override val adapter = StringsViewAdapter {
-        //TODO: implement save
+        val cm = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+        cm.primaryClip = ClipData.newPlainText(
+            it.value, it.value
+        )
+        Toast.makeText(this, R.string.copied, Toast.LENGTH_SHORT).show()
     }
 
     private val pkgName by lazy { intent.getStringExtra(Intent.EXTRA_PACKAGE_NAME) }
