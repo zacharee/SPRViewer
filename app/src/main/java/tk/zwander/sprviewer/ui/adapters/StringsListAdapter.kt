@@ -72,6 +72,14 @@ class StringsListAdapter(private val itemSelectedListener: (StringXmlData) -> Un
                 ext_indicator.isVisible = true
                 img_preview.isVisible = true
 
+                ext_indicator.setText(info.locale.toString().run {
+                    if (isBlank()) {
+                        "DEF"
+                    } else {
+                        substring(0, 4.coerceAtMost(length))
+                    }
+                })
+
                 string_file_name.text = info.constructLabel()
                 string_count.text = info.values.size.toString()
 
