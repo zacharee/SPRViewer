@@ -28,62 +28,64 @@ suspend fun getAppStringXmls(
     stringXmlFound: (data: StringXmlData, size: Int, count: Int) -> Unit
 ): Collection<StringXmlData> = coroutineScope {
     val table = apk.getResourceTable()
-    val (pkgCode, resPkg) = table.packageMap.entries.toList()[0].run { key.toInt() to value }
-
-    val stringsIndex =
-        resPkg.typeSpecMap.filter { it.value.name == "string" }.entries.elementAtOrNull(0)
-
-    val stringsStart =
-        if (stringsIndex != null) (stringsIndex.key.toInt() shl 16) or (pkgCode shl 24) else -1
-
-    val stringsSize = stringsIndex?.value?.entryFlags?.size ?: 0
-
-    var totalSize = 0
-
-    var count = 0
-
-    val resInfos = LinkedList<List<ResourceTable.Resource>>()
     val map = ConcurrentHashMap<Locale, StringXmlData>()
 
-    val loopRange: suspend CoroutineScope.(start: Int, end: Int) -> Unit = { start: Int, end: Int ->
-        for (i in start until end) {
-            try {
-                val r = table.getResourcesById(i.toLong())
-                if (r.isEmpty()) continue
+    var count = 0
+    var totalSize = table.packageMap.size
 
-                resInfos.add(r)
-                totalSize += r.size
-            } catch (e: Resources.NotFoundException) {}
+    table.packageMap.forEach { (k, v) ->
+        val (pkgCode, resPkg) = k.toInt() to v
+
+        val stringsIndex =
+            resPkg.typeSpecMap.filter { it.value.name == "string" }.entries.elementAtOrNull(0)
+
+        val stringsStart =
+            if (stringsIndex != null) (stringsIndex.key.toInt() shl 16) or (pkgCode shl 24) else -1
+
+        val stringsSize = stringsIndex?.value?.entryFlags?.size ?: 0
+
+        val resInfos = LinkedList<List<ResourceTable.Resource>>()
+
+        val loopRange: suspend CoroutineScope.(start: Int, end: Int) -> Unit = { start: Int, end: Int ->
+            for (i in start until end) {
+                try {
+                    val r = table.getResourcesById(i.toLong())
+                    if (r.isEmpty()) continue
+
+                    resInfos.add(r)
+                    totalSize += r.size
+                } catch (e: Resources.NotFoundException) {}
+            }
         }
-    }
 
-    if (stringsStart != -1) {
-        loopRange(stringsStart, stringsStart + stringsSize)
+        if (stringsStart != -1) {
+            loopRange(stringsStart, stringsStart + stringsSize)
 
-        resInfos.forEach {
-            it.forEach { res ->
-                val locale = res.type.locale
+            resInfos.forEach {
+                it.forEach { res ->
+                    val locale = res.type.locale
 
-                if (map.containsKey(locale)) {
-                    map[locale]!!.apply {
-                        values.add(StringData(
-                            res.resourceEntry.key,
-                            res.resourceEntry.toStringValue(table, locale)
-                        ))
+                    if (map.containsKey(locale)) {
+                        map[locale]!!.apply {
+                            values.add(StringData(
+                                res.resourceEntry.key,
+                                res.resourceEntry.toStringValue(table, locale)
+                            ))
+                        }
+                    } else {
+                        map[locale] = StringXmlData(
+                            locale
+                        ).apply {
+                            values.add(StringData(
+                                res.resourceEntry.key,
+                                res.resourceEntry.toStringValue(table, locale)
+                            ))
+                        }
                     }
-                } else {
-                    map[locale] = StringXmlData(
-                        locale
-                    ).apply {
-                        values.add(StringData(
-                            res.resourceEntry.key,
-                            res.resourceEntry.toStringValue(table, locale)
-                        ))
-                    }
+
+                    count++
+                    stringXmlFound(map[locale]!!, totalSize, count)
                 }
-
-                count++
-                stringXmlFound(map[locale]!!, totalSize, count)
             }
         }
     }
@@ -97,58 +99,61 @@ suspend fun getAppValues(
     valueFound: (data: UValueData, size: Int, count: Int) -> Unit
 ): Collection<UValueData> = coroutineScope {
     val table = apk.getResourceTable()
-    val (pkgCode, resPkg) = table.packageMap.entries.toList()[0].run { key.toInt() to value }
+    var totalSize = table.packageMap.size
+    var count = 0
 
     val list = ArraySet<UValueData>()
 
-    val stringsIndex =
-        resPkg.typeSpecMap.filter { it.value.name == "string" }.entries.elementAtOrNull(0)
+    table.packageMap.forEach { (k, v) ->
+        val (pkgCode, resPkg) = k.toInt() to v
 
-    val stringsStart =
-        if (stringsIndex != null) (stringsIndex.key.toInt() shl 16) or (pkgCode shl 24) else -1
+        val stringsIndex =
+            resPkg.typeSpecMap.filter { it.value.name == "string" }.entries.elementAtOrNull(0)
 
-    val stringsSize = stringsIndex?.value?.entryFlags?.size ?: 0
+        val stringsStart =
+            if (stringsIndex != null) (stringsIndex.key.toInt() shl 16) or (pkgCode shl 24) else -1
 
-    val totalSize = stringsSize
+        val stringsSize = stringsIndex?.value?.entryFlags?.size ?: 0
 
-    var count = 0
+        totalSize += stringsSize
 
-    val loopRange: suspend CoroutineScope.(start: Int, end: Int) -> Unit = { start: Int, end: Int ->
-        for (i in start until end) {
-            try {
-                val r = table.getResourcesById(i.toLong())
-                if (r.isEmpty()) continue
+        val loopRange: suspend CoroutineScope.(start: Int, end: Int) -> Unit = { start: Int, end: Int ->
+            for (i in start until end) {
+                try {
+                    val r = table.getResourcesById(i.toLong())
+                    if (r.isEmpty()) continue
 
-                val data = UValueData(
-                    "string",
-                    r[0].resourceEntry.key,
-                    apk.getFile().absolutePath,
-                    i,
-                    apk,
-                    packageInfo,
-                    r[0].resourceEntry.toStringValue(table, Locale.getDefault()),
-                    mutableListOf()
-                )
-
-                r.forEach {
-                    data.values.add(
-                        LocalizedValueData(
-                            it.type.locale,
-                            it.resourceEntry.toStringValue(table, it.type.locale)
-                        )
+                    val data = UValueData(
+                        "string",
+                        r[0].resourceEntry.key,
+                        apk.getFile().absolutePath,
+                        i,
+                        apk,
+                        packageInfo,
+                        r[0].resourceEntry.toStringValue(table, Locale.getDefault()),
+                        mutableListOf()
                     )
 
-                    count++
-                    list.add(data)
-                    valueFound(data, totalSize, count)
+                    r.forEach {
+                        data.values.add(
+                            LocalizedValueData(
+                                it.type.locale,
+                                it.resourceEntry.toStringValue(table, it.type.locale)
+                            )
+                        )
+
+                        count++
+                        list.add(data)
+                        valueFound(data, totalSize, count)
+                    }
+                } catch (e: Resources.NotFoundException) {
                 }
-            } catch (e: Resources.NotFoundException) {
             }
         }
-    }
 
-    if (stringsStart != -1) {
-        loopRange(stringsStart, stringsStart + stringsSize)
+        if (stringsStart != -1) {
+            loopRange(stringsStart, stringsStart + stringsSize)
+        }
     }
 
     return@coroutineScope list
@@ -160,79 +165,82 @@ suspend fun getAppDrawables(
     drawableFound: (data: UDrawableData, size: Int, count: Int) -> Unit
 ): List<UDrawableData> = coroutineScope {
     val table = apk.getResourceTable()
-    val (pkgCode, resPkg) = table.packageMap.entries.toList()[0].run { key.toInt() to value }
+    var totalSize = table.packageMap.size
+    var count = 0
 
     val list = ArrayList<UDrawableData>()
 
-    val drawableIndex =
-        resPkg.typeSpecMap.filter { it.value.name == "drawable" }.entries.elementAtOrNull(0)
-    val mipmapIndex =
-        resPkg.typeSpecMap.filter { it.value.name == "mipmap" }.entries.elementAtOrNull(0)
-    val rawIndex =
-        resPkg.typeSpecMap.filter { it.value.name == "raw" }.entries.elementAtOrNull(0)
+    table.packageMap.forEach { (k, v) ->
+        val (pkgCode, resPkg) = k.toInt() to v
 
-    val drawableStart =
-        if (drawableIndex != null) (drawableIndex.key.toInt() shl 16) or (pkgCode shl 24) else -1
-    val mipmapStart =
-        if (mipmapIndex != null) (mipmapIndex.key.toInt() shl 16) or (pkgCode shl 24) else -1
-    val rawStart =
-        if (rawIndex != null) (rawIndex.key.toInt() shl 16) or (pkgCode shl 24) else -1
+        val drawableIndex =
+            resPkg.typeSpecMap.filter { it.value.name == "drawable" }.entries.elementAtOrNull(0)
+        val mipmapIndex =
+            resPkg.typeSpecMap.filter { it.value.name == "mipmap" }.entries.elementAtOrNull(0)
+        val rawIndex =
+            resPkg.typeSpecMap.filter { it.value.name == "raw" }.entries.elementAtOrNull(0)
 
-    val drawableSize = drawableIndex?.value?.entryFlags?.size ?: 0
-    val mipmapSize = mipmapIndex?.value?.entryFlags?.size ?: 0
-    val rawSize = rawIndex?.value?.entryFlags?.size ?: 0
-    val totalSize = drawableSize + mipmapSize + rawSize
+        val drawableStart =
+            if (drawableIndex != null) (drawableIndex.key.toInt() shl 16) or (pkgCode shl 24) else -1
+        val mipmapStart =
+            if (mipmapIndex != null) (mipmapIndex.key.toInt() shl 16) or (pkgCode shl 24) else -1
+        val rawStart =
+            if (rawIndex != null) (rawIndex.key.toInt() shl 16) or (pkgCode shl 24) else -1
 
-    var count = 0
+        val drawableSize = drawableIndex?.value?.entryFlags?.size ?: 0
+        val mipmapSize = mipmapIndex?.value?.entryFlags?.size ?: 0
+        val rawSize = rawIndex?.value?.entryFlags?.size ?: 0
+        totalSize += drawableSize + mipmapSize + rawSize
 
-    val loopRange: suspend CoroutineScope.(start: Int, end: Int) -> Unit = { start: Int, end: Int ->
-        for (i in start until end) {
-            try {
-                val r = table.getResourcesById(i.toLong())
-                if (r.isEmpty()) continue
+        val loopRange: suspend CoroutineScope.(start: Int, end: Int) -> Unit = { start: Int, end: Int ->
+            for (i in start until end) {
+                try {
+                    val r = table.getResourcesById(i.toLong())
+                    if (r.isEmpty()) continue
 
-                val paths = r.map { it.resourceEntry }
+                    val paths = r.map { it.resourceEntry }
 
-                paths.forEach {
-                    val pathOrColor = it.toStringValue(table, Locale.getDefault())
+                    paths.forEach {
+                        val pathOrColor = it.toStringValue(table, Locale.getDefault())
 
-                    val split = pathOrColor.split("/")
-                    val fullName = split.last().split(".")
+                        val split = pathOrColor.split("/")
+                        val fullName = split.last().split(".")
 
-                    val typeMask = 0x00ff0000
-                    val typeSpec = resPkg.getTypeSpec(((typeMask and i) - 0xffff).toShort())
-                    val typeName = typeSpec?.name!!
-                    val name = it.key
-                    val ext = if (fullName.size > 1) fullName.subList(1, fullName.size)
-                        .joinToString(".") else null
+                        val typeMask = 0x00ff0000
+                        val typeSpec = resPkg.getTypeSpec(((typeMask and i) - 0xffff).toShort())
+                        val typeName = typeSpec?.name!!
+                        val name = it.key
+                        val ext = if (fullName.size > 1) fullName.subList(1, fullName.size)
+                            .joinToString(".") else null
 
-                    val data = UDrawableData(
-                        typeName,
-                        name,
-                        ext,
-                        pathOrColor,
-                        i,
-                        apk,
-                        packageInfo
-                    )
+                        val data = UDrawableData(
+                            typeName,
+                            name,
+                            ext,
+                            pathOrColor,
+                            i,
+                            apk,
+                            packageInfo
+                        )
 
-                    count++
-                    list.add(data)
-                    drawableFound(data, totalSize, count)
+                        count++
+                        list.add(data)
+                        drawableFound(data, totalSize, count)
+                    }
+                } catch (e: Resources.NotFoundException) {
                 }
-            } catch (e: Resources.NotFoundException) {
             }
         }
-    }
 
-    if (drawableStart != -1) {
-        loopRange(drawableStart, drawableStart + drawableSize)
-    }
-    if (mipmapStart != -1) {
-        loopRange(mipmapStart, mipmapStart + mipmapSize)
-    }
-    if (rawStart != -1) {
-        loopRange(rawStart, rawStart + rawSize)
+        if (drawableStart != -1) {
+            loopRange(drawableStart, drawableStart + drawableSize)
+        }
+        if (mipmapStart != -1) {
+            loopRange(mipmapStart, mipmapStart + mipmapSize)
+        }
+        if (rawStart != -1) {
+            loopRange(rawStart, rawStart + rawSize)
+        }
     }
 
     return@coroutineScope list
