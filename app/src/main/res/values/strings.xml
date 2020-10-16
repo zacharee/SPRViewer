@@ -29,6 +29,7 @@
     <string name="open_dir_error">Unable to launch file explorer</string>
     <string name="save_all_complete_desc">Batch export complete!</string>
     <string name="batch_export_choose_directory">Choose Output Directory</string>
+    <string name="import_apk_choice">What do you want to do with this APK?</string>
 
     <string name="export_notification_queue">Exporting: %1$d/%2$d</string>
     <string name="export_notification_drawable_progress">Drawable: %1$d/%2$d</string>

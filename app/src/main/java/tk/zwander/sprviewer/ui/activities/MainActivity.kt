@@ -5,10 +5,10 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import tk.zwander.sprviewer.R
 import tk.zwander.sprviewer.data.AppData
 import tk.zwander.sprviewer.ui.adapters.AppListAdapter
-import tk.zwander.sprviewer.ui.adapters.BaseListAdapter
 import java.io.File
 
 class MainActivity : BaseActivity<AppData, AppListAdapter.AppVH>() {
@@ -63,9 +63,7 @@ class MainActivity : BaseActivity<AppData, AppListAdapter.AppVH>() {
         when (requestCode) {
             REQ_IMPORT_APK -> {
                 if (resultCode == Activity.RESULT_OK) {
-
                     data?.data?.also { uri ->
-
                         contentResolver.openInputStream(uri).use { inputStream ->
                             val apk = File(cacheDir, "temp_apk.apk")
 
@@ -73,7 +71,17 @@ class MainActivity : BaseActivity<AppData, AppListAdapter.AppVH>() {
                                 inputStream.copyTo(outputStream)
                             }
 
-                            openDrawableActivity(apk)
+                            MaterialAlertDialogBuilder(this)
+                                .setTitle(R.string.import_apk)
+                                .setMessage(R.string.import_apk_choice)
+                                .setPositiveButton(R.string.view_images) { _, _ ->
+                                    openDrawableActivity(apk)
+                                }
+                                .setNegativeButton(R.string.view_strings) { _, _ ->
+                                    openValuesActivity(apk)
+                                }
+                                .setNeutralButton(android.R.string.cancel, null)
+                                .show()
                         }
                     }
                 }
@@ -106,6 +114,13 @@ class MainActivity : BaseActivity<AppData, AppListAdapter.AppVH>() {
     private fun openValuesActivity(pkg: String) {
         val valueIntent = Intent(this, StringsListActivity::class.java)
         valueIntent.putExtra(Intent.EXTRA_PACKAGE_NAME, pkg)
+
+        startActivity(valueIntent)
+    }
+
+    private fun openValuesActivity(apk: File) {
+        val valueIntent = Intent(this, StringsListActivity::class.java)
+        valueIntent.putExtra(StringsListActivity.EXTRA_FILE, apk)
 
         startActivity(valueIntent)
     }
