@@ -284,7 +284,7 @@ fun Activity.showTitleSnackBar(anchor: View) {
 
         show(anchor, 0,
             window.decorView
-                .findViewById<View>(androidx.appcompat.R.id.action_bar)
+                .findViewById<View>(R.id.action_bar)
                 .height - dpAsPx(12))
 
         getContentView().doOnAttach {
