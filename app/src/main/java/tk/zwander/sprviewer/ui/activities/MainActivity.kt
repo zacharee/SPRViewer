@@ -106,7 +106,7 @@ class MainActivity : BaseActivity<AppData, AppListAdapter.AppVH>() {
 
     private fun openDrawableActivity(apk: File) {
         val drawableIntent = Intent(this, DrawableListActivity::class.java)
-        drawableIntent.putExtra(DrawableListActivity.EXTRA_FILE, apk)
+        drawableIntent.putExtra(BaseListActivity.EXTRA_FILE, apk)
 
         startActivity(drawableIntent)
     }
@@ -120,7 +120,7 @@ class MainActivity : BaseActivity<AppData, AppListAdapter.AppVH>() {
 
     private fun openValuesActivity(apk: File) {
         val valueIntent = Intent(this, StringsListActivity::class.java)
-        valueIntent.putExtra(StringsListActivity.EXTRA_FILE, apk)
+        valueIntent.putExtra(BaseListActivity.EXTRA_FILE, apk)
 
         startActivity(valueIntent)
     }

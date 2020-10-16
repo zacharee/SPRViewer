@@ -79,7 +79,7 @@ abstract class BaseActivity<Data : BaseData, VH : BaseListAdapter.BaseVH> : AppC
             }
         }
 
-        window.decorView?.findViewById<View>(androidx.appcompat.R.id.action_bar)?.apply {
+        window.decorView?.findViewById<View>(R.id.action_bar)?.apply {
             setOnClickListener {
                 scrollToPosition()
             }

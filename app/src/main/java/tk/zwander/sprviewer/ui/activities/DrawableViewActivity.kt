@@ -67,7 +67,7 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
     private val path by lazy { paths.last() }
     private val drawableInfo by lazy { intent.getParcelableExtra<DrawableData>(EXTRA_DRAWABLE_INFO) }
     private val pkg by lazy { intent.getStringExtra(Intent.EXTRA_PACKAGE_NAME) }
-    private val file by lazy { intent.getSerializableExtra(DrawableListActivity.EXTRA_FILE) as File? }
+    private val file by lazy { intent.getSerializableExtra(BaseListActivity.EXTRA_FILE) as File? }
     private val remRes by lazy { getAppRes(apkPath!!) }
     private val table by lazy {
         apk.getResourceTable()
@@ -108,7 +108,7 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
 
         title = "$drawableName.$ext"
 
-        window.decorView?.findViewById<View>(androidx.appcompat.R.id.action_bar)?.apply {
+        window.decorView?.findViewById<View>(R.id.action_bar)?.apply {
             setOnLongClickListener {
                 showTitleSnackBar(it)
 

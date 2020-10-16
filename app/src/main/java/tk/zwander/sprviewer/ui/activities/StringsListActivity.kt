@@ -17,66 +17,17 @@ import java.util.*
 
 
 @Suppress("DeferredResultUnused")
-class StringsListActivity : BaseActivity<StringXmlData, StringsListAdapter.StringListVH>() {
-    companion object {
-        const val EXTRA_FILE = "file"
-
-        const val REQ_CHOOSE_OUTPUT_DIR = 2100
-    }
-
-    override val contentView = R.layout.activity_main
+class StringsListActivity : BaseListActivity<StringXmlData, StringsListAdapter.StringListVH>() {
     override val adapter = StringsListAdapter {
         StringsViewActivity.start(this, it, packageInfo.packageName)
     }
-    override val hasBackButton = true
-
-    private val apkPath by lazy {
-        if (pkg != null) {
-            File(packageManager.getApplicationInfo(pkg, 0).sourceDir)
-        } else {
-            file
-        }
-    }
-    private val apk by lazy {
-        ApkFile(apkPath)
-            .apply { preferredLocale = Locale.getDefault() }
-    }
-    private val pkg by lazy { intent.getStringExtra(Intent.EXTRA_PACKAGE_NAME) }
-    private val file by lazy { intent.getSerializableExtra(EXTRA_FILE) as File? }
-    private val appLabel by lazyDeferred { packageInfo.applicationInfo.loadLabel(packageManager).toString() }
-
-    private val parser = PackageParser()
-    private val packageInfo by lazy { parser.parsePackageCompat(apk.getFile(), 0, true) }
-
-    private var saveAll: MenuItem? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (pkg == null && file == null) {
-            finish()
-            return
-        }
-
         adapter.loadItemsAsync(apk, this::onLoadFinished) { size, count ->
             progress?.progress = (count.toFloat() / size.toFloat() * 100f).toInt()
         }
-
-        updateTitle()
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.batch, menu)
-
-        saveAll = menu.findItem(R.id.all)
-        saveAll?.setOnMenuItemClickListener {
-            val openIntent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-            startActivityForResult(openIntent, REQ_CHOOSE_OUTPUT_DIR)
-
-            true
-        }
-
-        return super.onCreateOptionsMenu(menu)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -112,25 +63,5 @@ class StringsListActivity : BaseActivity<StringXmlData, StringsListAdapter.Strin
                 progressItem?.isVisible = false
             }
         }
-    }
-
-    override fun checkCount() {
-        super.checkCount()
-
-        if (isReadyForMenus()) {
-            saveAll?.isVisible = true
-        }
-    }
-
-    override fun onLoadFinished() {
-        super.onLoadFinished()
-
-        updateTitle(adapter.itemCount)
-    }
-
-    private fun updateTitle(numberLocales: Int = -1) = launch {
-        title = withContext(Dispatchers.IO) {
-            appLabel.await()
-        } + if (numberLocales > -1) " ($numberLocales)" else ""
     }
 }
