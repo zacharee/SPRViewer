@@ -5,6 +5,8 @@
     android:padding="16dp"
     app:pgc_indeterminate="true"
     app:pgc_rimColor="?colorSecondaryVariant"
+    app:pgc_rimWidth="2dp"
+    app:pgc_speed="1.0"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     />

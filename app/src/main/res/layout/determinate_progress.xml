@@ -16,7 +16,9 @@
         app:pgc_indeterminate="false"
         app:pgc_rimColor="?colorAccent"
         app:pgc_rimWidth="8dp"
+        app:pgc_speed="1.0"
         app:pgc_textColor="@android:color/white"
+        tools:pgc_progress="10"
         />
 
     <TextView
