@@ -33,7 +33,9 @@ class AppListAdapter(private val itemSelectedListener: (AppData) -> Unit, privat
     }
 
     override fun compare(o1: AppData, o2: AppData): Int {
-        return o1.constructLabel().compareTo(o2.constructLabel(), true)
+        val initialCompare = o1.constructLabel().compareTo(o2.constructLabel(), true)
+        return if (initialCompare != 0) initialCompare else
+            o1.pkg.compareTo(o2.pkg)
     }
 
     override fun areContentsTheSame(oldItem: AppData, newItem: AppData): Boolean {
