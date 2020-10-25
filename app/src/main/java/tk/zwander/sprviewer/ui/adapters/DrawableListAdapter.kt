@@ -3,6 +3,7 @@ package tk.zwander.sprviewer.ui.adapters
 import android.annotation.SuppressLint
 import android.content.ContentResolver
 import android.content.pm.PackageParser
+import android.content.res.Resources
 import android.net.Uri
 import android.util.Log
 import android.view.LayoutInflater
@@ -24,7 +25,7 @@ import tk.zwander.sprviewer.util.getFile
 import tk.zwander.sprviewer.util.picasso
 import kotlin.Exception
 
-class DrawableListAdapter(private val itemSelectedListener: (UDrawableData) -> Unit) : BaseListAdapter<UDrawableData, DrawableListAdapter.ListVH>(UDrawableData::class.java) {
+class DrawableListAdapter(private val remRes: Resources, private val itemSelectedListener: (UDrawableData) -> Unit) : BaseListAdapter<UDrawableData, DrawableListAdapter.ListVH>(UDrawableData::class.java) {
     override val viewRes = R.layout.drawable_info_layout
 
     @SuppressLint("SetTextI18n")
@@ -81,8 +82,6 @@ class DrawableListAdapter(private val itemSelectedListener: (UDrawableData) -> U
                 img_preview.isVisible = true
 
                 try {
-                    val remRes = context.getAppRes(info.file.getFile())
-
                     context.picasso.cancelRequest(img_preview)
 
                     context.picasso.load(

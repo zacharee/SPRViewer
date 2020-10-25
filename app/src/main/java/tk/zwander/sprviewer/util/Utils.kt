@@ -2,11 +2,8 @@ package tk.zwander.sprviewer.util
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.app.ResourcesManager
-import android.content.Context
 import android.content.pm.PackageParser
 import android.content.res.Resources
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupWindow

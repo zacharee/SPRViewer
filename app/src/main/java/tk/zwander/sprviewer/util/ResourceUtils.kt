@@ -2,6 +2,7 @@ package tk.zwander.sprviewer.util
 
 import android.app.LoadedApk
 import android.app.ResourcesManager
+import android.content.pm.PackageParser
 import android.content.res.CompatibilityInfo
 import android.content.res.Configuration
 import android.content.res.Resources

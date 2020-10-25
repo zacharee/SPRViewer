@@ -39,11 +39,25 @@ suspend fun Context.getInstalledApps(listener: (data: AppData, size: Int, count:
     return ret
 }
 
+private val loadedResources = HashMap<String, Resources>()
+
 fun Context.getAppRes(apk: File): Resources {
     val resMan = ResourcesManager.getInstance()
     val pkgInfo = (applicationContext as Application).mLoadedApk
 
-    return resMan.getResourcesCompat(apk.absolutePath, pkgInfo)
+    return loadedResources[apk.absolutePath] ?: resMan
+        .getResourcesCompat(apk.absolutePath, pkgInfo)
+        .apply {
+            loadedResources[apk.absolutePath] = this
+        }
+}
+
+fun destroyAppRes(apk: File) {
+    val res = loadedResources[apk.absolutePath] ?: return
+
+    res.assets.close()
+
+    loadedResources.remove(apk.absolutePath)
 }
 
 /**

@@ -180,6 +180,7 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
         super.onDestroy()
 
         cancel()
+        destroyAppRes(apk.getFile())
     }
 
     @ExperimentalCoroutinesApi

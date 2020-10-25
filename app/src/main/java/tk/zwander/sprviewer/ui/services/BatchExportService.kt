@@ -168,6 +168,8 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
     private fun onExportCompleted(session: BatchExportSessionData, cancelled: Boolean = false) {
         queuedExports.remove(session)
 
+        destroyAppRes(session.appFile)
+
         if (!cancelled) {
             nm.notify(session.hashCode(), createCompletedNotification(session))
         } else {

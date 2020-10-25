@@ -23,12 +23,14 @@ import java.util.*
 
 @Suppress("DeferredResultUnused")
 class DrawableListActivity : BaseListActivity<UDrawableData, DrawableListAdapter.ListVH>() {
-    override val adapter = DrawableListAdapter {
-        val viewIntent = Intent(this, DrawableViewActivity::class.java)
-        viewIntent.putExtra(DrawableViewActivity.EXTRA_DRAWABLE_INFO, it.toDrawableData())
-        viewIntent.putExtras(intent)
+    override val adapter by lazy {
+        DrawableListAdapter(remRes) {
+            val viewIntent = Intent(this, DrawableViewActivity::class.java)
+            viewIntent.putExtra(DrawableViewActivity.EXTRA_DRAWABLE_INFO, it.toDrawableData())
+            viewIntent.putExtras(intent)
 
-        startActivity(viewIntent)
+            startActivity(viewIntent)
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

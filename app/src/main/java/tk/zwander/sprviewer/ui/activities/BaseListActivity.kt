@@ -13,14 +13,12 @@ import net.dongliu.apk.parser.ApkFile
 import tk.zwander.sprviewer.R
 import tk.zwander.sprviewer.data.BaseData
 import tk.zwander.sprviewer.ui.adapters.BaseListAdapter
-import tk.zwander.sprviewer.util.getAppRes
-import tk.zwander.sprviewer.util.getFile
-import tk.zwander.sprviewer.util.lazyDeferred
-import tk.zwander.sprviewer.util.parsePackageCompat
+import tk.zwander.sprviewer.util.*
 import java.io.File
 import java.util.*
 
-abstract class BaseListActivity<Data : BaseData, VH : BaseListAdapter.BaseVH> : BaseActivity<Data, VH>() {
+abstract class BaseListActivity<Data : BaseData, VH : BaseListAdapter.BaseVH> :
+    BaseActivity<Data, VH>() {
     companion object {
         const val EXTRA_FILE = "file"
 
@@ -44,17 +42,20 @@ abstract class BaseListActivity<Data : BaseData, VH : BaseListAdapter.BaseVH> : 
 
     internal val pkg by lazy { intent.getStringExtra(Intent.EXTRA_PACKAGE_NAME) }
     internal val file by lazy { intent.getSerializableExtra(EXTRA_FILE) as File? }
+    internal val remRes by lazy { getAppRes(apk.getFile()) }
     internal val appLabel by lazyDeferred {
         val labelRes = packageInfo.applicationInfo.labelRes
         try {
-            getAppRes(apk.getFile()).getString(labelRes)
+            remRes.getString(labelRes)
         } catch (e: Resources.NotFoundException) {
             packageInfo.applicationInfo.packageName
         }
     }
 
     internal val parser = PackageParser()
-    internal val packageInfo by lazy { parser.parsePackageCompat(apk.getFile(), 0, true) }
+    internal val packageInfo by lazy {
+        parser.parsePackageCompat(apk.getFile(), 0, true)
+    }
 
     internal var saveAll: MenuItem? = null
 
@@ -95,6 +96,12 @@ abstract class BaseListActivity<Data : BaseData, VH : BaseListAdapter.BaseVH> : 
         super.onLoadFinished()
 
         updateTitle(adapter.itemCount)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        destroyAppRes(apk.getFile())
     }
 
     internal fun updateTitle(numberItems: Int = -1) = launch {
