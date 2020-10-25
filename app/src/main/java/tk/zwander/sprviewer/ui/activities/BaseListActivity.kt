@@ -2,6 +2,7 @@ package tk.zwander.sprviewer.ui.activities
 
 import android.content.Intent
 import android.content.pm.PackageParser
+import android.content.res.Resources
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -45,7 +46,11 @@ abstract class BaseListActivity<Data : BaseData, VH : BaseListAdapter.BaseVH> : 
     internal val file by lazy { intent.getSerializableExtra(EXTRA_FILE) as File? }
     internal val appLabel by lazyDeferred {
         val labelRes = packageInfo.applicationInfo.labelRes
-        getAppRes(apk.getFile()).getString(labelRes)
+        try {
+            getAppRes(apk.getFile()).getString(labelRes)
+        } catch (e: Resources.NotFoundException) {
+            packageInfo.applicationInfo.packageName
+        }
     }
 
     internal val parser = PackageParser()

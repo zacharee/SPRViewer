@@ -67,8 +67,10 @@ class DrawableListAdapter(private val itemSelectedListener: (UDrawableData) -> U
             }
         }
 
-        addAll(drawables)
-        listener()
+        withContext(Dispatchers.Main) {
+            addAll(drawables)
+            listener()
+        }
     }
 
     inner open class ListVH(view: View) : BaseVH(view) {
