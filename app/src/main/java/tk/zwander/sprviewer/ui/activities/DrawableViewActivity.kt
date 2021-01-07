@@ -5,6 +5,7 @@ import android.content.ContentResolver
 import android.content.Intent
 import android.content.pm.PackageParser
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
@@ -427,7 +428,9 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
             .apply {
                 saveListener = { width, height, tint -> compressPngAsync(
                     drawable.mutate().apply {
-                        setTint(tint)
+                        if (tint != Color.TRANSPARENT) {
+                            setTint(tint)
+                        }
                     }.toBitmap(width, height), os)
                 }
             }
