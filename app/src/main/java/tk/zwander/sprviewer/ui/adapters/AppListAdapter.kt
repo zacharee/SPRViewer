@@ -5,15 +5,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
-import kotlinx.android.synthetic.main.app_info_layout.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import tk.zwander.sprviewer.R
 import tk.zwander.sprviewer.data.AppData
+import tk.zwander.sprviewer.databinding.AppInfoLayoutBinding
 import tk.zwander.sprviewer.util.getInstalledApps
 
-class AppListAdapter(private val itemSelectedListener: (AppData) -> Unit, private val valuesSelectedListener: (AppData) -> Unit) : BaseListAdapter<AppData, AppListAdapter.AppVH>(AppData::class.java) {
+class AppListAdapter(private val itemSelectedListener: (AppData) -> Unit, private val valuesSelectedListener: (AppData) -> Unit) : BaseListAdapter<AppData, AppListAdapter.AppVH>() {
     override val viewRes = R.layout.app_info_layout
 
     override fun onCreateViewHolder(parent: ViewGroup, position: Int): AppVH {
@@ -54,25 +54,27 @@ class AppListAdapter(private val itemSelectedListener: (AppData) -> Unit, privat
     }
 
     inner class AppVH(view: View) : BaseVH(view) {
+        private val binding = AppInfoLayoutBinding.bind(itemView)
+
         fun bind(info: AppData) {
-            itemView.apply {
+            binding.apply {
                 icon.setImageDrawable(info.icon)
-                app_name.text = info.constructLabel()
-                app_pkg.text = info.pkg
+                appName.text = info.constructLabel()
+                appPkg.text = info.pkg
 
-                extras_layout.isVisible = info.expanded
-                view_images.setOnClickListener {
-                    itemSelectedListener(getInfo(adapterPosition))
+                extrasLayout.isVisible = info.expanded
+                viewImages.setOnClickListener {
+                    itemSelectedListener(getInfo(bindingAdapterPosition))
                 }
-                view_strings.setOnClickListener {
-                    valuesSelectedListener(getInfo(adapterPosition))
+                viewStrings.setOnClickListener {
+                    valuesSelectedListener(getInfo(bindingAdapterPosition))
                 }
+            }
 
-                setOnClickListener {
-                    getInfo(adapterPosition).apply {
-                        expanded = !expanded
-                        notifyItemChanged(adapterPosition)
-                    }
+            itemView.setOnClickListener {
+                getInfo(bindingAdapterPosition).apply {
+                    expanded = !expanded
+                    notifyItemChanged(bindingAdapterPosition)
                 }
             }
         }

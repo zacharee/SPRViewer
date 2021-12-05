@@ -1,24 +1,17 @@
 package tk.zwander.sprviewer.ui.activities
 
-import android.content.*
-import android.content.pm.PackageParser
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuItem
-import kotlinx.coroutines.*
-import net.dongliu.apk.parser.ApkFile
-import tk.zwander.sprviewer.R
-import tk.zwander.sprviewer.data.DrawableData
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import kotlinx.coroutines.launch
 import tk.zwander.sprviewer.data.UDrawableData
-import tk.zwander.sprviewer.ui.adapters.BaseListAdapter
 import tk.zwander.sprviewer.ui.adapters.DrawableListAdapter
 import tk.zwander.sprviewer.ui.services.BatchExportService
-import tk.zwander.sprviewer.util.*
+import tk.zwander.sprviewer.util.getFile
 import tk.zwander.sprviewer.views.BaseDimensionInputDialog
 import tk.zwander.sprviewer.views.ExportInfo
-import java.io.File
-import java.util.*
 
 
 @Suppress("DeferredResultUnused")
@@ -33,22 +26,17 @@ class DrawableListActivity : BaseListActivity<UDrawableData, DrawableListAdapter
         }
     }
 
+    override val saveAllAct: ActivityResultLauncher<Uri> = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { result ->
+        BaseDimensionInputDialog(this) { info ->
+            handleBatchExport(info, result)
+        }.show()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         adapter.loadItemsAsync(apk, packageInfo, this::onLoadFinished) { size, count ->
             progress?.progress = (count.toFloat() / size.toFloat() * 100f).toInt()
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        if (resultCode == RESULT_OK && requestCode == REQ_CHOOSE_OUTPUT_DIR
-            && data != null) {
-            BaseDimensionInputDialog(this) { info ->
-                handleBatchExport(info, data.data)
-            }.show()
         }
     }
 

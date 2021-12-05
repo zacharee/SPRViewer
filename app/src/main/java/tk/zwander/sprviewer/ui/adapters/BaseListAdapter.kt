@@ -1,18 +1,15 @@
 package tk.zwander.sprviewer.ui.adapters
 
-import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
-import androidx.recyclerview.widget.*
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.SortedList
 import kotlinx.coroutines.*
 import tk.zwander.sprviewer.data.BaseData
 import tk.zwander.sprviewer.util.get
 import java.util.*
-import kotlin.collections.ArrayList
 
-abstract class BaseListAdapter<T : BaseData, VH : BaseListAdapter.BaseVH>(dataClass: Class<T>) : RecyclerView.Adapter<VH>(), SearchView.OnQueryTextListener, CoroutineScope by MainScope() {
+abstract class BaseListAdapter<T : BaseData, VH : BaseListAdapter.BaseVH> : RecyclerView.Adapter<VH>(), SearchView.OnQueryTextListener, CoroutineScope by MainScope() {
     private val batchedCallback = SortedList.BatchedCallback(InnerSortCallback())
     internal val actuallyVisible = TreeSet<T> { o1, o2 -> compare(o1, o2) }
 
@@ -131,17 +128,10 @@ abstract class BaseListAdapter<T : BaseData, VH : BaseListAdapter.BaseVH>(dataCl
         actuallyVisible.addAll(items)
     }
 
-    fun createBaseViewHolder(parent: ViewGroup, position: Int): BaseVH {
-        return BaseVH(
-            LayoutInflater.from(parent.context)
-                .inflate(viewRes, parent, false)
-        )
-    }
-
     internal fun getInfo(position: Int) = actuallyVisible.get(position)
 
-    internal fun filter(query: String): List<T> {
-        val lowerCaseQuery = query.toLowerCase(Locale.getDefault())
+    private fun filter(query: String): List<T> {
+        val lowerCaseQuery = query.lowercase(Locale.getDefault())
 
         val filteredModelList = LinkedList<T>()
 

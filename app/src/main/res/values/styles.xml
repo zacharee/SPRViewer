@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <style name="AppTheme" parent="Theme.MaterialComponents">
         <item name="colorPrimary">@color/colorPrimary</item>
@@ -24,7 +24,7 @@
 
     <style name="AppTheme.DialogStyle" parent="Theme.MaterialComponents.Dialog.Alert">
         <item name="dialogCornerRadius">12dp</item>
-        <item name="android:dialogCornerRadius">?dialogCornerRadius</item>
+        <item name="android:dialogCornerRadius" tools:targetApi="p">?dialogCornerRadius</item>
         <item name="backgroundColor">@android:color/transparent</item>
         <item name="android:colorBackground">@android:color/transparent</item>
         <item name="android:background">@drawable/dialog_background</item>

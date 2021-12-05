@@ -5,9 +5,13 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.reddit.indicatorfastscroll.FastScrollerThumbView
+import com.reddit.indicatorfastscroll.FastScrollerView
 import tk.zwander.sprviewer.R
 import tk.zwander.sprviewer.data.AppData
+import tk.zwander.sprviewer.databinding.ActivityMainBinding
 import tk.zwander.sprviewer.ui.adapters.AppListAdapter
 import java.io.File
 
@@ -16,7 +20,7 @@ class MainActivity : BaseActivity<AppData, AppListAdapter.AppVH>() {
         const val REQ_IMPORT_APK = 1000
     }
 
-    override val contentView = R.layout.activity_main
+    override val contentView by lazy { binding.root }
     override val adapter = AppListAdapter(
         itemSelectedListener = {
             openDrawableActivity(it.pkg)
@@ -25,6 +29,15 @@ class MainActivity : BaseActivity<AppData, AppListAdapter.AppVH>() {
             openValuesActivity(it.pkg)
         }
     )
+
+    override val recycler: RecyclerView
+        get() = binding.recycler
+    override val scrollerThumb: FastScrollerThumbView
+        get() = binding.scrollerThumb
+    override val scroller: FastScrollerView
+        get() = binding.scroller
+
+    internal val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
 
     private var importItem: MenuItem? = null
 

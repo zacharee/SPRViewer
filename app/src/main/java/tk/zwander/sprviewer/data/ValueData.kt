@@ -27,9 +27,7 @@ data class ValueData(
         return UValueData(
             type, name, path, id,
             ApkFile(path),
-            PackageParser().run {
-                parsePackageCompat(File(path), 0, true)
-            },
+            parsePackageCompat(File(path), 0, true),
             defaultValue,
             values
         )
@@ -42,7 +40,7 @@ data class UValueData(
     val path: String,
     val id: Int,
     val file: ApkFile,
-    val packageInfo: PackageParser.Package,
+    val packageInfo: CustomPackageInfo,
     val defaultValue: String?,
     val values: MutableList<LocalizedValueData>
 ) : BaseData() {

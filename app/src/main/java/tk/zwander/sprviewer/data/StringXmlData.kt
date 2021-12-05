@@ -16,7 +16,7 @@ data class StringXmlData(
     val values: MutableSet<StringData> = TreeSet<StringData>()
 ) : Parcelable, BaseData() {
     override fun constructLabel(): String {
-        return "${locale.toString().run { if (this.isBlank()) "DEFAULT" else this }}/strings.xml"
+        return "${locale.toString().run { this.ifBlank { "DEFAULT" } }}/strings.xml"
     }
 
     fun asXmlString(): String {

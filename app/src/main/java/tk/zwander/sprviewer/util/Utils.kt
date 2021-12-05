@@ -92,7 +92,7 @@ suspend fun getAppStringXmls(
 
 suspend fun getAppValues(
     apk: ApkFile,
-    packageInfo: PackageParser.Package,
+    packageInfo: CustomPackageInfo,
     valueFound: (data: UValueData, size: Int, count: Int) -> Unit
 ): Collection<UValueData> = coroutineScope {
     val table = apk.getResourceTable()
@@ -158,7 +158,7 @@ suspend fun getAppValues(
 
 suspend fun getAppDrawables(
     apk: ApkFile,
-    packageInfo: PackageParser.Package,
+    packageInfo: CustomPackageInfo,
     drawableFound: (data: UDrawableData, size: Int, count: Int) -> Unit
 ): List<UDrawableData> = coroutineScope {
     val table = apk.getResourceTable()
@@ -271,7 +271,7 @@ fun Activity.showTitleSnackBar(anchor: View) {
         text = title.toString()
         autoDismissDuration = -1L
         widthRatio = 1.0f
-        arrowVisible = false
+        isVisibleArrow = false
     }.apply {
         val popupWindow = this::class.java.getDeclaredField("bodyWindow")
             .apply { isAccessible = true }
@@ -279,7 +279,7 @@ fun Activity.showTitleSnackBar(anchor: View) {
 
         popupWindow.overlapAnchor = true
 
-        show(anchor, 0,
+        showAsDropDown(anchor, 0,
             window.decorView
                 .findViewById<View>(R.id.action_bar)
                 .height - dpAsPx(12))

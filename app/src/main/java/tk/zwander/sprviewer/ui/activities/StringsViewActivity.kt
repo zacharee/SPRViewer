@@ -5,12 +5,16 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
+import androidx.recyclerview.widget.RecyclerView
+import com.reddit.indicatorfastscroll.FastScrollerThumbView
+import com.reddit.indicatorfastscroll.FastScrollerView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import tk.zwander.sprviewer.R
 import tk.zwander.sprviewer.data.StringData
 import tk.zwander.sprviewer.data.StringXmlData
+import tk.zwander.sprviewer.databinding.ActivityMainBinding
 import tk.zwander.sprviewer.ui.adapters.StringsViewAdapter
 
 class StringsViewActivity : BaseActivity<StringData, StringsViewAdapter.StringViewVH>() {
@@ -29,8 +33,17 @@ class StringsViewActivity : BaseActivity<StringData, StringsViewAdapter.StringVi
         }
     }
 
-    override val contentView = R.layout.activity_main
+    override val contentView by lazy { binding.root }
     override val hasBackButton = true
+
+    override val recycler: RecyclerView
+        get() = binding.recycler
+    override val scrollerThumb: FastScrollerThumbView
+        get() = binding.scrollerThumb
+    override val scroller: FastScrollerView
+        get() = binding.scroller
+
+    internal val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
 
     override val adapter = StringsViewAdapter {
         val cm = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager

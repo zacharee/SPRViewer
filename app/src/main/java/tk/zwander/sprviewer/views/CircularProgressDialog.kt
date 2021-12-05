@@ -4,17 +4,18 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import kotlinx.android.synthetic.main.determinate_progress.view.*
 import tk.zwander.sprviewer.R
+import tk.zwander.sprviewer.databinding.DeterminateProgressBinding
 
-class CircularProgressDialog(context: Context, var maxProgress: Int = 0) : MaterialAlertDialogBuilder(context) {
+class CircularProgressDialog(context: Context, private var maxProgress: Int = 0) : MaterialAlertDialogBuilder(context) {
     private val view = LayoutInflater.from(context).inflate(R.layout.determinate_progress, null)
-    private val progress = view.progress
+    private val binding = DeterminateProgressBinding.bind(view)
+    private val progress = binding.progress
 
     var onCancelListener: (() -> Unit)? = null
 
-    var currentPercent = 0
-    var currentSubPercent = 0
+    private var currentPercent = 0
+    private var currentSubPercent = 0
 
     init {
         setView(view)
@@ -25,11 +26,11 @@ class CircularProgressDialog(context: Context, var maxProgress: Int = 0) : Mater
     }
 
     fun setBaseFileName(name: String?) {
-        view.base_name.text = name
+        binding.baseName.text = name
     }
 
     fun setCurrentFileName(name: String?) {
-        view.filename.text = name
+        binding.filename.text = name
     }
 
     @SuppressLint("SetTextI18n")
@@ -41,7 +42,7 @@ class CircularProgressDialog(context: Context, var maxProgress: Int = 0) : Mater
             this.progress.progress = currentPercent
         }
 
-        view.file_fraction.text = "$progress/$maxProgress"
+        binding.fileFraction.text = "$progress/$maxProgress"
     }
 
     fun updateSubProgress(current: Int, max: Int = 100) {
@@ -49,7 +50,7 @@ class CircularProgressDialog(context: Context, var maxProgress: Int = 0) : Mater
 
         if (new != currentSubPercent) {
             currentSubPercent = new
-            view.sub_progress.progress = currentSubPercent
+            binding.subProgress.progress = currentSubPercent
         }
     }
 }

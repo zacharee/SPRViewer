@@ -7,6 +7,8 @@ import android.view.Gravity
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.widget.AppCompatTextView
+import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.widget.TextViewCompat
 import tk.zwander.sprviewer.R
 
@@ -15,7 +17,7 @@ class ExtensionIndicator(context: Context, attrs: AttributeSet) : LinearLayout(c
         get() = findViewById(R.id.text)
 
     init {
-        background = resources.getDrawable(R.drawable.solid_circle, context.theme)
+        background = ContextCompat.getDrawable(context, R.drawable.solid_circle)
         gravity = Gravity.CENTER
     }
 
@@ -58,7 +60,7 @@ class ExtensionIndicator(context: Context, attrs: AttributeSet) : LinearLayout(c
         init {
             setTextColor(resources.getColor(android.R.color.white, context.theme))
             gravity = Gravity.CENTER
-            setSingleLine(true)
+            isSingleLine = true
             TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
                 this,
                 5,

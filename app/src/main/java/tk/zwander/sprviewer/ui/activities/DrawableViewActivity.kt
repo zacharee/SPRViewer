@@ -23,12 +23,11 @@ import ar.com.hjg.pngj.ImageLineHelper
 import ar.com.hjg.pngj.ImageLineInt
 import ar.com.hjg.pngj.PngWriter
 import com.squareup.picasso.Callback
-import com.squareup.picasso.Picasso
-import kotlinx.android.synthetic.main.activity_drawable_view.*
 import kotlinx.coroutines.*
 import net.dongliu.apk.parser.ApkFile
 import tk.zwander.sprviewer.R
 import tk.zwander.sprviewer.data.DrawableData
+import tk.zwander.sprviewer.databinding.ActivityDrawableViewBinding
 import tk.zwander.sprviewer.util.*
 import tk.zwander.sprviewer.views.DimensionInputDialog
 import java.io.ByteArrayInputStream
@@ -78,8 +77,7 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
             it.resourceEntry.toStringValue(table, Locale.getDefault())
         }
     }
-    private val parser = PackageParser()
-    private val packageInfo by lazy { parser.parsePackageCompat(apk.getFile(), 0, true) }
+    private val packageInfo by lazy { parsePackageCompat(apk.getFile(), 0, true) }
     private val drawableName: String
         get() = drawableInfo.name
     private val drawableId: Int
@@ -88,16 +86,17 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
         get() = drawableInfo.ext
 
     private val isViewingAnimatedImage: Boolean
-        get() = image.anim != null
+        get() = binding.image.anim != null
+
+    private val binding by lazy { ActivityDrawableViewBinding.inflate(layoutInflater) }
 
     private var saveImg: MenuItem? = null
     private var saveOrig: MenuItem? = null
     private var saveXml: MenuItem? = null
 
-    @ExperimentalCoroutinesApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_drawable_view)
+        setContentView(binding.root)
 
         if (drawableInfo == null || (pkg.isNullOrBlank() && file == null)) {
             finish()
@@ -129,17 +128,17 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
                                     "${remRes.getResourceTypeName(drawableId)}/" +
                                     "$drawableId"
                         )
-                    ).into(image, object : Callback {
+                    ).into(binding.image, object : Callback {
                         override fun onError(e: Exception?) {
                             try {
-                                image.setImageDrawable(ResourcesCompat.getDrawable(remRes, drawableId, remRes.newTheme()))
+                                binding.image.setImageDrawable(ResourcesCompat.getDrawable(remRes, drawableId, remRes.newTheme()))
 
                                 saveImg?.isVisible = !isViewingAnimatedImage
                             } catch (e: Exception) {
-                                image.isVisible = false
-                                text.isVisible = true
+                                binding.image.isVisible = false
+                                binding.text.isVisible = true
 
-                                text.text = drawableXml
+                                binding.text.text = drawableXml
                             }
 
                             imageLoadingDone()
@@ -157,14 +156,14 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
                 }
             } else {
                 try {
-                    image.setImageDrawable(ResourcesCompat.getDrawable(remRes, drawableId, remRes.newTheme()))
+                    binding.image.setImageDrawable(ResourcesCompat.getDrawable(remRes, drawableId, remRes.newTheme()))
 
                     saveImg?.isVisible = !isViewingAnimatedImage
                 } catch (e: Exception) {
-                    image.isVisible = false
-                    text.isVisible = true
+                    binding.image.isVisible = false
+                    binding.text.isVisible = true
 
-                    text.text = drawableXml
+                    binding.text.text = drawableXml
                 }
 
                 imageLoadingDone()
@@ -173,8 +172,8 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
     }
 
     private fun imageLoadingDone() {
-        loading_progress.isVisible = false
-        image_text_wrapper.isVisible = true
+        binding.loadingProgress.isVisible = false
+        binding.imageTextWrapper.isVisible = true
     }
 
     override fun onDestroy() {
@@ -184,7 +183,6 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
         destroyAppRes(apk.getFile())
     }
 
-    @ExperimentalCoroutinesApi
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.save, menu)
 
@@ -223,7 +221,6 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
         }
     }
 
-    @ExperimentalCoroutinesApi
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (resultCode == Activity.RESULT_OK) {
             when (requestCode) {
@@ -288,7 +285,7 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
     }
 
     private fun handlePngSave(os: OutputStream) {
-        image.drawable.run {
+        binding.image.drawable.run {
             if (!extensionsToRasterize.contains(ext)) {
                 compressPngAsync(toBitmap(), os)
             } else {
@@ -409,18 +406,18 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
     }
 
     private fun setProgressVisible(visible: Boolean, indet: Boolean = false) = launch {
-        export_progress.isVisible = visible
-        export_progress.isIndeterminate = indet
-        export_progress.progress = 0
+        binding.exportProgress.isVisible = visible
+        binding.exportProgress.isIndeterminate = indet
+        binding.exportProgress.progress = 0
     }
 
     private fun setMaxProgress(max: Int) = launch {
-        export_progress.max = max
+        binding.exportProgress.max = max
     }
 
     private fun setCurrentProgress(current: Int, max: Int = 100) = launch {
         setMaxProgress(max)
-        export_progress.progress = current
+        binding.exportProgress.progress = current
     }
 
     private fun getDimensions(drawable: Drawable, os: OutputStream) = launch {

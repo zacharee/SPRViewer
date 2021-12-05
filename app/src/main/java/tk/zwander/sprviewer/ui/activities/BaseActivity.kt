@@ -9,10 +9,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.hmomeni.progresscircula.ProgressCircula
 import com.reddit.indicatorfastscroll.FastScrollItemIndicator
+import com.reddit.indicatorfastscroll.FastScrollerThumbView
 import com.reddit.indicatorfastscroll.FastScrollerView
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
 import tk.zwander.sprviewer.R
 import tk.zwander.sprviewer.data.BaseData
@@ -22,16 +23,20 @@ import java.util.*
 import kotlin.math.absoluteValue
 
 abstract class BaseActivity<Data : BaseData, VH : BaseListAdapter.BaseVH> : AppCompatActivity(), CoroutineScope by MainScope() {
-    abstract val contentView: Int
+    abstract val contentView: View
     abstract val adapter: BaseListAdapter<Data, VH>
+
+    internal abstract val recycler: RecyclerView
+    internal abstract val scroller: FastScrollerView
+    internal abstract val scrollerThumb: FastScrollerThumbView
 
     internal var progressItem: MenuItem? = null
     internal var progress: ProgressCircula? = null
 
-    internal var searchItem: MenuItem? = null
-    internal var searchView: SearchView? = null
+    private var searchItem: MenuItem? = null
+    private var searchView: SearchView? = null
 
-    internal var doneLoading = false
+    private var doneLoading = false
 
     internal open val hasBackButton = false
 
@@ -63,11 +68,11 @@ abstract class BaseActivity<Data : BaseData, VH : BaseListAdapter.BaseVH> : AppC
                 FastScrollItemIndicator.Text(
                     item.constructLabel()
                         .substring(0, 1)
-                        .toUpperCase(Locale.getDefault())
+                        .uppercase(Locale.getDefault())
                 )
             }
         )
-        scroller_thumb.setupWithFastScroller(scroller)
+        scrollerThumb.setupWithFastScroller(scroller)
 
         scroller.itemIndicatorSelectedCallbacks += object : FastScrollerView.ItemIndicatorSelectedCallback {
             override fun onItemIndicatorSelected(

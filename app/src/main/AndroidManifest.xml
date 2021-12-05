@@ -14,15 +14,25 @@
         android:vmSafeMode="true"
         android:name=".ui.App"
         tools:ignore="AllowBackup,GoogleAppIndexingWarning">
-        <activity android:name=".ui.activities.DrawableViewActivity" />
-        <activity android:name=".ui.activities.DrawableListActivity" />
-        <activity android:name=".ui.activities.StringsListActivity" />
-        <activity android:name=".ui.activities.StringsViewActivity" />
+        <activity android:name=".ui.activities.DrawableViewActivity"
+            android:exported="true"
+            />
+        <activity android:name=".ui.activities.DrawableListActivity"
+            android:exported="true"
+            />
+        <activity android:name=".ui.activities.StringsListActivity"
+            android:exported="true"
+            />
+        <activity android:name=".ui.activities.StringsViewActivity"
+            android:exported="true"
+            />
         <activity android:name=".ui.activities.BatchExportDialogActivity"
             android:excludeFromRecents="true"
             android:theme="@style/AppTheme.DialogActivity"
+            android:exported="true"
             />
-        <activity android:name=".ui.activities.MainActivity">
+        <activity android:name=".ui.activities.MainActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -31,6 +41,7 @@
         </activity>
 
         <service android:name=".ui.services.BatchExportService"
+            android:exported="true"
             />
     </application>
 

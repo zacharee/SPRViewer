@@ -2,12 +2,12 @@ package tk.zwander.sprviewer.util
 
 import android.app.LoadedApk
 import android.app.ResourcesManager
-import android.content.pm.PackageParser
 import android.content.res.CompatibilityInfo
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import android.view.Display
 import net.dongliu.apk.parser.struct.resource.ResourcePackage
 import net.dongliu.apk.parser.struct.resource.ResourceTable
@@ -73,7 +73,7 @@ fun ResourcesManager.getResourcesCompat(apkPath: String, pkgInfo: LoadedApk): Re
                     pkgInfo.classLoader
                 ) as Resources
         }
-        else -> {
+        Build.VERSION.SDK_INT < 31 -> {
             ResourcesManager::class.java
                 .getDeclaredMethod(
                     "getResources",
@@ -93,6 +93,38 @@ fun ResourcesManager.getResourcesCompat(apkPath: String, pkgInfo: LoadedApk): Re
                     this,
                     null,
                     apkPath,
+                    null,
+                    null,
+                    null,
+                    Display.DEFAULT_DISPLAY,
+                    null,
+                    pkgInfo.compatibilityInfo,
+                    pkgInfo.classLoader,
+                    null
+                ) as Resources
+        }
+        else -> {
+            ResourcesManager::class.java
+                .getDeclaredMethod(
+                    "getResources",
+                    IBinder::class.java,
+                    String::class.java,
+                    Array<String>::class.java,
+                    Array<String>::class.java,
+                    Array<String>::class.java,
+                    Array<String>::class.java,
+                    java.lang.Integer::class.java,
+                    Configuration::class.java,
+                    CompatibilityInfo::class.java,
+                    ClassLoader::class.java,
+                    List::class.java
+                )
+                .apply { isAccessible = true }
+                .invoke(
+                    this,
+                    null,
+                    apkPath,
+                    null,
                     null,
                     null,
                     null,

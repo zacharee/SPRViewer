@@ -3,13 +3,13 @@ package tk.zwander.sprviewer.ui.adapters
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import kotlinx.android.synthetic.main.drawable_info_layout.view.*
 import kotlinx.coroutines.*
 import tk.zwander.sprviewer.R
 import tk.zwander.sprviewer.data.StringData
 import tk.zwander.sprviewer.data.StringXmlData
+import tk.zwander.sprviewer.databinding.DrawableInfoLayoutBinding
 
-class StringsViewAdapter(private val itemSelectedCallback: (item: StringData) -> Unit) : BaseListAdapter<StringData, StringsViewAdapter.StringViewVH>(StringData::class.java) {
+class StringsViewAdapter(private val itemSelectedCallback: (item: StringData) -> Unit) : BaseListAdapter<StringData, StringsViewAdapter.StringViewVH>() {
     override val viewRes = R.layout.drawable_info_layout
 
     override fun compare(o1: StringData, o2: StringData): Int {
@@ -49,16 +49,18 @@ class StringsViewAdapter(private val itemSelectedCallback: (item: StringData) ->
     }
 
     inner class StringViewVH(view: View) : BaseListAdapter.BaseVH(view) {
+        private val binding = DrawableInfoLayoutBinding.bind(itemView)
+
         fun onBind(info: StringData) {
-            itemView.apply {
-                drawable_name.text = info.key
-                drawable_path.text = info.value
+            binding.apply {
+                drawableName.text = info.key
+                drawablePath.text = info.value
 
-                ext_indicator.setText("STR")
+                extIndicator.setText("STR")
+            }
 
-                setOnClickListener {
-                    itemSelectedCallback(getInfo(adapterPosition))
-                }
+            itemView.setOnClickListener {
+                itemSelectedCallback(getInfo(bindingAdapterPosition))
             }
         }
     }

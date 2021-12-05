@@ -1,6 +1,9 @@
 package tk.zwander.sprviewer.ui
 
 import android.app.Application
+import android.os.Build
+import android.util.Log
+import org.lsposed.hiddenapibypass.HiddenApiBypass
 import tk.zwander.sprviewer.util.BatchExportListener
 
 class App : Application() {
@@ -9,8 +12,8 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        Class.forName("dalvik.system.CloseGuard")
-            .getMethod("setEnabled", Boolean::class.java)
-            .invoke(null, true)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            HiddenApiBypass.setHiddenApiExemptions("L")
+        }
     }
 }

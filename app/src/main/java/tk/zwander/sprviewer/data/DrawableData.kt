@@ -19,9 +19,7 @@ data class DrawableData(
         return UDrawableData(
             type, name, ext, path, id,
             ApkFile(path),
-            PackageParser().run {
-                parsePackageCompat(File(path), 0, true)
-            }
+            parsePackageCompat(File(path), 0, true)
         )
     }
 }
@@ -33,7 +31,7 @@ data class UDrawableData(
     val path: String,
     val id: Int,
     val file: ApkFile,
-    val packageInfo: PackageParser.Package
+    val packageInfo: CustomPackageInfo
 ) : BaseData() {
     fun toDrawableData(): DrawableData {
         return DrawableData(

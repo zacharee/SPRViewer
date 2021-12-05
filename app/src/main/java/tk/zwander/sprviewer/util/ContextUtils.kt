@@ -1,5 +1,6 @@
 package tk.zwander.sprviewer.util
 
+import android.annotation.SuppressLint
 import android.app.Application
 import android.app.ResourcesManager
 import android.content.Context
@@ -72,6 +73,7 @@ fun Context.dpAsPx(dpVal: Number) =
         resources.displayMetrics
     ).roundToInt()
 
+@SuppressLint("StaticFieldLeak")
 private var _picassoInstance: Picasso? = null
 
 val Context.picasso: Picasso

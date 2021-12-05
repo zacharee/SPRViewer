@@ -76,8 +76,6 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
 
     private val nm by lazy { NotificationManagerCompat.from(this) }
 
-    private val parser = PackageParser()
-
     private val progressViews by lazy {
         RemoteViews(
             packageName,
@@ -94,7 +92,7 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
                     this,
                     102,
                     Intent(this, BatchExportDialogActivity::class.java),
-                    0
+                    PendingIntent.FLAG_UPDATE_CURRENT or (1 shl 25)
                 )
             )
     }
@@ -189,10 +187,10 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
         }
     }
 
-    var previousNotification = 0L
+    private var previousNotification = 0L
 
     private fun startNewExport(session: BatchExportSessionData) {
-        val runner = runBatchExport(
+        val runner = runBatchExportAsync(
             this,
             session,
             { currentFile: String?, currentFileProgress: Int?,
@@ -248,7 +246,7 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         setDataAndType(session.uri, "resource/folder")
                     },
-                    0
+                    PendingIntent.FLAG_UPDATE_CURRENT or (1 shl 25)
                 )
             )
             .build()
@@ -292,7 +290,7 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
         return progressNotification
             .setContent(progressContent)
             .setCustomBigContentView(progressContent)
-            .setNotificationSilent()
+            .setSilent(true)
             .build()
     }
 
@@ -311,7 +309,7 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
                 100,
                 Intent(this, BatchExportService::class.java)
                     .setAction(ACTION_CANCEL_CURRENT_EXPORT),
-                0
+                PendingIntent.FLAG_UPDATE_CURRENT or (1 shl 25)
             )
         )
 
@@ -352,7 +350,7 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
         return progressViews
     }
 
-    private fun runBatchExport(
+    private fun runBatchExportAsync(
         context: Context,
         session: BatchExportSessionData,
         progressCallback: (
@@ -370,7 +368,7 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
         val apk = session.apkFile
         val table = session.apkResourceTable
         val remRes = session.remRes
-        val packageInfo = parser.parsePackageCompat(apk.getFile(), 0, true)
+        val packageInfo = parsePackageCompat(apk.getFile(), 0, true)
 
         val parentDir = DocumentFile.fromTreeUri(context, uri)
         val dir = parentDir?.createDirectory(packageInfo.packageName)
@@ -662,7 +660,7 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
 
                                 launch(context = Dispatchers.Main) {
                                     progressCallback(
-                                        target!!.name,
+                                        target.name,
                                         ((max - avail).toDouble() / max).toInt(),
                                         index + 1,
                                         items.size,

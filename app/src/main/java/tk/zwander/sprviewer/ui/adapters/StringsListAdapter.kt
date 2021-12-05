@@ -5,18 +5,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
-import kotlinx.android.synthetic.main.drawable_info_layout.view.ext_indicator
-import kotlinx.android.synthetic.main.drawable_info_layout.view.img_preview
-import kotlinx.android.synthetic.main.string_list_info_layout.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.dongliu.apk.parser.ApkFile
 import tk.zwander.sprviewer.R
 import tk.zwander.sprviewer.data.StringXmlData
+import tk.zwander.sprviewer.databinding.StringListInfoLayoutBinding
 import tk.zwander.sprviewer.util.*
 
-class StringsListAdapter(private val itemSelectedListener: (StringXmlData) -> Unit) : BaseListAdapter<StringXmlData, StringsListAdapter.StringListVH>(StringXmlData::class.java) {
+class StringsListAdapter(private val itemSelectedListener: (StringXmlData) -> Unit) : BaseListAdapter<StringXmlData, StringsListAdapter.StringListVH>() {
     override val viewRes = R.layout.string_list_info_layout
 
     @SuppressLint("SetTextI18n")
@@ -51,7 +49,7 @@ class StringsListAdapter(private val itemSelectedListener: (StringXmlData) -> Un
         progressListener: (Int, Int) -> Unit
     ) = launch {
         val values = withContext(Dispatchers.IO) {
-            getAppStringXmls(apk) { d, size, count ->
+            getAppStringXmls(apk) { _, size, count ->
                 launch(Dispatchers.Main) {
                     progressListener(size, count)
                 }
@@ -66,13 +64,15 @@ class StringsListAdapter(private val itemSelectedListener: (StringXmlData) -> Un
     }
 
     inner class StringListVH(view: View) : BaseVH(view) {
+        private val binding = StringListInfoLayoutBinding.bind(itemView)
+
         @SuppressLint("SetTextI18n")
         fun onBind(info: StringXmlData) {
-            itemView.apply {
-                ext_indicator.isVisible = true
-                img_preview.isVisible = true
+            binding.apply {
+                extIndicator.isVisible = true
+                imgPreview.isVisible = true
 
-                ext_indicator.setText(info.locale.toString().run {
+                extIndicator.setText(info.locale.toString().run {
                     if (isBlank()) {
                         "DEF"
                     } else {
@@ -80,12 +80,12 @@ class StringsListAdapter(private val itemSelectedListener: (StringXmlData) -> Un
                     }
                 })
 
-                string_file_name.text = info.constructLabel()
-                string_count.text = info.values.size.toString()
+                stringFileName.text = info.constructLabel()
+                stringCount.text = info.values.size.toString()
+            }
 
-                setOnClickListener {
-                    itemSelectedListener(getInfo(adapterPosition))
-                }
+            itemView.setOnClickListener {
+                itemSelectedListener(getInfo(bindingAdapterPosition))
             }
         }
     }

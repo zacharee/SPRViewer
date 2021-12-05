@@ -31,13 +31,13 @@ import com.github.chrisbanes.photoview.PhotoView
 @RemoteView
 class AnimatedImageView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) : PhotoView(context, attrs) {
     var anim: Animatable? = null
-    internal var attached: Boolean = false
+    private var attached: Boolean = false
     private var allowAnimation = true
 
     // Tracks the last image that was set, so that we don't refresh the image if it is exactly
     // the same as the previous one. If this is a resid, we track that. If it's a drawable, we
     // track the hashcode of the drawable.
-    internal var drawableId: Int = 0
+    private var drawableId: Int = 0
 
     fun setAllowAnimation(allowAnimation: Boolean) {
         if (this.allowAnimation != allowAnimation) {

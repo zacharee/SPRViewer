@@ -12,20 +12,19 @@ import android.view.ViewGroup
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.isVisible
 import com.squareup.picasso.Callback
-import kotlinx.android.synthetic.main.drawable_info_layout.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.dongliu.apk.parser.ApkFile
 import tk.zwander.sprviewer.R
+import tk.zwander.sprviewer.data.CustomPackageInfo
 import tk.zwander.sprviewer.data.UDrawableData
+import tk.zwander.sprviewer.databinding.DrawableInfoLayoutBinding
 import tk.zwander.sprviewer.util.getAppDrawables
-import tk.zwander.sprviewer.util.getAppRes
-import tk.zwander.sprviewer.util.getFile
 import tk.zwander.sprviewer.util.picasso
 import kotlin.Exception
 
-class DrawableListAdapter(private val remRes: Resources, private val itemSelectedListener: (UDrawableData) -> Unit) : BaseListAdapter<UDrawableData, DrawableListAdapter.ListVH>(UDrawableData::class.java) {
+class DrawableListAdapter(private val remRes: Resources, private val itemSelectedListener: (UDrawableData) -> Unit) : BaseListAdapter<UDrawableData, DrawableListAdapter.ListVH>() {
     override val viewRes = R.layout.drawable_info_layout
 
     @SuppressLint("SetTextI18n")
@@ -56,7 +55,7 @@ class DrawableListAdapter(private val remRes: Resources, private val itemSelecte
 
     fun loadItemsAsync(
         apk: ApkFile,
-        packageInfo: PackageParser.Package,
+        packageInfo: CustomPackageInfo,
         listener: () -> Unit,
         progressListener: (Int, Int) -> Unit
     ) = launch {
@@ -74,15 +73,17 @@ class DrawableListAdapter(private val remRes: Resources, private val itemSelecte
         }
     }
 
-    inner open class ListVH(view: View) : BaseVH(view) {
+    inner class ListVH(view: View) : BaseVH(view) {
+        private val binding = DrawableInfoLayoutBinding.bind(itemView)
+
         @SuppressLint("SetTextI18n")
         fun onBind(info: UDrawableData) {
             itemView.apply {
-                ext_indicator.isVisible = true
-                img_preview.isVisible = true
+                binding.extIndicator.isVisible = true
+                binding.imgPreview.isVisible = true
 
                 try {
-                    context.picasso.cancelRequest(img_preview)
+                    context.picasso.cancelRequest(binding.imgPreview)
 
                     context.picasso.load(
                         Uri.parse(
@@ -91,23 +92,23 @@ class DrawableListAdapter(private val remRes: Resources, private val itemSelecte
                                     "${remRes.getResourceTypeName(info.id)}/" +
                                     "${info.id}"
                         )
-                    ).into(img_preview, object : Callback {
+                    ).into(binding.imgPreview, object : Callback {
                         override fun onError(e: Exception?) {
                             launch {
                                 withContext(Dispatchers.Main) {
                                     try {
-                                        img_preview.setImageDrawable(
+                                        binding.imgPreview.setImageDrawable(
                                             ResourcesCompat.getDrawable(remRes, info.id, remRes.newTheme()))
-                                        ext_indicator.isVisible = false
+                                        binding.extIndicator.isVisible = false
                                     } catch (e: Exception) {
-                                        img_preview.isVisible = false
+                                        binding.imgPreview.isVisible = false
                                     }
                                 }
                             }
                         }
 
                         override fun onSuccess() {
-                            ext_indicator.isVisible = false
+                            binding.extIndicator.isVisible = false
                         }
                     })
 
@@ -115,12 +116,12 @@ class DrawableListAdapter(private val remRes: Resources, private val itemSelecte
                     Log.e("SPRViewer", "ERR", e)
                 }
 
-                drawable_name.text = "${info.name}.${info.ext}"
-                ext_indicator.setText(info.ext)
-                drawable_path.text = info.path
+                binding.drawableName.text = "${info.name}.${info.ext}"
+                binding.extIndicator.setText(info.ext)
+                binding.drawablePath.text = info.path
 
                 setOnClickListener {
-                    itemSelectedListener(getInfo(adapterPosition))
+                    itemSelectedListener(getInfo(bindingAdapterPosition))
                 }
             }
         }
