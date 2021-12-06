@@ -46,7 +46,8 @@ dependencies {
 
     implementation 'com.github.2hamed:ProgressCircula:v0.2.1'
     implementation 'com.squareup.picasso:picasso:2.71828'
-    implementation 'net.dongliu:apk-parser:2.6.10'
+//    implementation 'net.dongliu:apk-parser:2.6.10'
+    implementation 'com.github.zacharee:apk-parser:a18de0ac8e'
     implementation 'com.github.chrisbanes:PhotoView:2.3.0'
     implementation 'com.alexdupre:pngj:2.1.2.1'
     implementation 'com.daimajia.numberprogressbar:library:1.4@aar'

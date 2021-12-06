@@ -70,7 +70,7 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
     private val file by lazy { intent.getSerializableExtra(BaseListActivity.EXTRA_FILE) as File? }
     private val remRes by lazy { getAppRes(apkPath!!) }
     private val table by lazy {
-        apk.getResourceTable()
+        apk.resourceTable
     }
     private val paths by lazy {
         table.getResourcesById(drawableId.toLong()).map {

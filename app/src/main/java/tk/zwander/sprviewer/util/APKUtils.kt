@@ -18,16 +18,6 @@ import java.io.File
 import java.nio.ByteBuffer
 import java.util.zip.ZipFile
 
-fun AbstractApkFile.getResourceTable(): ResourceTable {
-    val data = getFileData(AndroidConstants.RESOURCE_FILE) ?: return ResourceTable()
-    val buffer = ByteBuffer.wrap(data)
-    val parser = ResourceTableParser(buffer)
-
-    parser.parse()
-
-    return parser.resourceTable
-}
-
 fun ApkFile.getFile(): File {
     return ApkFile::class.java
         .getDeclaredField("apkFile")

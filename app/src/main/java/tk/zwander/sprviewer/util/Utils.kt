@@ -24,7 +24,7 @@ suspend fun getAppStringXmls(
     apk: ApkFile,
     stringXmlFound: (data: StringXmlData, size: Int, count: Int) -> Unit
 ): Collection<StringXmlData> = coroutineScope {
-    val table = apk.getResourceTable()
+    val table = apk.resourceTable
     val map = ConcurrentHashMap<Locale, StringXmlData>()
 
     var count = 0
@@ -95,7 +95,7 @@ suspend fun getAppValues(
     packageInfo: CustomPackageInfo,
     valueFound: (data: UValueData, size: Int, count: Int) -> Unit
 ): Collection<UValueData> = coroutineScope {
-    val table = apk.getResourceTable()
+    val table = apk.resourceTable
     var totalSize = table.packageMap.size
     var count = 0
 
@@ -161,7 +161,7 @@ suspend fun getAppDrawables(
     packageInfo: CustomPackageInfo,
     drawableFound: (data: UDrawableData, size: Int, count: Int) -> Unit
 ): List<UDrawableData> = coroutineScope {
-    val table = apk.getResourceTable()
+    val table = apk.resourceTable
     var totalSize = table.packageMap.size
     var count = 0
 

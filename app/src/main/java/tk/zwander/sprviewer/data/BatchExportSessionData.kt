@@ -4,7 +4,6 @@ import android.content.res.Resources
 import android.net.Uri
 import net.dongliu.apk.parser.ApkFile
 import net.dongliu.apk.parser.struct.resource.ResourceTable
-import tk.zwander.sprviewer.util.getResourceTable
 import tk.zwander.sprviewer.views.ExportInfo
 import java.io.File
 
@@ -16,5 +15,5 @@ data class BatchExportSessionData(
     val appFile: File,
     val apkFile: ApkFile,
     val remRes: Resources,
-    val apkResourceTable: ResourceTable = apkFile.getResourceTable()
+    val apkResourceTable: ResourceTable = apkFile.resourceTable
 )
