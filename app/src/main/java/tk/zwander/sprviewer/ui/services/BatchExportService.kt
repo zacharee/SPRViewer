@@ -5,6 +5,7 @@ import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageParser
+import android.content.pm.ParceledListSlice
 import android.graphics.Bitmap
 import android.graphics.drawable.Animatable
 import android.net.Uri
@@ -58,7 +59,7 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
 
             startIntent.action = ACTION_BATCH_EXPORT
             startIntent.putExtra(EXTRA_EXPORT_URI, uri)
-            startIntent.putExtra(EXTRA_DRAWABLES, safeDrawables)
+            startIntent.putExtra(EXTRA_DRAWABLES, ParceledListSlice(safeDrawables))
             startIntent.putExtra(EXTRA_EXPORT_INFO, exportInfo)
             startIntent.putExtra(EXTRA_APP_NAME, appName)
             startIntent.putExtra(EXTRA_APP_FILE, appFile.absolutePath)
@@ -135,7 +136,7 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action == ACTION_BATCH_EXPORT) {
             val uri = intent.getParcelableExtra<Uri>(EXTRA_EXPORT_URI)
-            val drawables = intent.getParcelableArrayListExtra<DrawableData>(EXTRA_DRAWABLES)
+            val drawables = intent.getParcelableExtra<ParceledListSlice<DrawableData>>(EXTRA_DRAWABLES).list
             val exportInfo = intent.getParcelableExtra<ExportInfo>(EXTRA_EXPORT_INFO)
             val appName = intent.getStringExtra(EXTRA_APP_NAME)
             val appFile = File(intent.getStringExtra(EXTRA_APP_FILE))
