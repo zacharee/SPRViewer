@@ -67,7 +67,10 @@ abstract class BaseActivity<Data : BaseData, VH : BaseListAdapter.BaseVH> : AppC
 
                 FastScrollItemIndicator.Text(
                     item.constructLabel()
-                        .substring(0, 1)
+                        .run {
+                            if (isBlank()) "?"
+                            else substring(0, 1)
+                        }
                         .uppercase(Locale.getDefault())
                 )
             }
