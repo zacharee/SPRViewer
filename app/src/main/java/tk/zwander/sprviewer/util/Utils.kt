@@ -9,6 +9,8 @@ import android.view.ViewGroup
 import android.widget.PopupWindow
 import androidx.collection.ArraySet
 import androidx.core.view.doOnAttach
+import androidx.core.view.setPadding
+import com.skydoves.balloon.BalloonAnimation
 import com.skydoves.balloon.createBalloon
 import kotlinx.coroutines.*
 import net.dongliu.apk.parser.ApkFile
@@ -266,6 +268,8 @@ fun Activity.showTitleSnackBar(anchor: View) {
         setBackgroundDrawableResource(R.drawable.snackbar_background)
         setTextSize(20f)
         setArrowSize(0)
+        setMargin(0)
+        setElevation(0)
         setBalloonAnimationStyle(R.style.SnackbarAnimStyle)
 
         text = title.toString()
@@ -283,11 +287,6 @@ fun Activity.showTitleSnackBar(anchor: View) {
             window.decorView
                 .findViewById<View>(R.id.action_bar)
                 .height - dpAsPx(12))
-
-        getContentView().doOnAttach {
-            it.rootView.findViewById<View>(R.id.balloon_card).elevation = 0f
-            (it.parent.parent as ViewGroup).elevation = 0f
-        }
 
         setOnBalloonOutsideTouchListener { _, _ ->
             dismiss()
