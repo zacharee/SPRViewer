@@ -53,7 +53,7 @@ class DrawableListActivity : BaseListActivity<UDrawableData, DrawableListAdapter
             info,
             appLabel,
             apk.getFile(),
-            pkg
+            packageInfo.packageName
         )
     }
 }

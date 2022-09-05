@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.isVisible
 import com.squareup.picasso.Callback
+import com.squareup.picasso.Picasso
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -20,7 +21,6 @@ import tk.zwander.sprviewer.data.CustomPackageInfo
 import tk.zwander.sprviewer.data.UDrawableData
 import tk.zwander.sprviewer.databinding.DrawableInfoLayoutBinding
 import tk.zwander.sprviewer.util.getAppDrawables
-import picasso
 
 class DrawableListAdapter(private val remRes: Resources, private val itemSelectedListener: (UDrawableData) -> Unit) : BaseListAdapter<UDrawableData, DrawableListAdapter.ListVH>() {
     override val viewRes = R.layout.drawable_info_layout
@@ -81,9 +81,9 @@ class DrawableListAdapter(private val remRes: Resources, private val itemSelecte
                 binding.imgPreview.isVisible = true
 
                 try {
-                    picasso.cancelRequest(binding.imgPreview)
+                    Picasso.get().cancelRequest(binding.imgPreview)
 
-                    picasso.load(
+                    Picasso.get().load(
                         Uri.parse(
                             "${ContentResolver.SCHEME_ANDROID_RESOURCE}://" +
                                     "${info.packageInfo.packageName}/" +

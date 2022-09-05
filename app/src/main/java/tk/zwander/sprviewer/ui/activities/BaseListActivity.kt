@@ -72,7 +72,7 @@ abstract class BaseListActivity<Data : BaseData, VH : BaseListAdapter.BaseVH> :
     internal val file by lazy { intent.getSerializableExtra(EXTRA_FILE) as File? }
     internal val remRes by lazy { getAppRes(apk.getFile()) }
 
-    internal val packageInfo by lazy {
+    protected val packageInfo by lazy {
         parsePackageCompat(apk.getFile(), pkg ?: apk.apkMeta.packageName, 0, true)
     }
 
