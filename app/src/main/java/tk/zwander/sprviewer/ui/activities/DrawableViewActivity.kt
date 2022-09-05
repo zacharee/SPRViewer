@@ -3,7 +3,6 @@ package tk.zwander.sprviewer.ui.activities
 import android.app.Activity
 import android.content.ContentResolver
 import android.content.Intent
-import android.content.pm.PackageParser
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.Drawable
@@ -77,7 +76,7 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
             it.resourceEntry.toStringValue(table, Locale.getDefault())
         }
     }
-    private val packageInfo by lazy { parsePackageCompat(apk.getFile(), 0, true) }
+    private val packageInfo by lazy { parsePackageCompat(apk.getFile(), pkg, 0, true) }
     private val drawableName: String
         get() = drawableInfo.name
     private val drawableId: Int
@@ -199,8 +198,8 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
         return true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        return when (item?.itemId) {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
             R.id.action_save_png -> {
                 startPngSave()
                 true

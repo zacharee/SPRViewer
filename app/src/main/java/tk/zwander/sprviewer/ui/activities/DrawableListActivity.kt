@@ -26,7 +26,7 @@ class DrawableListActivity : BaseListActivity<UDrawableData, DrawableListAdapter
         }
     }
 
-    override val saveAllAct: ActivityResultLauncher<Uri> = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { result ->
+    override val saveAllAct: ActivityResultLauncher<Uri?> = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { result ->
         BaseDimensionInputDialog(this) { info ->
             handleBatchExport(info, result)
         }.show()
@@ -40,7 +40,9 @@ class DrawableListActivity : BaseListActivity<UDrawableData, DrawableListAdapter
         }
     }
 
-    private fun handleBatchExport(info: ExportInfo, uri: Uri) = launch {
+    private fun handleBatchExport(info: ExportInfo, uri: Uri?) = launch {
+        if (uri == null) return@launch
+
         contentResolver.takePersistableUriPermission(uri,
             Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
 
@@ -49,8 +51,9 @@ class DrawableListActivity : BaseListActivity<UDrawableData, DrawableListAdapter
             uri,
             adapter.allItemsCopy,
             info,
-            appLabel.await(),
-            apk.getFile()
+            appLabel,
+            apk.getFile(),
+            pkg
         )
     }
 }

@@ -132,8 +132,8 @@ abstract class BaseActivity<Data : BaseData, VH : BaseListAdapter.BaseVH> : AppC
         return true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        return when (item?.itemId) {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
             android.R.id.home -> {
                 onBackPressed()
                 true

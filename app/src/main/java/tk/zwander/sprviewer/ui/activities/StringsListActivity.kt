@@ -19,7 +19,7 @@ class StringsListActivity : BaseListActivity<StringXmlData, StringsListAdapter.S
         StringsViewActivity.start(this, it, packageInfo.packageName)
     }
 
-    override val saveAllAct: ActivityResultLauncher<Uri> = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { result ->
+    override val saveAllAct: ActivityResultLauncher<Uri?> = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { result ->
         if (result == null) return@registerForActivityResult
 
         contentResolver.takePersistableUriPermission(result,

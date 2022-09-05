@@ -45,6 +45,7 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
         const val EXTRA_EXPORT_INFO = "export_info"
         const val EXTRA_APP_NAME = "app_name"
         const val EXTRA_APP_FILE = "app_file"
+        const val EXTRA_APP_PKG = "app_pkg"
 
         fun startBatchExport(
             context: Context,
@@ -52,7 +53,8 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
             drawables: List<UDrawableData>,
             exportInfo: ExportInfo,
             appName: String,
-            appFile: File
+            appFile: File,
+            appPkg: String
         ) {
             val safeDrawables = ArrayList(drawables.map { it.toDrawableData() })
             val startIntent = Intent(context, BatchExportService::class.java)
@@ -63,6 +65,7 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
             startIntent.putExtra(EXTRA_EXPORT_INFO, exportInfo)
             startIntent.putExtra(EXTRA_APP_NAME, appName)
             startIntent.putExtra(EXTRA_APP_FILE, appFile.absolutePath)
+            startIntent.putExtra(EXTRA_APP_PKG, appPkg)
 
             ContextCompat.startForegroundService(context, startIntent)
         }
@@ -141,10 +144,12 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
             val appName = intent.getStringExtra(EXTRA_APP_NAME)
             val appFile = File(intent.getStringExtra(EXTRA_APP_FILE))
             val apkFile = ApkFile(appFile)
+            val appPkg = intent.getStringExtra(EXTRA_APP_PKG)
 
             val session = BatchExportSessionData(
                 uri, drawables, exportInfo, appName,
                 appFile, apkFile,
+                appPkg,
                 getAppRes(appFile)
             )
 
@@ -369,7 +374,8 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
         val apk = session.apkFile
         val table = session.apkResourceTable
         val remRes = session.remRes
-        val packageInfo = parsePackageCompat(apk.getFile(), 0, true)
+        val pkg = session.appPkg
+        val packageInfo = parsePackageCompat(apk.getFile(), pkg,  0, true)
 
         val parentDir = DocumentFile.fromTreeUri(context, uri)
         val dir = parentDir?.createDirectory(packageInfo.packageName)

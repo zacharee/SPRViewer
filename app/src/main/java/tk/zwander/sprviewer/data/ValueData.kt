@@ -23,15 +23,15 @@ data class ValueData(
     val defaultValue: String?,
     val values: MutableList<LocalizedValueData>
 ) : Parcelable {
-    fun toUValueData(): UValueData {
-        return UValueData(
-            type, name, path, id,
-            ApkFile(path),
-            parsePackageCompat(File(path), 0, true),
-            defaultValue,
-            values
-        )
-    }
+//    fun toUValueData(): UValueData {
+//        return UValueData(
+//            type, name, path, id,
+//            ApkFile(path),
+//            parsePackageCompat(File(path), 0, true),
+//            defaultValue,
+//            values
+//        )
+//    }
 }
 
 data class UValueData(

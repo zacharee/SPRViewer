@@ -14,6 +14,7 @@ data class BatchExportSessionData(
     val appName: String,
     val appFile: File,
     val apkFile: ApkFile,
+    val appPkg: String,
     val remRes: Resources,
     val apkResourceTable: ResourceTable = apkFile.resourceTable
 )

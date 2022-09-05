@@ -23,10 +23,10 @@ class MainActivity : BaseActivity<AppData, AppListAdapter.AppVH>() {
     override val contentView by lazy { binding.root }
     override val adapter = AppListAdapter(
         itemSelectedListener = {
-            openDrawableActivity(it.pkg)
+            openDrawableActivity(it.pkg, it.label)
         },
         valuesSelectedListener = {
-            openValuesActivity(it.pkg)
+            openValuesActivity(it.pkg, it.label)
         }
     )
 
@@ -110,9 +110,10 @@ class MainActivity : BaseActivity<AppData, AppListAdapter.AppVH>() {
         }
     }
 
-    private fun openDrawableActivity(pkg: String) {
+    private fun openDrawableActivity(pkg: String, label: String) {
         val drawableIntent = Intent(this, DrawableListActivity::class.java)
         drawableIntent.putExtra(Intent.EXTRA_PACKAGE_NAME, pkg)
+        drawableIntent.putExtra(BaseListActivity.EXTRA_APP_LABEL, label)
 
         startActivity(drawableIntent)
     }
@@ -124,9 +125,10 @@ class MainActivity : BaseActivity<AppData, AppListAdapter.AppVH>() {
         startActivity(drawableIntent)
     }
 
-    private fun openValuesActivity(pkg: String) {
+    private fun openValuesActivity(pkg: String, label: String) {
         val valueIntent = Intent(this, StringsListActivity::class.java)
         valueIntent.putExtra(Intent.EXTRA_PACKAGE_NAME, pkg)
+        valueIntent.putExtra(BaseListActivity.EXTRA_APP_LABEL, label)
 
         startActivity(valueIntent)
     }

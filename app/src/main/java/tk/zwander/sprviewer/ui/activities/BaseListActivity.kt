@@ -1,7 +1,6 @@
 package tk.zwander.sprviewer.ui.activities
 
 import android.content.Intent
-import android.content.res.Resources
 import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
@@ -26,9 +25,10 @@ abstract class BaseListActivity<Data : BaseData, VH : BaseListAdapter.BaseVH> :
     BaseActivity<Data, VH>() {
     companion object {
         const val EXTRA_FILE = "file"
+        const val EXTRA_APP_LABEL = "app_label"
     }
 
-    internal abstract val saveAllAct: ActivityResultLauncher<Uri>
+    internal abstract val saveAllAct: ActivityResultLauncher<Uri?>
 
     override val contentView by lazy { binding.root }
     override val hasBackButton = true
@@ -54,20 +54,26 @@ abstract class BaseListActivity<Data : BaseData, VH : BaseListAdapter.BaseVH> :
             .apply { preferredLocale = Locale.getDefault() }
     }
 
-    private val pkg by lazy { intent.getStringExtra(Intent.EXTRA_PACKAGE_NAME) }
+    protected val pkg by lazy { intent.getStringExtra(Intent.EXTRA_PACKAGE_NAME) }
+    protected val appLabel by lazy {
+        intent.getStringExtra(EXTRA_APP_LABEL)
+            ?: run {
+                val l = packageInfo.appInfo?.loadLabel(packageManager)?.toString()
+                if (l == packageInfo.appInfo?.name) null else l
+            }
+            ?: try {
+                packageManager.getPackageInfo(
+                    pkg ?: apk.apkMeta.packageName, 0
+                ).applicationInfo.loadLabel(packageManager).toString()
+            } catch (e: Exception) {
+                apk.apkMeta.label ?: pkg ?: apk.apkMeta.packageName
+            }
+    }
     internal val file by lazy { intent.getSerializableExtra(EXTRA_FILE) as File? }
     internal val remRes by lazy { getAppRes(apk.getFile()) }
-    internal val appLabel by lazyDeferred {
-        val labelRes = packageInfo.applicationInfo.labelRes
-        try {
-            remRes.getString(labelRes)
-        } catch (e: Resources.NotFoundException) {
-            packageInfo.applicationInfo.packageName
-        }
-    }
 
     internal val packageInfo by lazy {
-        parsePackageCompat(apk.getFile(), 0, true)
+        parsePackageCompat(apk.getFile(), pkg ?: apk.apkMeta.packageName, 0, true)
     }
 
     private var saveAll: MenuItem? = null
@@ -121,7 +127,7 @@ abstract class BaseListActivity<Data : BaseData, VH : BaseListAdapter.BaseVH> :
 
     private fun updateTitle(numberItems: Int = -1) = launch {
         title = withContext(Dispatchers.IO) {
-            appLabel.await()
+            appLabel
         } + if (numberItems > -1) " ($numberItems)" else ""
     }
 }

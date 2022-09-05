@@ -1,2 +1,4 @@
-include ':app'
+include ':app'/*, ':apkparser'*/
 rootProject.name='SPRViewer'
+
+//project(':apkparser').setProjectDir(new File("../apk-parser"))
