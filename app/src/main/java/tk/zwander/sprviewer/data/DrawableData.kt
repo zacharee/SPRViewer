@@ -1,8 +1,9 @@
 package tk.zwander.sprviewer.data
 
 import android.os.Parcelable
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 import net.dongliu.apk.parser.ApkFile
+import net.dongliu.apk.parser.struct.resource.ResTableConfig
 
 @Parcelize
 data class DrawableData(
@@ -10,7 +11,8 @@ data class DrawableData(
     val name: String,
     val ext: String?,
     val path: String,
-    val id: Int
+    val id: Int,
+    val resTableConfig: ResTableConfigParcelable
 ) : Parcelable {
 //    fun toUDrawableData(): UDrawableData {
 //        return UDrawableData(
@@ -28,11 +30,13 @@ data class UDrawableData(
     val path: String,
     val id: Int,
     val file: ApkFile,
-    val packageInfo: CustomPackageInfo
+    val packageInfo: CustomPackageInfo,
+    val resTableConfig: ResTableConfig
 ) : BaseData() {
     fun toDrawableData(): DrawableData {
         return DrawableData(
-            type, name, ext, path, id
+            type, name, ext, path, id,
+            ResTableConfigParcelable(resTableConfig)
         )
     }
 

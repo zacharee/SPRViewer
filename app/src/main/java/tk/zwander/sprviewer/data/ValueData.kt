@@ -1,7 +1,7 @@
 package tk.zwander.sprviewer.data
 
 import android.os.Parcelable
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 import net.dongliu.apk.parser.ApkFile
 import java.util.*
 

@@ -14,6 +14,7 @@
     <string name="open_dir">Open</string>
     <string name="tint">Tint</string>
     <string name="copied">Copied</string>
+    <string name="exporting">Exporting</string>
 
     <string name="base_raster_width">Base Raster Width</string>
     <string name="rasterize_xmls">Rasterize XMLs</string>
@@ -23,6 +24,7 @@
     <string name="rasterize_sprs">Rasterize SPRs</string>
     <string name="export_astcs">Export ASTCs</string>
     <string name="export_sprs">Export SPRs</string>
+    <string name="deobfuscate_names">Deobfuscate Names</string>
 
     <string name="load_image_error">Unable to load image</string>
     <string name="enter_dimensions">Enter export dimensions</string>

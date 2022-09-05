@@ -132,7 +132,6 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
     override fun onDestroy() {
         super.onDestroy()
 
-        stopForeground(true)
         stopForeground(STOP_FOREGROUND_REMOVE)
     }
 
@@ -155,7 +154,9 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
 
             onNewExportQueued(session)
         } else if (intent?.action == ACTION_CANCEL_CURRENT_EXPORT) {
-            onExportCompleted(queuedExports.first(), true)
+            queuedExports.firstOrNull()?.let {
+                onExportCompleted(it, true)
+            }
         }
 
         return super.onStartCommand(intent, flags, startId)
@@ -169,13 +170,16 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
         }
     }
 
-    private fun onExportCompleted(session: BatchExportSessionData, cancelled: Boolean = false) {
-        queuedExports.remove(session)
-
-        destroyAppRes(session.appFile)
+    private fun onExportCompleted(session: BatchExportSessionData?, cancelled: Boolean = false) {
+        session?.let {
+            queuedExports.remove(session)
+            destroyAppRes(session.appFile)
+        }
 
         if (!cancelled) {
-            nm.notify(session.hashCode(), createCompletedNotification(session))
+            session?.let {
+                nm.notify(session.hashCode(), createCompletedNotification(session))
+            }
         } else {
             currentExport?.cancel()
         }
@@ -294,7 +298,7 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
         )
 
         return progressNotification
-            .setContent(progressContent)
+            .setContentTitle(resources.getString(R.string.exporting))
             .setCustomBigContentView(progressContent)
             .setSilent(true)
             .build()
@@ -356,6 +360,7 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
         return progressViews
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     private fun runBatchExportAsync(
         context: Context,
         session: BatchExportSessionData,
@@ -503,7 +508,13 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
             if (loaded != null) {
                 val target = dir?.createFile(
                     "image/$rasterExtension",
-                    drawableData.path.replace("/", ".")
+                    if (!session.exportInfo.deobNames) {
+                        drawableData.path.replace("/", ".")
+                    } else {
+                        val prefix = drawableData.resTableConfig.constructPrefix()
+
+                        "${if (prefix.isNotBlank()) "$prefix." else ""}${drawableData.name}"
+                    }
                 )
 
                 launch {
@@ -580,7 +591,16 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
 
             if (info.exportXmls && drawableXml != null) {
                 val target =
-                    dir?.createFile("text/xml", drawableData.path.replace("/", "."))
+                    dir?.createFile(
+                        "text/xml",
+                        if (!session.exportInfo.deobNames) {
+                            drawableData.path.replace("/", ".")
+                        } else {
+                            val prefix = drawableData.resTableConfig.constructPrefix()
+
+                            "${if (prefix.isNotBlank()) "$prefix." else ""}${drawableData.name}"
+                        }
+                    )
 
                 launch {
                     progressCallback(
@@ -636,7 +656,16 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
 
             if ((ext == "astc" && info.exportAstcs) || (ext == "spr" && info.exportSprs)) {
                 val target =
-                    dir?.createFile("image/$ext", drawableData.path.replace("/", "."))
+                    dir?.createFile(
+                        "image/$ext",
+                        if (!session.exportInfo.deobNames) {
+                            drawableData.path.replace("/", ".")
+                        } else {
+                            val prefix = drawableData.resTableConfig.constructPrefix()
+
+                            "${if (prefix.isNotBlank()) "$prefix." else ""}${drawableData.name}"
+                        }
+                    )
 
                 launch {
                     progressCallback(

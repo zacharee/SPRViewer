@@ -82,6 +82,14 @@
             android:text="@string/export_sprs"
             />
 
+        <CheckBox
+            android:id="@+id/deob_names"
+            android:layout_width="match_parent"
+            android:layout_height="?android:listPreferredItemHeightSmall"
+            android:checked="true"
+            android:text="@string/deobfuscate_names"
+            />
+
     </LinearLayout>
 
 </ScrollView>

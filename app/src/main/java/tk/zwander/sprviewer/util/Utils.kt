@@ -191,10 +191,10 @@ suspend fun getAppDrawables(
                     val r = table.getResourcesById(i.toLong())
                     if (r.isEmpty()) continue
 
-                    val paths = r.map { it.resourceEntry }
+                    r.forEach { resource ->
+                        val entry = resource.resourceEntry
 
-                    paths.forEach {
-                        val pathOrColor = it.toStringValue(table, Locale.getDefault())
+                        val pathOrColor = entry.toStringValue(table, Locale.getDefault())
 
                         val split = pathOrColor.split("/")
                         val fullName = split.last().split(".")
@@ -202,7 +202,7 @@ suspend fun getAppDrawables(
                         val typeMask = 0x00ff0000
                         val typeSpec = resPkg.getTypeSpec(((typeMask and i) - 0xffff).toShort())
                         val typeName = typeSpec?.name!!
-                        val name = it.key
+                        val name = entry.key
                         val ext = if (fullName.size > 1) fullName.subList(1, fullName.size)
                             .joinToString(".") else null
 
@@ -213,7 +213,8 @@ suspend fun getAppDrawables(
                             pathOrColor,
                             i,
                             apk,
-                            packageInfo
+                            packageInfo,
+                            resource.type.config
                         )
 
                         count++

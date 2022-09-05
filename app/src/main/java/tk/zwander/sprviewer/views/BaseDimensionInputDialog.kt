@@ -4,7 +4,7 @@ import android.content.Context
 import android.os.Parcelable
 import android.view.LayoutInflater
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 import tk.zwander.sprviewer.R
 import tk.zwander.sprviewer.databinding.PixelInputBinding
 
@@ -30,7 +30,8 @@ class BaseDimensionInputDialog(
                     binding.exportRasters.isChecked,
                     binding.exportXmls.isChecked,
                     binding.exportAstcs.isChecked,
-                    binding.exportSprs.isChecked
+                    binding.exportSprs.isChecked,
+                    binding.deobNames.isChecked
                 )
             )
         }
@@ -48,5 +49,6 @@ data class ExportInfo(
     val exportRasters: Boolean,
     val exportXmls: Boolean,
     val exportAstcs: Boolean,
-    val exportSprs: Boolean
+    val exportSprs: Boolean,
+    val deobNames: Boolean
 ) : Parcelable
