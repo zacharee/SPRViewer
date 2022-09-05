@@ -2,9 +2,12 @@ package tk.zwander.sprviewer.ui.activities
 
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.reddit.indicatorfastscroll.FastScrollerThumbView
@@ -39,10 +42,23 @@ class MainActivity : BaseActivity<AppData, AppListAdapter.AppVH>() {
 
     internal val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
 
+    private val notifRequester =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+            if (!it) {
+                finish()
+            }
+        }
+
     private var importItem: MenuItem? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            checkCallingOrSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            notifRequester.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+        }
 
         adapter.loadItemsAsync(this, this::onLoadFinished) { size, count ->
             progress?.apply {

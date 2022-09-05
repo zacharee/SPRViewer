@@ -4,6 +4,7 @@
     package="tk.zwander.sprviewer">
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:allowBackup="true"
@@ -41,7 +42,7 @@
         </activity>
 
         <service android:name=".ui.services.BatchExportService"
-            android:exported="true"
+            android:exported="false"
             />
     </application>
 
