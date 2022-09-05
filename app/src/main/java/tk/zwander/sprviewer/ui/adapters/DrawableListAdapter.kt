@@ -2,7 +2,6 @@ package tk.zwander.sprviewer.ui.adapters
 
 import android.annotation.SuppressLint
 import android.content.ContentResolver
-import android.content.pm.PackageParser
 import android.content.res.Resources
 import android.net.Uri
 import android.util.Log
@@ -21,8 +20,7 @@ import tk.zwander.sprviewer.data.CustomPackageInfo
 import tk.zwander.sprviewer.data.UDrawableData
 import tk.zwander.sprviewer.databinding.DrawableInfoLayoutBinding
 import tk.zwander.sprviewer.util.getAppDrawables
-import tk.zwander.sprviewer.util.picasso
-import kotlin.Exception
+import picasso
 
 class DrawableListAdapter(private val remRes: Resources, private val itemSelectedListener: (UDrawableData) -> Unit) : BaseListAdapter<UDrawableData, DrawableListAdapter.ListVH>() {
     override val viewRes = R.layout.drawable_info_layout
@@ -83,9 +81,9 @@ class DrawableListAdapter(private val remRes: Resources, private val itemSelecte
                 binding.imgPreview.isVisible = true
 
                 try {
-                    context.picasso.cancelRequest(binding.imgPreview)
+                    picasso.cancelRequest(binding.imgPreview)
 
-                    context.picasso.load(
+                    picasso.load(
                         Uri.parse(
                             "${ContentResolver.SCHEME_ANDROID_RESOURCE}://" +
                                     "${info.packageInfo.packageName}/" +

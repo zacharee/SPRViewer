@@ -2,15 +2,10 @@ package tk.zwander.sprviewer.util
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.pm.PackageParser
 import android.content.res.Resources
 import android.view.View
-import android.view.ViewGroup
 import android.widget.PopupWindow
 import androidx.collection.ArraySet
-import androidx.core.view.doOnAttach
-import androidx.core.view.setPadding
-import com.skydoves.balloon.BalloonAnimation
 import com.skydoves.balloon.createBalloon
 import kotlinx.coroutines.*
 import net.dongliu.apk.parser.ApkFile
@@ -53,7 +48,7 @@ suspend fun getAppStringXmls(
 
                     resInfos.add(r)
                     totalSize += r.size
-                } catch (e: Resources.NotFoundException) {}
+                } catch (_: Resources.NotFoundException) {}
             }
         }
 
@@ -145,8 +140,7 @@ suspend fun getAppValues(
                         list.add(data)
                         valueFound(data, totalSize, count)
                     }
-                } catch (e: Resources.NotFoundException) {
-                }
+                } catch (_: Resources.NotFoundException) {}
             }
         }
 
@@ -226,8 +220,7 @@ suspend fun getAppDrawables(
                         list.add(data)
                         drawableFound(data, totalSize, count)
                     }
-                } catch (e: Resources.NotFoundException) {
-                }
+                } catch (_: Resources.NotFoundException) {}
             }
         }
 

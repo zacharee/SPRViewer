@@ -44,7 +44,7 @@ abstract class BaseListActivity<Data : BaseData, VH : BaseListAdapter.BaseVH> :
 
     private val apkPath by lazy {
         if (pkg != null) {
-            File(packageManager.getApplicationInfo(pkg, 0).sourceDir)
+            File(packageManager.getApplicationInfoCompat(pkg!!, 0).sourceDir)
         } else {
             file
         }
@@ -54,15 +54,15 @@ abstract class BaseListActivity<Data : BaseData, VH : BaseListAdapter.BaseVH> :
             .apply { preferredLocale = Locale.getDefault() }
     }
 
-    protected val pkg by lazy { intent.getStringExtra(Intent.EXTRA_PACKAGE_NAME) }
-    protected val appLabel by lazy {
+    protected val pkg: String? by lazy { intent.getStringExtra(Intent.EXTRA_PACKAGE_NAME) }
+    protected val appLabel: String by lazy {
         intent.getStringExtra(EXTRA_APP_LABEL)
             ?: run {
                 val l = packageInfo.appInfo?.loadLabel(packageManager)?.toString()
                 if (l == packageInfo.appInfo?.name) null else l
             }
             ?: try {
-                packageManager.getPackageInfo(
+                packageManager.getPackageInfoCompat(
                     pkg ?: apk.apkMeta.packageName, 0
                 ).applicationInfo.loadLabel(packageManager).toString()
             } catch (e: Exception) {

@@ -7,7 +7,6 @@ import android.content.res.Configuration
 import android.content.res.Resources
 import android.os.Build
 import android.os.IBinder
-import android.util.Log
 import android.view.Display
 import net.dongliu.apk.parser.struct.resource.ResourcePackage
 import net.dongliu.apk.parser.struct.resource.ResourceTable

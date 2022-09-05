@@ -1,17 +1,12 @@
 package tk.zwander.sprviewer.util
 
 import android.annotation.SuppressLint
-import android.content.pm.IPackageManager
-import android.content.pm.PackageManager
 import android.content.pm.PackageManager.*
 import android.content.pm.PackageParser
-import android.content.pm.PackageParser.PackageParserException
 import android.content.pm.parsing.result.ParseInput
 import android.content.pm.parsing.result.ParseTypeImpl
 import android.content.pm.pkg.FrameworkPackageUserState
 import android.os.Build
-import android.os.ServiceManager
-import android.os.UserHandle
 import android.permission.PermissionManager
 import net.dongliu.apk.parser.ApkFile
 import tk.zwander.sprviewer.data.CustomPackageInfo

@@ -1,13 +1,11 @@
 package tk.zwander.sprviewer.util
 
-import android.annotation.SuppressLint
 import android.app.Application
 import android.app.ResourcesManager
 import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.util.TypedValue
-import com.squareup.picasso.Picasso
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import tk.zwander.sprviewer.data.AppData
@@ -17,7 +15,7 @@ import java.util.concurrent.ConcurrentLinkedDeque
 import kotlin.math.roundToInt
 
 suspend fun Context.getInstalledApps(listener: (data: AppData, size: Int, count: Int) -> Unit): Collection<AppData> {
-    val installedApps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
+    val installedApps = packageManager.getInstalledApplicationsCompat(PackageManager.GET_META_DATA)
     val ret = ConcurrentLinkedDeque<AppData>()
 
     var count = 0
@@ -72,15 +70,6 @@ fun Context.dpAsPx(dpVal: Number) =
         dpVal.toFloat(),
         resources.displayMetrics
     ).roundToInt()
-
-@SuppressLint("StaticFieldLeak")
-private var _picassoInstance: Picasso? = null
-
-val Context.picasso: Picasso
-    get() {
-        return _picassoInstance ?: Picasso.Builder(this@picasso)
-            .build().apply { _picassoInstance = this }
-    }
 
 val Context.app: App
     get() = applicationContext as App

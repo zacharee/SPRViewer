@@ -13,6 +13,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.drawable.toBitmap
@@ -22,6 +23,7 @@ import ar.com.hjg.pngj.ImageLineHelper
 import ar.com.hjg.pngj.ImageLineInt
 import ar.com.hjg.pngj.PngWriter
 import com.squareup.picasso.Callback
+import com.squareup.picasso.Picasso
 import kotlinx.coroutines.*
 import net.dongliu.apk.parser.ApkFile
 import tk.zwander.sprviewer.R
@@ -38,15 +40,11 @@ import java.util.*
 class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     companion object {
         const val EXTRA_DRAWABLE_INFO = "drawable_info"
-
-        private const val SAVE_PNG_REQ = 101
-        private const val SAVE_XML_REQ = 102
-        private const val SAVE_ORIG_REQ = 103
     }
 
     private val apkPath by lazy {
         if (pkg != null) {
-            File(packageManager.getApplicationInfo(pkg, 0).sourceDir)
+            File(packageManager.getApplicationInfoCompat(pkg).sourceDir)
         } else {
             file
         }
@@ -64,7 +62,7 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
         }
     }
     private val path by lazy { paths.last() }
-    private val drawableInfo by lazy { intent.getParcelableExtra<DrawableData>(EXTRA_DRAWABLE_INFO) }
+    private val drawableInfo by lazy { intent.getParcelableExtraCompat<DrawableData?>(EXTRA_DRAWABLE_INFO) }
     private val pkg by lazy { intent.getStringExtra(Intent.EXTRA_PACKAGE_NAME) }
     private val file by lazy { intent.getSerializableExtra(BaseListActivity.EXTRA_FILE) as File? }
     private val remRes by lazy { getAppRes(apkPath!!) }
@@ -78,21 +76,47 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
     }
     private val packageInfo by lazy { parsePackageCompat(apk.getFile(), pkg, 0, true) }
     private val drawableName: String
-        get() = drawableInfo.name
+        get() = drawableInfo!!.name
     private val drawableId: Int
-        get() = drawableInfo.id
+        get() = drawableInfo!!.id
     private val ext: String?
-        get() = drawableInfo.ext
+        get() = drawableInfo!!.ext
 
     private val isViewingAnimatedImage: Boolean
         get() = binding.image.anim != null
 
     private val binding by lazy { ActivityDrawableViewBinding.inflate(layoutInflater) }
 
+    private val savePngRequester = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val os = contentResolver.openOutputStream(result.data!!.data!!)!!
+
+            saveAsPng(os)
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val saveXmlRequester = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val os = contentResolver.openOutputStream(result.data!!.data!!)!!
+
+            saveXmlAsync(os)
+        }
+    }
+
+    private val saveOrigRequester = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val os = contentResolver.openOutputStream(result.data!!.data!!)!!
+
+            saveOrigAsync(os)
+        }
+    }
+
     private var saveImg: MenuItem? = null
     private var saveOrig: MenuItem? = null
     private var saveXml: MenuItem? = null
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
@@ -120,7 +144,7 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
 
             if (drawableXml == null) {
                 try {
-                    picasso.load(
+                    Picasso.get().load(
                         Uri.parse(
                             "${ContentResolver.SCHEME_ANDROID_RESOURCE}://" +
                                     "${packageInfo.packageName}/" +
@@ -182,6 +206,7 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
         destroyAppRes(apk.getFile())
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.save, menu)
 
@@ -213,35 +238,11 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
                 true
             }
             android.R.id.home -> {
-                onBackPressed()
+                onBackPressedDispatcher.onBackPressed()
                 true
             }
             else -> super.onOptionsItemSelected(item)
         }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (resultCode == Activity.RESULT_OK) {
-            when (requestCode) {
-                SAVE_PNG_REQ -> {
-                    val os = contentResolver.openOutputStream(data!!.data!!)!!
-
-                    saveAsPng(os)
-                }
-                SAVE_XML_REQ -> {
-                    val os = contentResolver.openOutputStream(data!!.data!!)!!
-
-                    saveXmlAsync(os)
-                }
-                SAVE_ORIG_REQ -> {
-                    val os = contentResolver.openOutputStream(data!!.data!!)!!
-
-                    saveOrigAsync(os)
-                }
-            }
-        }
-
-        super.onActivityResult(requestCode, resultCode, data)
     }
 
     private fun startPngSave() {
@@ -252,7 +253,7 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
         saveIntent.type = "images/$extension"
         saveIntent.putExtra(Intent.EXTRA_TITLE, "$drawableName.$extension")
 
-        startActivityForResult(saveIntent, SAVE_PNG_REQ)
+        savePngRequester.launch(saveIntent)
     }
 
     private fun startXmlSave() {
@@ -262,7 +263,7 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
         saveIntent.type = "text/xml"
         saveIntent.putExtra(Intent.EXTRA_TITLE, "$drawableName.xml")
 
-        startActivityForResult(saveIntent, SAVE_XML_REQ)
+        saveXmlRequester.launch(saveIntent)
     }
 
     private fun startOrigSave() {
@@ -272,7 +273,7 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
         saveIntent.type = "image/$ext"
         saveIntent.putExtra(Intent.EXTRA_TITLE, "$drawableName.$ext")
 
-        startActivityForResult(saveIntent, SAVE_ORIG_REQ)
+        saveOrigRequester.launch(saveIntent)
     }
 
     private fun saveAsPng(os: OutputStream) {
@@ -294,7 +295,7 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
     }
 
     private fun compressPngAsync(bmp: Bitmap, os: OutputStream) = async(context = Dispatchers.IO) {
-        setProgressVisible(true, indet = false).join()
+        setProgressVisible(true, indeterminate = false).join()
 
         try {
             val info = ImageInfo(bmp.width, bmp.height, 8, bmp.hasAlpha())
@@ -353,7 +354,7 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
 
     @ExperimentalCoroutinesApi
     private fun saveXmlAsync(os: OutputStream) = async(context = Dispatchers.IO) {
-        setProgressVisible(visible = true, indet = false)
+        setProgressVisible(visible = true, indeterminate = false)
 
         os.use { output ->
             drawableXml.getOrAwaitResult()?.byteInputStream()?.use { input ->
@@ -379,7 +380,7 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
     }
 
     private fun saveOrigAsync(os: OutputStream) = async(context = Dispatchers.IO) {
-        setProgressVisible(visible = true, indet = false)
+        setProgressVisible(visible = true, indeterminate = false)
 
         os.use { output ->
             remRes.openRawResource(drawableId).use { input ->
@@ -404,9 +405,9 @@ class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() 
         setProgressVisible(false).join()
     }
 
-    private fun setProgressVisible(visible: Boolean, indet: Boolean = false) = launch {
+    private fun setProgressVisible(visible: Boolean, indeterminate: Boolean = false) = launch {
         binding.exportProgress.isVisible = visible
-        binding.exportProgress.isIndeterminate = indet
+        binding.exportProgress.isIndeterminate = indeterminate
         binding.exportProgress.progress = 0
     }
 

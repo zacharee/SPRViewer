@@ -19,10 +19,6 @@ import tk.zwander.sprviewer.ui.adapters.AppListAdapter
 import java.io.File
 
 class MainActivity : BaseActivity<AppData, AppListAdapter.AppVH>() {
-    companion object {
-        const val REQ_IMPORT_APK = 1000
-    }
-
     override val contentView by lazy { binding.root }
     override val adapter = AppListAdapter(
         itemSelectedListener = {
@@ -48,6 +44,31 @@ class MainActivity : BaseActivity<AppData, AppListAdapter.AppVH>() {
                 finish()
             }
         }
+    private val apkImportReq = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            result?.data?.data?.also { uri ->
+                contentResolver.openInputStream(uri).use { inputStream ->
+                    val apk = File(cacheDir, "temp_apk.apk")
+
+                    apk.outputStream().use { outputStream ->
+                        inputStream.copyTo(outputStream)
+                    }
+
+                    MaterialAlertDialogBuilder(this)
+                        .setTitle(R.string.import_apk)
+                        .setMessage(R.string.import_apk_choice)
+                        .setPositiveButton(R.string.view_images) { _, _ ->
+                            openDrawableActivity(apk)
+                        }
+                        .setNegativeButton(R.string.view_strings) { _, _ ->
+                            openValuesActivity(apk)
+                        }
+                        .setNeutralButton(android.R.string.cancel, null)
+                        .show()
+                }
+            }
+        }
+    }
 
     private var importItem: MenuItem? = null
 
@@ -78,44 +99,12 @@ class MainActivity : BaseActivity<AppData, AppListAdapter.AppVH>() {
             openIntent.addCategory(Intent.CATEGORY_OPENABLE)
             openIntent.type = "application/vnd.android.package-archive"
 
-            startActivityForResult(openIntent, REQ_IMPORT_APK)
+            apkImportReq.launch(openIntent)
 
             true
         }
 
         return super.onCreateOptionsMenu(menu)
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        when (requestCode) {
-            REQ_IMPORT_APK -> {
-                if (resultCode == Activity.RESULT_OK) {
-                    data?.data?.also { uri ->
-                        contentResolver.openInputStream(uri).use { inputStream ->
-                            val apk = File(cacheDir, "temp_apk.apk")
-
-                            apk.outputStream().use { outputStream ->
-                                inputStream.copyTo(outputStream)
-                            }
-
-                            MaterialAlertDialogBuilder(this)
-                                .setTitle(R.string.import_apk)
-                                .setMessage(R.string.import_apk_choice)
-                                .setPositiveButton(R.string.view_images) { _, _ ->
-                                    openDrawableActivity(apk)
-                                }
-                                .setNegativeButton(R.string.view_strings) { _, _ ->
-                                    openValuesActivity(apk)
-                                }
-                                .setNeutralButton(android.R.string.cancel, null)
-                                .show()
-                        }
-                    }
-                }
-            }
-        }
     }
 
     override fun checkCount() {

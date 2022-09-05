@@ -48,7 +48,7 @@ class StringsViewAdapter(private val itemSelectedCallback: (item: StringData) ->
         }
     }
 
-    inner class StringViewVH(view: View) : BaseListAdapter.BaseVH(view) {
+    inner class StringViewVH(view: View) : BaseVH(view) {
         private val binding = DrawableInfoLayoutBinding.bind(itemView)
 
         fun onBind(info: StringData) {

@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import androidx.activity.OnBackPressedCallback
 import androidx.annotation.CallSuper
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
@@ -39,6 +40,13 @@ abstract class BaseActivity<Data : BaseData, VH : BaseListAdapter.BaseVH> : AppC
     private var doneLoading = false
 
     internal open val hasBackButton = false
+
+    private val backPressedCallback = object : OnBackPressedCallback(false) {
+        override fun handleOnBackPressed() {
+            searchView?.onActionViewCollapsed()
+            adapter.onQueryTextSubmit(null)
+        }
+    }
 
     @CallSuper
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -98,6 +106,8 @@ abstract class BaseActivity<Data : BaseData, VH : BaseListAdapter.BaseVH> : AppC
                 true
             }
         }
+
+        onBackPressedDispatcher.addCallback(this, backPressedCallback)
     }
 
     override fun onDestroy() {
@@ -123,7 +133,13 @@ abstract class BaseActivity<Data : BaseData, VH : BaseListAdapter.BaseVH> : AppC
         }
 
         searchView?.setOnCloseListener {
+            backPressedCallback.isEnabled = false
             adapter.onQueryTextSubmit(null)
+            false
+        }
+
+        searchItem?.setOnMenuItemClickListener {
+            backPressedCallback.isEnabled = true
             false
         }
 
@@ -135,19 +151,10 @@ abstract class BaseActivity<Data : BaseData, VH : BaseListAdapter.BaseVH> : AppC
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             android.R.id.home -> {
-                onBackPressed()
+                onBackPressedDispatcher.onBackPressed()
                 true
             }
             else -> super.onOptionsItemSelected(item)
-        }
-    }
-
-    override fun onBackPressed() {
-        if (searchView?.isIconified == false) {
-            searchView?.onActionViewCollapsed()
-            adapter.onQueryTextSubmit(null)
-        } else {
-            super.onBackPressed()
         }
     }
 
