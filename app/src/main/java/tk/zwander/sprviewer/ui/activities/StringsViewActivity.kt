@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.recyclerview.widget.RecyclerView
 import com.reddit.indicatorfastscroll.FastScrollerThumbView
 import com.reddit.indicatorfastscroll.FastScrollerView
@@ -19,8 +20,6 @@ import tk.zwander.sprviewer.ui.adapters.StringsViewAdapter
 
 class StringsViewActivity : BaseActivity<StringData, StringsViewAdapter.StringViewVH>() {
     companion object {
-        const val REQ_SAVE_STRINGS = 2011
-
         var stringInfo: StringXmlData? = null
 
         fun start(context: Context, info: StringXmlData, pkg: String) {
@@ -54,6 +53,14 @@ class StringsViewActivity : BaseActivity<StringData, StringsViewAdapter.StringVi
     }
 
     private val pkgName by lazy { intent.getStringExtra(Intent.EXTRA_PACKAGE_NAME) }
+    private val saveLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("text/xml")) { result ->
+        if (result != null) {
+            contentResolver.openOutputStream(result).bufferedWriter().use {
+                val xml = stringInfo ?: return@use
+                it.write(xml.asXmlString())
+            }
+        }
+    }
 
     private var saveAll: MenuItem? = null
 
@@ -90,11 +97,7 @@ class StringsViewActivity : BaseActivity<StringData, StringsViewAdapter.StringVi
 
         saveAll = menu.findItem(R.id.all)
         saveAll?.setOnMenuItemClickListener {
-            val createIntent = Intent(Intent.ACTION_CREATE_DOCUMENT)
-            createIntent.type = "text/xml"
-            createIntent.addCategory(Intent.CATEGORY_OPENABLE)
-            createIntent.putExtra(Intent.EXTRA_TITLE, "${pkgName}-strings_${stringInfo!!.locale}.xml")
-            startActivityForResult(createIntent, REQ_SAVE_STRINGS)
+            saveLauncher.launch("${pkgName}-strings_${stringInfo!!.locale}.xml")
 
             true
         }
@@ -103,18 +106,6 @@ class StringsViewActivity : BaseActivity<StringData, StringsViewAdapter.StringVi
         }
 
         return super.onCreateOptionsMenu(menu)
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        if (resultCode == RESULT_OK && requestCode == REQ_SAVE_STRINGS
-            && data != null) {
-            contentResolver.openOutputStream(data.data).bufferedWriter().use {
-                val xml = stringInfo ?: return@use
-                it.write(xml.asXmlString())
-            }
-        }
     }
 
     private fun updateTitle(numberStrings: Int = -1) = launch {
