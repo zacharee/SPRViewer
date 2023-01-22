@@ -10,7 +10,7 @@ android {
         applicationId "tk.zwander.sprviewer"
         minSdkVersion 23
         targetSdkVersion 33
-        versionCode 13
+        versionCode 14
         versionName versionCode.toString()
     }
     buildTypes {
