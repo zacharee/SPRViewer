@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package tk.zwander.sprviewer.util
 
 import android.annotation.SuppressLint
@@ -29,7 +31,6 @@ fun ApkFile.getZipFile(): ZipFile {
 }
 
 @SuppressLint("PrivateApi")
-@Suppress("UNCHECKED_CAST")
 fun parsePackageCompat(
     packageFile: File,
     packageName: String,

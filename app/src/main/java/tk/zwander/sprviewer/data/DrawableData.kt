@@ -13,15 +13,7 @@ data class DrawableData(
     val path: String,
     val id: Int,
     val resTableConfig: ResTableConfigParcelable
-) : Parcelable {
-//    fun toUDrawableData(): UDrawableData {
-//        return UDrawableData(
-//            type, name, ext, path, id,
-//            ApkFile(path),
-//            parsePackageCompat(File(path), 0, true)
-//        )
-//    }
-}
+) : Parcelable
 
 data class UDrawableData(
     val type: String,

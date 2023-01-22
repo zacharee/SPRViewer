@@ -13,7 +13,6 @@ import tk.zwander.sprviewer.data.StringXmlData
 import tk.zwander.sprviewer.ui.adapters.StringsListAdapter
 
 
-@Suppress("DeferredResultUnused")
 class StringsListActivity : BaseListActivity<StringXmlData, StringsListAdapter.StringListVH>() {
     override val adapter = StringsListAdapter {
         StringsViewActivity.start(this, it, packageInfo.packageName)

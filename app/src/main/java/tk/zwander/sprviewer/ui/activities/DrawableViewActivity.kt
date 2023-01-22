@@ -1,5 +1,6 @@
 package tk.zwander.sprviewer.ui.activities
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ContentResolver
 import android.content.Intent
@@ -36,6 +37,7 @@ import java.io.File
 import java.io.OutputStream
 import java.util.*
 
+@SuppressLint("InlinedApi")
 @Suppress("DeferredResultUnused")
 class DrawableViewActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     companion object {

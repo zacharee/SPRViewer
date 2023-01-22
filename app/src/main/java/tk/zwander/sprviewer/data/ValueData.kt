@@ -19,17 +19,7 @@ data class ValueData(
     val id: Int,
     val defaultValue: String?,
     val values: MutableList<LocalizedValueData>
-) : Parcelable {
-//    fun toUValueData(): UValueData {
-//        return UValueData(
-//            type, name, path, id,
-//            ApkFile(path),
-//            parsePackageCompat(File(path), 0, true),
-//            defaultValue,
-//            values
-//        )
-//    }
-}
+) : Parcelable
 
 data class UValueData(
     val type: String,
@@ -41,14 +31,6 @@ data class UValueData(
     val defaultValue: String?,
     val values: MutableList<LocalizedValueData>
 ) : BaseData() {
-    fun toDrawableData(): ValueData {
-        return ValueData(
-            type, name, path, id,
-            defaultValue,
-            values
-        )
-    }
-
     override fun constructLabel(): String {
         return name
     }

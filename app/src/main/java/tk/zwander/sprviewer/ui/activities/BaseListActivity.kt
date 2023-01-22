@@ -1,5 +1,6 @@
 package tk.zwander.sprviewer.ui.activities
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -21,6 +22,7 @@ import tk.zwander.sprviewer.util.*
 import java.io.File
 import java.util.*
 
+@SuppressLint("InlinedApi")
 abstract class BaseListActivity<Data : BaseData, VH : BaseListAdapter.BaseVH> :
     BaseActivity<Data, VH>() {
     companion object {

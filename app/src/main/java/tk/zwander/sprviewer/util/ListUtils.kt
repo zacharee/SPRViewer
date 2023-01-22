@@ -5,16 +5,6 @@ import java.util.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
-fun <T> Enumeration<T>.forEachRemaining(consumer: (T, shortCircuit: () -> Unit) -> Unit) {
-    var running = true
-
-    while (hasMoreElements() && running) {
-        consumer(nextElement()) {
-            running = false
-        }
-    }
-}
-
 suspend fun <T> Collection<T>.forEachParallel(
     context: CoroutineContext = EmptyCoroutineContext,
     block: suspend CoroutineScope.(T) -> Unit

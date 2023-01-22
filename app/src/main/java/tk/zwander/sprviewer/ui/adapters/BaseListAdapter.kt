@@ -1,5 +1,6 @@
 package tk.zwander.sprviewer.ui.adapters
 
+import android.annotation.SuppressLint
 import android.view.View
 import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.RecyclerView
@@ -53,22 +54,10 @@ abstract class BaseListAdapter<T : BaseData, VH : BaseListAdapter.BaseVH> : Recy
     }
 
     override fun onQueryTextChange(newText: String?): Boolean {
-//        return if (orig.size > 4000) {
-//            false
-//        } else {
-//            doFilter(newText)
-//            true
-//        }
         return false
     }
 
     override fun onQueryTextSubmit(query: String?): Boolean {
-//        return if (orig.size > 4000) {
-//            doFilter(query)
-//            true
-//        } else {
-//            false
-//        }
         doFilter(query)
         return true
     }
@@ -142,6 +131,7 @@ abstract class BaseListAdapter<T : BaseData, VH : BaseListAdapter.BaseVH> : Recy
         return filteredModelList
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun replaceAll(newItems: Collection<T>) = runBlocking {
         actuallyVisible.clear()
         actuallyVisible.addAll(newItems)

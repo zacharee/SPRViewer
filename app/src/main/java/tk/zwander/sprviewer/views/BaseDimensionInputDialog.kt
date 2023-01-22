@@ -1,5 +1,6 @@
 package tk.zwander.sprviewer.views
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Parcelable
 import android.view.LayoutInflater
@@ -8,14 +9,14 @@ import kotlinx.parcelize.Parcelize
 import tk.zwander.sprviewer.R
 import tk.zwander.sprviewer.databinding.PixelInputBinding
 
+@SuppressLint("InflateParams")
 class BaseDimensionInputDialog(
     context: Context,
     okListener: (info: ExportInfo) -> Unit
 ) : MaterialAlertDialogBuilder(context) {
     init {
-        val view = LayoutInflater.from(context).inflate(R.layout.pixel_input, null)
-        val binding = PixelInputBinding.bind(view)
-        setView(view)
+        val binding = PixelInputBinding.inflate(LayoutInflater.from(context))
+        setView(binding.root)
         setTitle(R.string.base_raster_width)
 
         setPositiveButton(android.R.string.ok) { _, _ ->

@@ -1,5 +1,6 @@
 package tk.zwander.sprviewer.ui.activities
 
+import android.annotation.SuppressLint
 import android.content.*
 import android.os.Bundle
 import android.view.Menu
@@ -18,6 +19,7 @@ import tk.zwander.sprviewer.data.StringXmlData
 import tk.zwander.sprviewer.databinding.ActivityMainBinding
 import tk.zwander.sprviewer.ui.adapters.StringsViewAdapter
 
+@SuppressLint("InlinedApi")
 class StringsViewActivity : BaseActivity<StringData, StringsViewAdapter.StringViewVH>() {
     companion object {
         var stringInfo: StringXmlData? = null

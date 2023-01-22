@@ -1,5 +1,6 @@
 package tk.zwander.sprviewer.ui.activities
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -115,6 +116,7 @@ class MainActivity : BaseActivity<AppData, AppListAdapter.AppVH>() {
         }
     }
 
+    @SuppressLint("InlinedApi")
     private fun openDrawableActivity(pkg: String, label: String) {
         val drawableIntent = Intent(this, DrawableListActivity::class.java)
         drawableIntent.putExtra(Intent.EXTRA_PACKAGE_NAME, pkg)
@@ -130,6 +132,7 @@ class MainActivity : BaseActivity<AppData, AppListAdapter.AppVH>() {
         startActivity(drawableIntent)
     }
 
+    @SuppressLint("InlinedApi")
     private fun openValuesActivity(pkg: String, label: String) {
         val valueIntent = Intent(this, StringsListActivity::class.java)
         valueIntent.putExtra(Intent.EXTRA_PACKAGE_NAME, pkg)

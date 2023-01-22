@@ -13,8 +13,6 @@ import tk.zwander.sprviewer.util.getFile
 import tk.zwander.sprviewer.views.BaseDimensionInputDialog
 import tk.zwander.sprviewer.views.ExportInfo
 
-
-@Suppress("DeferredResultUnused")
 class DrawableListActivity : BaseListActivity<UDrawableData, DrawableListAdapter.ListVH>() {
     override val adapter by lazy {
         DrawableListAdapter(remRes) {

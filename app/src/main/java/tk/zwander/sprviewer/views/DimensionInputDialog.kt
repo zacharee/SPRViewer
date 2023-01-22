@@ -23,9 +23,7 @@ class DimensionInputDialog(context: Context, drawable: Drawable) : MaterialAlert
     private val hwRatio = intrinsicHeight.toFloat() / intrinsicWidth.toFloat()
     private val whRatio = intrinsicWidth.toFloat() / intrinsicHeight.toFloat()
 
-    private val view = LayoutInflater.from(context)
-        .inflate(R.layout.dimension_input, null)
-    private val binding = DimensionInputBinding.bind(view)
+    private val binding = DimensionInputBinding.inflate(LayoutInflater.from(context))
 
     private val tintDrawable = ContextCompat.getDrawable(context, R.drawable.outlined_circle)!!.mutate() as GradientDrawable
     private var tintColor = Color.TRANSPARENT
@@ -85,7 +83,7 @@ class DimensionInputDialog(context: Context, drawable: Drawable) : MaterialAlert
         }
 
         setTitle(R.string.enter_dimensions)
-        setView(view)
+        setView(binding.root)
 
         setPositiveButton(android.R.string.ok) { _, _ ->
             val widthInput = binding.widthInput.text?.toString()
@@ -105,7 +103,7 @@ class DimensionInputDialog(context: Context, drawable: Drawable) : MaterialAlert
         setNegativeButton(android.R.string.cancel, null)
     }
 
-    private fun getScaledDimen(input: CharSequence?, ratio: Float, def: Int): Int {
+    private fun getScaledDimen(input: CharSequence?, ratio: Float, @Suppress("SameParameterValue") def: Int): Int {
         return (parseDimen(input, def) * ratio).toInt()
     }
 

@@ -1,5 +1,6 @@
 package tk.zwander.sprviewer.ui.services
 
+import android.annotation.SuppressLint
 import android.app.*
 import android.content.ContentResolver
 import android.content.Context
@@ -95,7 +96,7 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
                     this,
                     102,
                     Intent(this, BatchExportDialogActivity::class.java),
-                    PendingIntent.FLAG_UPDATE_CURRENT or (1 shl 25)
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
                 )
             )
     }
@@ -132,7 +133,9 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
     override fun onDestroy() {
         super.onDestroy()
 
-        stopForeground(STOP_FOREGROUND_REMOVE)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            stopForeground(STOP_FOREGROUND_REMOVE)
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -170,6 +173,7 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
         }
     }
 
+    @SuppressLint("MissingPermission")
     private fun onExportCompleted(session: BatchExportSessionData?, cancelled: Boolean = false) {
         session?.let {
             queuedExports.remove(session)
@@ -256,12 +260,13 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         setDataAndType(session.uri, "resource/folder")
                     },
-                    PendingIntent.FLAG_UPDATE_CURRENT or (1 shl 25)
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
                 )
             )
             .build()
     }
 
+    @SuppressLint("MissingPermission")
     private fun updateProgressNotification(
         currentFile: String? = null,
         currentFileProgress: Int? = null,
@@ -319,7 +324,7 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
                 100,
                 Intent(this, BatchExportService::class.java)
                     .setAction(ACTION_CANCEL_CURRENT_EXPORT),
-                PendingIntent.FLAG_UPDATE_CURRENT or (1 shl 25)
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
             )
         )
 

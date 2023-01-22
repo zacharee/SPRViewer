@@ -48,7 +48,7 @@ suspend fun getAppStringXmls(
 
                     resInfos.add(r)
                     totalSize += r.size
-                } catch (_: Resources.NotFoundException) {}
+                } catch (ignored: Resources.NotFoundException) {}
             }
         }
 
@@ -140,7 +140,7 @@ suspend fun getAppValues(
                         list.add(data)
                         valueFound(data, totalSize, count)
                     }
-                } catch (_: Resources.NotFoundException) {}
+                } catch (ignored: Resources.NotFoundException) {}
             }
         }
 
@@ -221,7 +221,7 @@ suspend fun getAppDrawables(
                         list.add(data)
                         drawableFound(data, totalSize, count)
                     }
-                } catch (_: Resources.NotFoundException) {}
+                } catch (ignored: Resources.NotFoundException) {}
             }
         }
 
