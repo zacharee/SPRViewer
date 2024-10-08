@@ -17,8 +17,6 @@ class App : Application() {
 
         Picasso.setSingletonInstance(Picasso.Builder(this).build())
 
-        Bugsnag.notify(RuntimeException("Test error"))
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             HiddenApiBypass.setHiddenApiExemptions("L")
         }
