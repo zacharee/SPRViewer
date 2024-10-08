@@ -45,6 +45,10 @@
         <service android:name=".ui.services.BatchExportService"
             android:exported="false"
             />
+
+        <meta-data
+            android:name="com.bugsnag.android.API_KEY"
+            android:value="a2828dca71a8de3e4b7a9cd1e1c0157e"/>
     </application>
 
 </manifest>
