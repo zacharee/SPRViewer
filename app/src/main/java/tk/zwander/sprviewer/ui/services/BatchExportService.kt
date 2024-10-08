@@ -260,7 +260,7 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         setDataAndType(session.uri, "resource/folder")
                     },
-                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+                    PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE,
                 )
             )
             .build()
