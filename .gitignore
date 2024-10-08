@@ -12,3 +12,14 @@
 /captures
 .externalNativeBuild
 .cxx
+/app/release/app-release.apk
+/.idea/appInsightsSettings.xml
+/.idea/compiler.xml
+/.idea/deploymentTargetDropDown.xml
+/.idea/deploymentTargetSelector.xml
+/.idea/jarRepositories.xml
+/.idea/kotlinc.xml
+/.idea/migrations.xml
+/.idea/misc.xml
+/app/release/output-metadata.json
+/.idea/runConfigurations.xml
