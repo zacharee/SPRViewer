@@ -96,7 +96,7 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
                     this,
                     102,
                     Intent(this, BatchExportDialogActivity::class.java),
-                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE,
                 )
             )
     }
@@ -324,7 +324,7 @@ class BatchExportService : Service(), CoroutineScope by MainScope() {
                 100,
                 Intent(this, BatchExportService::class.java)
                     .setAction(ACTION_CANCEL_CURRENT_EXPORT),
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE,
             )
         )
 
