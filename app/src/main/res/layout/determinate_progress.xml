@@ -45,7 +45,7 @@
         tools:text="some_filename.some_extension"
         />
 
-    <com.daimajia.numberprogressbar.NumberProgressBar
+    <ProgressBar
         android:id="@+id/sub_progress"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -53,12 +53,7 @@
         android:layout_marginTop="16dp"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
-        app:progress_reached_bar_height="2dp"
-        app:progress_text_size="12sp"
-        app:progress_reached_color="?colorAccent"
-        app:progress_text_color="?colorAccent"
         tools:progress_current="50"
-        style="@style/NumberProgressBar_Default"
         />
 
 </LinearLayout>
